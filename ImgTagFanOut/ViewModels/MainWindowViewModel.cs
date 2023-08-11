@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading;
@@ -15,6 +17,7 @@ public class MainWindowViewModel : ViewModelBase
 {
     public string Greeting => "Welcome to Avalonia!";
     private string _workingFolder = string.Empty;
+    private ObservableCollection<string> _images = new();
 
     public string WorkingFolder
     {
@@ -27,6 +30,12 @@ public class MainWindowViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> ScanFolderCommand { get; }
 
     public ReactiveCommand<Unit, Unit> CancelScanCommand { get; }
+    
+    public ObservableCollection<string> Images
+    {
+        get => _images;
+        set => this.RaiseAndSetIfChanged(ref _images, value);
+    }
     public MainWindowViewModel()
     {
         ScanFolderCommand = ReactiveCommand.CreateFromObservable(
@@ -65,6 +74,14 @@ public class MainWindowViewModel : ViewModelBase
 
     private async Task ScanFolder(CancellationToken arg)
     {
+        IEnumerable<string> enumerateFiles = Directory.EnumerateFiles(WorkingFolder, "*.jpg", SearchOption.AllDirectories);
+
+        foreach (string file in enumerateFiles)
+        {
+            Images.Add(Path.GetRelativePath(WorkingFolder,  file));
+        }
+        
+        
         await Task.CompletedTask;
     }
 }
