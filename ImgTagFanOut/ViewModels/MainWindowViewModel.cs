@@ -8,6 +8,7 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using ReactiveUI;
 
@@ -15,8 +16,9 @@ namespace ImgTagFanOut.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
-    public string Greeting => "Welcome to Avalonia!";
     private string _workingFolder = string.Empty;
+    private string _selectedImage = string.Empty;
+    private Bitmap _imageToDisplay = null;
     private ObservableCollection<string> _images = new();
 
     public string WorkingFolder
@@ -24,18 +26,31 @@ public class MainWindowViewModel : ViewModelBase
         get => _workingFolder;
         set => this.RaiseAndSetIfChanged(ref _workingFolder, value);
     }
-    
+
     public ReactiveCommand<Window, string> SelectFolderCommand { get; }
-    
+
     public ReactiveCommand<Unit, Unit> ScanFolderCommand { get; }
 
     public ReactiveCommand<Unit, Unit> CancelScanCommand { get; }
-    
+
     public ObservableCollection<string> Images
     {
         get => _images;
         set => this.RaiseAndSetIfChanged(ref _images, value);
     }
+
+    public string SelectedImage
+    {
+        get => _selectedImage;
+        set => this.RaiseAndSetIfChanged(ref _selectedImage, value);
+    }
+
+    public Bitmap ImageToDisplay
+    {
+        get => _imageToDisplay;
+        set => this.RaiseAndSetIfChanged(ref _imageToDisplay, value);
+    }
+
     public MainWindowViewModel()
     {
         ScanFolderCommand = ReactiveCommand.CreateFromObservable(
@@ -70,6 +85,16 @@ public class MainWindowViewModel : ViewModelBase
         CancelScanCommand = ReactiveCommand.Create(
             () => { },
             CancelScanCommand?.IsExecuting);
+
+        this.WhenAnyValue(x => x.SelectedImage)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Throttle(TimeSpan.FromMilliseconds(100))
+            .ObserveOn(RxApp.MainThreadScheduler).Subscribe(x =>
+            {
+                Bitmap? previous = ImageToDisplay;
+                ImageToDisplay = new Bitmap(Path.Combine(WorkingFolder, x));
+                previous?.Dispose();
+            });
     }
 
     private async Task ScanFolder(CancellationToken arg)
@@ -78,10 +103,10 @@ public class MainWindowViewModel : ViewModelBase
 
         foreach (string file in enumerateFiles)
         {
-            Images.Add(Path.GetRelativePath(WorkingFolder,  file));
+            Images.Add(Path.GetRelativePath(WorkingFolder, file));
         }
-        
-        
+
+
         await Task.CompletedTask;
     }
 }
