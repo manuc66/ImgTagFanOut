@@ -14,7 +14,24 @@
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainWindowViewModel/>
     </Design.DataContext>
-
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="Auto"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <TextBox Grid.Row="0" Grid.Column="0" Name="DestinationPath" VerticalAlignment="Center"
+                 Text="{Binding Path=WorkingFolder}" />
+        <Button Grid.Row="0"  Grid.Column="1" Content="Browse" Command="{Binding SelectFolderCommand}" 
+                CommandParameter="{Binding $parent[Window]}" HorizontalAlignment="Right" />
+        
+        <Button Grid.Row="2"  Grid.Column="1" Content="Scan" Command="{Binding ScanFolderCommand}" HorizontalAlignment="Right" />
+        <Button Grid.Row="2"  Grid.Column="0" Content="Cancel" Command="{Binding CancelScanCommand}" HorizontalAlignment="Right" />
+    </Grid>
 
 </Window>
