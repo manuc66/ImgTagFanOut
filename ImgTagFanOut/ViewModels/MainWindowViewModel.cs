@@ -18,7 +18,7 @@ public class MainWindowViewModel : ViewModelBase
 {
     private string _workingFolder = string.Empty;
     private string _selectedImage = string.Empty;
-    private Bitmap _imageToDisplay = null;
+    private Bitmap? _imageToDisplay = null;
     private ObservableCollection<string> _images = new();
 
     public string WorkingFolder
@@ -45,7 +45,7 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _selectedImage, value);
     }
 
-    public Bitmap ImageToDisplay
+    public Bitmap? ImageToDisplay
     {
         get => _imageToDisplay;
         set => this.RaiseAndSetIfChanged(ref _imageToDisplay, value);
@@ -88,11 +88,17 @@ public class MainWindowViewModel : ViewModelBase
 
         this.WhenAnyValue(x => x.SelectedImage)
             .Where(x => !string.IsNullOrWhiteSpace(x))
-            .Throttle(TimeSpan.FromMilliseconds(100))
+            .Throttle(TimeSpan.FromMilliseconds(10))
             .ObserveOn(RxApp.MainThreadScheduler).Subscribe(x =>
             {
                 Bitmap? previous = ImageToDisplay;
-                ImageToDisplay = new Bitmap(Path.Combine(WorkingFolder, x));
+                string fullFilePath = Path.Combine(WorkingFolder, x);
+                
+                using (FileStream fs = new(fullFilePath, FileMode.Open, FileAccess.Read))
+                {
+                    ImageToDisplay = new Bitmap(fs);
+                }
+
                 previous?.Dispose();
             });
     }
