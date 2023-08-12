@@ -72,7 +72,7 @@
                 <TextBox Grid.Column="0" Text="{Binding TagFilterInput}"></TextBox><Button Grid.Column="1" Command="{Binding ClearTagFilterInputCommand}">Clear</Button><Button Command="{Binding AddToTagListCommand}" Grid.Column="2">Add</Button>
             </Grid> 
             <WrapPanel Grid.Row="1" >
-      <ItemsControl ItemsSource="{Binding TagList}">
+      <ItemsControl ItemsSource="{Binding FilteredTagList}">
           <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate><WrapPanel></WrapPanel></ItemsPanelTemplate>
           </ItemsControl.ItemsPanel>
@@ -81,11 +81,6 @@
               <StackPanel Orientation="Horizontal"><Button Content="{Binding .}" ></Button></StackPanel>
               </DataTemplate>
           </ItemsControl.ItemTemplate>
-          <!-- <ItemsControl.DataTemplates> -->
-          <!--     <DataTemplate DataType="{x:Type system:String}"> -->
-          <!--         <StackPanel Orientation="Horizontal"><Button Content="{Binding .}" ></Button></StackPanel> -->
-          <!--     </DataTemplate> -->
-          <!-- </ItemsControl.DataTemplates> -->
       </ItemsControl>
             </WrapPanel>
             <WrapPanel Grid.Row="2" >
