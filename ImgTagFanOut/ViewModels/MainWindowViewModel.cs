@@ -20,6 +20,8 @@ public class MainWindowViewModel : ViewModelBase
     private string _selectedImage = string.Empty;
     private Bitmap? _imageToDisplay = null;
     private ObservableCollection<string> _images = new();
+    private string _tagFilterInput;
+    private ObservableCollection<string> _tagList = new();
 
     public string WorkingFolder
     {
@@ -38,6 +40,11 @@ public class MainWindowViewModel : ViewModelBase
         get => _images;
         set => this.RaiseAndSetIfChanged(ref _images, value);
     }
+    public ObservableCollection<string> TagList
+    {
+        get => _tagList;
+        set => this.RaiseAndSetIfChanged(ref _tagList, value);
+    }
 
     public string SelectedImage
     {
@@ -51,8 +58,17 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _imageToDisplay, value);
     }
 
+    public ReactiveCommand<Unit, Unit> AddToTagListCommand { get; }
+    public ReactiveCommand<Unit,Unit> ClearTagFilterInputCommand { get; }
+    public String TagFilterInput 
+    {
+        get => _tagFilterInput;
+        set => this.RaiseAndSetIfChanged(ref _tagFilterInput, value);
+    }
+
     public MainWindowViewModel()
     {
+        TagList = new ObservableCollection<string>() { "Luca", "Louis", "Filip" };
         ScanFolderCommand = ReactiveCommand.CreateFromObservable(
             () => Observable
                 .StartAsync(ScanFolder)

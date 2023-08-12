@@ -3,6 +3,7 @@
         xmlns:vm="using:ImgTagFanOut.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:system="clr-namespace:System;assembly=System.Runtime"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ImgTagFanOut.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -14,8 +15,13 @@
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainWindowViewModel/>
     </Design.DataContext>
-    
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Column="0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"></ColumnDefinition>
             <ColumnDefinition Width="Auto"></ColumnDefinition>
@@ -43,17 +49,51 @@
         </ListBox>
         <StackPanel Grid.Row="2" Grid.Column="1">
             <ToggleSwitch>Hide done</ToggleSwitch>
-            <AutoCompleteBox></AutoCompleteBox>
             <Button>Previous</Button>
             <Button>Next</Button>
             <Button>Done</Button>
         </StackPanel>
         
-        <Image Source="{Binding ImageToDisplay}" Grid.Row="3" Grid.Column="0"></Image>
-        <ListBox Grid.Row="3" Grid.Column="1">
-            <StackPanel Orientation="Horizontal"><TextBlock>Stef</TextBlock><Button>X</Button></StackPanel>
-            <StackPanel Orientation="Horizontal"><TextBlock>Luc</TextBlock><Button>X</Button></StackPanel>
-        </ListBox>
+        <Image Source="{Binding ImageToDisplay}" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"></Image>
     </Grid>
 
+        <Grid Grid.Row="0" Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="1*"></RowDefinition>
+                <RowDefinition Height="1*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0" Text="{Binding TagFilterInput}"></TextBox><Button Grid.Column="1" Command="{Binding ClearTagFilterInputCommand}">Clear</Button><Button Command="{Binding AddToTagListCommand}" Grid.Column="2">Add</Button>
+            </Grid> 
+            <WrapPanel Grid.Row="1" >
+      <ItemsControl ItemsSource="{Binding TagList}">
+          <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate><WrapPanel></WrapPanel></ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+              <DataTemplate>
+              <StackPanel Orientation="Horizontal"><Button Content="{Binding .}" ></Button></StackPanel>
+              </DataTemplate>
+          </ItemsControl.ItemTemplate>
+          <!-- <ItemsControl.DataTemplates> -->
+          <!--     <DataTemplate DataType="{x:Type system:String}"> -->
+          <!--         <StackPanel Orientation="Horizontal"><Button Content="{Binding .}" ></Button></StackPanel> -->
+          <!--     </DataTemplate> -->
+          <!-- </ItemsControl.DataTemplates> -->
+      </ItemsControl>
+            </WrapPanel>
+            <WrapPanel Grid.Row="2" >
+                <StackPanel Orientation="Horizontal"><TextBlock>Stef</TextBlock><Button>X</Button></StackPanel>
+                <StackPanel Orientation="Horizontal"><TextBlock>Luc</TextBlock><Button>X</Button></StackPanel>
+            </WrapPanel>
+        </Grid>
+
+        
+    </Grid>
 </Window>
