@@ -271,12 +271,16 @@ public class MainWindowViewModel : ViewModelBase
 
     public ReactiveCommand<Unit, Unit> AddToTagListCommand { get; }
     public ReactiveCommand<Unit, Unit> ClearTagFilterInputCommand { get; }
+    public ReactiveCommand<Unit, Unit>  DoneCommand { get; }
+    public ReactiveCommand<Unit, Unit>  PreviousCommand { get; }
+    public ReactiveCommand<Unit, Unit>  NextCommand { get; }
 
     public String? TagFilterInput
     {
         get => _tagFilterInput;
         set => this.RaiseAndSetIfChanged(ref _tagFilterInput, value);
     }
+
 
 
     public MainWindowViewModel()
@@ -286,6 +290,10 @@ public class MainWindowViewModel : ViewModelBase
         _tagRepository.TryCreateTag("Filip", out _);
         TagList = new ObservableCollection<Tag>(_tagRepository.GetAll());
         _filteredTagList = new List<SelectableTag>();
+
+        DoneCommand = ReactiveCommand.Create(() => { }, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
+        PreviousCommand = ReactiveCommand.Create(() => { }, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
+        NextCommand = ReactiveCommand.Create(() => { }, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
 
         ScanFolderCommand = ReactiveCommand.CreateFromObservable(
             () => Observable
