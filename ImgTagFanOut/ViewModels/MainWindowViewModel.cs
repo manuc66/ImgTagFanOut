@@ -357,32 +357,23 @@ public class MainWindowViewModel : ViewModelBase
                 }
             });
 
-        this.WhenAnyValue(x => x.TagFilterInput).Subscribe(tagFilterInput =>
-        {
-            if (string.IsNullOrWhiteSpace(tagFilterInput))
+        this.WhenAnyValue(x => x.TagFilterInput).CombineLatest(
+                TagList
+                    .ToObservableChangeSet(x => x)
+                    .ToCollection(),
+                (filter, list) => (filter, list))
+            .Subscribe((current) =>
             {
-                FilteredTagList = TagList.Select(x => new SelectableTag(x) { IsSelected = IsSelected(x) }).ToList();
-            }
-            else
-            {
-                FilteredTagList = TagList.Where(x => x.MatchFilter(tagFilterInput)).Select(x => new SelectableTag(x) { IsSelected = IsSelected(x) }).ToList();
-            }
-        });
-
-        TagList
-            .ToObservableChangeSet(x => x)
-            .ToCollection()
-            .Subscribe(tagList =>
-            {
-                if (string.IsNullOrWhiteSpace(TagFilterInput))
+                if(string.IsNullOrWhiteSpace(current.filter))
                 {
-                    FilteredTagList = tagList.Select(x => new SelectableTag(x) { IsSelected = IsSelected(x) }).ToList();
+                    FilteredTagList = current.list.Select(x => new SelectableTag(x) { IsSelected = IsSelected(x) }).ToList();
                 }
                 else
                 {
-                    FilteredTagList = tagList.Where(x => x.MatchFilter(TagFilterInput)).Select(x => new SelectableTag(x) { IsSelected = IsSelected(x) }).ToList();
+                    FilteredTagList = current.list.Where(x => x.MatchFilter(current.filter)).Select(x => new SelectableTag(x) { IsSelected = IsSelected(x) }).ToList();
                 }
             });
+        
 
         SelectedImageTag = new CanHaveTag<string>(String.Empty);
         this.WhenAnyValue(x => x.SelectedImage)
