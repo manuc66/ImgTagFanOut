@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:system="clr-namespace:System;assembly=System.Runtime"
+        xmlns:imgTagFanOut="clr-namespace:ImgTagFanOut"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ImgTagFanOut.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -75,43 +76,45 @@
                 <Button Grid.Column="1" Command="{Binding ClearTagFilterInputCommand}">Clear</Button>
                 <Button Command="{Binding AddToTagListCommand}" Grid.Column="2">Add</Button>
             </Grid>
-            <WrapPanel Grid.Row="1">
-                <ItemsControl Name="AllTagsComponent" ItemsSource="{Binding FilteredTagList}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel></WrapPanel>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <ToggleButton Content="{Binding .}" 
-                                        CommandParameter="{Binding}"
-                                        Command="{ReflectionBinding ElementName=AllTagsComponent, Path=DataContext.ToggleAssignTagToImageCommand}"
-                                        ></ToggleButton>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </WrapPanel>
-            <WrapPanel Grid.Row="2">
-                <ItemsControl Name="AssignedTagComponent" ItemsSource="{Binding SelectedImageTag.Tags, FallbackValue=null}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel></WrapPanel>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding Name}">Luc</TextBlock><Button 
+
+            <ItemsControl Grid.Row="1" Name="AllTagsComponent" ItemsSource="{Binding FilteredTagList}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel></WrapPanel>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <ToggleButton Content="{Binding Tag.Name}"
+                                          IsChecked="{Binding IsSelected}"
+                                          CommandParameter="{Binding Tag}"
+                                          Command="{ReflectionBinding ElementName=AllTagsComponent, Path=DataContext.ToggleAssignTagToImageCommand}">
+                            </ToggleButton>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <ItemsControl Grid.Row="2" Name="AssignedTagComponent"
+                          ItemsSource="{Binding SelectedImageTag.Tags, FallbackValue=null}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel></WrapPanel>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <ToggleButton Content="{Binding Path=Name}" IsChecked="True"
                                     CommandParameter="{Binding}"
-                                    Command="{ReflectionBinding ElementName=AssignedTagComponent, Path=DataContext.RemoveTagToImageCommand}">X</Button>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </WrapPanel>
+                                    Command="{ReflectionBinding ElementName=AssignedTagComponent, Path=DataContext.RemoveTagToImageCommand}">
+                                
+                            </ToggleButton>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </Grid>
     </Grid>
 </Window>

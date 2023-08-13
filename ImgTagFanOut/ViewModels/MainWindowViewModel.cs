@@ -65,6 +65,16 @@ public class Tag : IEquatable<Tag>
     {
         return StringComparer.OrdinalIgnoreCase.GetHashCode(Name);
     }
+
+    public bool Same(string? s)
+    {
+        return s != null && string.Equals(Name, s, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public bool MatchFilter(string? tagFilterInput)
+    {
+        return tagFilterInput != null && Name.Contains(tagFilterInput, StringComparison.OrdinalIgnoreCase);
+    }
 }
 
 public class CanHaveTag<T> : ViewModelBase
@@ -85,7 +95,7 @@ public class CanHaveTag<T> : ViewModelBase
 
     public void AddTag(Tag tag)
     {
-        if (!_tags.Any(x => x.Equals(tag)))
+        if (!Has(tag))
         {
             _tags.Add(tag);
         }
@@ -93,21 +103,26 @@ public class CanHaveTag<T> : ViewModelBase
 
     public void RemoveTag(Tag tag)
     {
-        if (_tags.Any(x => x.Equals(tag)))
+        if (Has(tag))
         {
             _tags.Remove(tag);
         }
     }
 
+    public bool Has(Tag tag)
+    {
+        return _tags.Any(x => x.Equals(tag));
+    }
+
     public void Toggle(Tag tag)
     {
-        if (!_tags.Any(x => x.Equals(tag)))
+        if (Has(tag))
         {
-            _tags.Add(tag);
+            _tags.Remove(tag);
         }
         else
         {
-            _tags.Remove(tag);
+            _tags.Add(tag);
         }
     }
 }
@@ -121,8 +136,11 @@ class TagRepository
         if (!string.IsNullOrWhiteSpace(tagName?.Trim()))
         {
             newTag = new Tag(tagName.Trim());
-            _tags.Add(newTag);
-            return true;
+            bool added = _tags.Add(newTag);
+            if (added)
+            {
+                return true;
+            }
         }
 
         newTag = null;
@@ -142,20 +160,48 @@ class TagRepository
         }
     }
 
-    public void RemoveTagToItem<T>(string tagName, CanHaveTag<T> tagAssignation)
+    public void RemoveTagToItem<T>(string tagName, CanHaveTag<T>? tagAssignation)
     {
         if (_tags.TryGetValue(new Tag(tagName), out Tag? existingTag))
         {
-            tagAssignation.RemoveTag(existingTag);
+            tagAssignation?.RemoveTag(existingTag);
         }
     }
 
     public void ToggleToItem(string tagName, CanHaveTag<string> tagAssignation)
     {
-        if (_tags.TryGetValue(new Tag(tagName), out Tag? existingTag))
+        ToggleToItem(new Tag(tagName), tagAssignation);
+    }
+
+    public void ToggleToItem(Tag tagName, CanHaveTag<string> tagAssignation)
+    {
+        if (_tags.TryGetValue(tagName, out Tag? existingTag))
         {
             tagAssignation.Toggle(existingTag);
         }
+    }
+}
+
+public class SelectableTag : ViewModelBase
+{
+    private Tag _tag;
+    private bool _isSelected;
+
+    public Tag Tag
+    {
+        get => _tag;
+        set => this.RaiseAndSetIfChanged(ref _tag, value);
+    }
+
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => this.RaiseAndSetIfChanged(ref _isSelected, value);
+    }
+
+    public SelectableTag(Tag tag)
+    {
+        Tag = tag;
     }
 }
 
@@ -166,8 +212,8 @@ public class MainWindowViewModel : ViewModelBase
     private Bitmap? _imageToDisplay = null;
     private ObservableCollection<string> _images = new();
     private string? _tagFilterInput;
-    private ObservableCollection<string> _tagList = new();
-    private List<string> _filteredTagList;
+    private ObservableCollection<Tag> _tagList = new();
+    private List<SelectableTag> _filteredTagList;
     private readonly TagRepository _tagRepository = new();
     private CanHaveTag<string>? _selectedImageTag;
 
@@ -183,7 +229,7 @@ public class MainWindowViewModel : ViewModelBase
 
     public ReactiveCommand<Unit, Unit> CancelScanCommand { get; }
 
-    public ReactiveCommand<String, Unit> ToggleAssignTagToImageCommand { get; }
+    public ReactiveCommand<Tag, Unit> ToggleAssignTagToImageCommand { get; }
 
     public ReactiveCommand<Tag, Unit> RemoveTagToImageCommand { get; }
 
@@ -193,13 +239,13 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _images, value);
     }
 
-    public ObservableCollection<string> TagList
+    public ObservableCollection<Tag> TagList
     {
         get => _tagList;
         set => this.RaiseAndSetIfChanged(ref _tagList, value);
     }
 
-    public List<string> FilteredTagList
+    public List<SelectableTag> FilteredTagList
     {
         get => _filteredTagList;
         set => this.RaiseAndSetIfChanged(ref _filteredTagList, value);
@@ -238,12 +284,12 @@ public class MainWindowViewModel : ViewModelBase
         _tagRepository.TryCreateTag("Lucas", out _);
         _tagRepository.TryCreateTag("Louis", out _);
         _tagRepository.TryCreateTag("Filip", out _);
-        TagList = new ObservableCollection<string>(_tagRepository.GetAll().Select(x => x.Name));
-        _filteredTagList = new List<string>();
+        TagList = new ObservableCollection<Tag>(_tagRepository.GetAll());
+        _filteredTagList = new List<SelectableTag>();
 
         ScanFolderCommand = ReactiveCommand.CreateFromObservable(
             () => Observable
-                .StartAsync(ScanFolder)
+                .StartAsync(ScanFolder, RxApp.TaskpoolScheduler)
                 .TakeUntil(CancelScanCommand!));
         ScanFolderCommand.Subscribe(x => { });
         SelectFolderCommand = ReactiveCommand.CreateFromTask<Window, string>(async window =>
@@ -272,44 +318,54 @@ public class MainWindowViewModel : ViewModelBase
         SelectFolderCommand.Subscribe(path => { WorkingFolder = path; });
         CancelScanCommand = ReactiveCommand.Create(
             () => { },
-            CancelScanCommand?.IsExecuting);
+            ScanFolderCommand.IsExecuting);
 
         AddToTagListCommand = ReactiveCommand.Create(() =>
         {
             if (_tagRepository.TryCreateTag(TagFilterInput, out Tag? newTag))
             {
-                TagList.Add(newTag.Name);
+                TagList.Add(newTag);
             }
         }, this.WhenAnyValue(x => x.TagFilterInput)
-            .Select(x => !string.IsNullOrWhiteSpace(x) && !TagList.Any(tag => tag.Equals(x.Trim(), StringComparison.OrdinalIgnoreCase)))
-            .CombineLatest(TagList
-                .ToObservableChangeSet(x => x)
-                .ToCollection()
-                .Select(collection => !collection.Any(tag => tag.Equals(TagFilterInput, StringComparison.OrdinalIgnoreCase))), (b, b1) => b && b1));
+            .CombineLatest(TagList.ToObservableChangeSet(x => x).ToCollection(),
+                (tagFilterInput, tagList) => !string.IsNullOrWhiteSpace(tagFilterInput) && !tagList.Any(tag => tag.Same(tagFilterInput))));
         ClearTagFilterInputCommand = ReactiveCommand.Create(() => { TagFilterInput = String.Empty; },
             this.WhenAnyValue(x => x.TagFilterInput).Select(x => !string.IsNullOrWhiteSpace(x)));
 
         ToggleAssignTagToImageCommand = ReactiveCommand.Create(
-            (String s) =>
+            (Tag s) =>
             {
                 if (SelectedImageTag != null)
                 {
                     _tagRepository.ToggleToItem(s, SelectedImageTag);
                 }
+
+                foreach (SelectableTag selectableTag in FilteredTagList)
+                {
+                    selectableTag.IsSelected = IsSelected(selectableTag.Tag);
+                }
             });
 
         RemoveTagToImageCommand = ReactiveCommand.Create(
-            (Tag s) => { _tagRepository.RemoveTagToItem(s.Name, SelectedImageTag); });
+            (Tag s) =>
+            {
+                _tagRepository.RemoveTagToItem(s.Name, SelectedImageTag);
+
+                foreach (SelectableTag selectableTag in FilteredTagList)
+                {
+                    selectableTag.IsSelected = IsSelected(selectableTag.Tag);
+                }
+            });
 
         this.WhenAnyValue(x => x.TagFilterInput).Subscribe(tagFilterInput =>
         {
             if (string.IsNullOrWhiteSpace(tagFilterInput))
             {
-                FilteredTagList = new List<string>(TagList);
+                FilteredTagList = TagList.Select(x => new SelectableTag(x) { IsSelected = IsSelected(x) }).ToList();
             }
             else
             {
-                FilteredTagList = new List<string>(TagList.Where(x => x.Contains(tagFilterInput, StringComparison.OrdinalIgnoreCase)));
+                FilteredTagList = TagList.Where(x => x.MatchFilter(tagFilterInput)).Select(x => new SelectableTag(x) { IsSelected = IsSelected(x) }).ToList();
             }
         });
 
@@ -320,14 +376,15 @@ public class MainWindowViewModel : ViewModelBase
             {
                 if (string.IsNullOrWhiteSpace(TagFilterInput))
                 {
-                    FilteredTagList = new List<string>(tagList);
+                    FilteredTagList = tagList.Select(x => new SelectableTag(x) { IsSelected = IsSelected(x) }).ToList();
                 }
                 else
                 {
-                    FilteredTagList = new List<string>(tagList.Where(x => x.Contains(TagFilterInput, StringComparison.OrdinalIgnoreCase)));
+                    FilteredTagList = tagList.Where(x => x.MatchFilter(TagFilterInput)).Select(x => new SelectableTag(x) { IsSelected = IsSelected(x) }).ToList();
                 }
             });
 
+        SelectedImageTag = new CanHaveTag<string>(String.Empty);
         this.WhenAnyValue(x => x.SelectedImage)
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Throttle(TimeSpan.FromMilliseconds(10))
@@ -347,6 +404,11 @@ public class MainWindowViewModel : ViewModelBase
             });
     }
 
+    private bool IsSelected(Tag x)
+    {
+        return SelectedImageTag?.Has(x) ?? false;
+    }
+
     private async Task ScanFolder(CancellationToken arg)
     {
         IEnumerable<string> enumerateFiles = Directory.EnumerateFiles(WorkingFolder, "*.jpg", SearchOption.AllDirectories);
@@ -355,7 +417,6 @@ public class MainWindowViewModel : ViewModelBase
         {
             Images.Add(Path.GetRelativePath(WorkingFolder, file));
         }
-
 
         await Task.CompletedTask;
     }
