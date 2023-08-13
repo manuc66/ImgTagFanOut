@@ -13,7 +13,7 @@
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainWindowViewModel/>
+        <vm:MainWindowViewModel />
     </Design.DataContext>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -22,40 +22,42 @@
         </Grid.ColumnDefinitions>
 
         <Grid Grid.Column="0">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"></ColumnDefinition>
-            <ColumnDefinition Width="Auto"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-        </Grid.RowDefinitions>
-        <TextBox Grid.Row="0" Grid.Column="0" Name="DestinationPath" VerticalAlignment="Center"
-                 Text="{Binding Path=WorkingFolder}" />
-        <Button Grid.Row="0"  Grid.Column="1" Content="Browse" Command="{Binding SelectFolderCommand}" 
-                CommandParameter="{Binding $parent[Window]}" HorizontalAlignment="Right" />
-        
-        <Button Grid.Row="1"  Grid.Column="1" Content="Scan" Command="{Binding ScanFolderCommand}" HorizontalAlignment="Right" />
-        <Button Grid.Row="1"  Grid.Column="0" Content="Cancel" Command="{Binding CancelScanCommand}" HorizontalAlignment="Right" />
-        <ListBox Grid.Row="2" Grid.Column="0" ItemsSource="{Binding Images}" SelectedItem="{Binding SelectedImage}">
-    
-            <ListBox.ItemTemplate>
-               <DataTemplate>
-                   <TextBlock Text="{Binding}"></TextBlock>
-               </DataTemplate>
-           </ListBox.ItemTemplate>
-        </ListBox>
-        <StackPanel Grid.Row="2" Grid.Column="1">
-            <ToggleSwitch>Hide done</ToggleSwitch>
-            <Button>Previous</Button>
-            <Button>Next</Button>
-            <Button>Done</Button>
-        </StackPanel>
-        
-        <Image Source="{Binding ImageToDisplay}" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"></Image>
-    </Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <TextBox Grid.Row="0" Grid.Column="0" Name="DestinationPath" VerticalAlignment="Center"
+                     Text="{Binding Path=WorkingFolder}" />
+            <Button Grid.Row="0" Grid.Column="1" Content="Browse" Command="{Binding SelectFolderCommand}"
+                    CommandParameter="{Binding $parent[Window]}" HorizontalAlignment="Right" />
+
+            <Button Grid.Row="1" Grid.Column="1" Content="Scan" Command="{Binding ScanFolderCommand}"
+                    HorizontalAlignment="Right" />
+            <Button Grid.Row="1" Grid.Column="0" Content="Cancel" Command="{Binding CancelScanCommand}"
+                    HorizontalAlignment="Right" />
+            <ListBox Grid.Row="2" Grid.Column="0" ItemsSource="{Binding Images}" SelectedItem="{Binding SelectedImage}">
+
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}"></TextBlock>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <StackPanel Grid.Row="2" Grid.Column="1">
+                <ToggleSwitch>Hide done</ToggleSwitch>
+                <Button>Previous</Button>
+                <Button>Next</Button>
+                <Button>Done</Button>
+            </StackPanel>
+
+            <Image Source="{Binding ImageToDisplay}" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"></Image>
+        </Grid>
 
         <Grid Grid.Row="0" Grid.Column="1">
             <Grid.RowDefinitions>
@@ -69,26 +71,47 @@
                     <ColumnDefinition Width="Auto"></ColumnDefinition>
                     <ColumnDefinition Width="Auto"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <TextBox Grid.Column="0" Text="{Binding TagFilterInput}"></TextBox><Button Grid.Column="1" Command="{Binding ClearTagFilterInputCommand}">Clear</Button><Button Command="{Binding AddToTagListCommand}" Grid.Column="2">Add</Button>
-            </Grid> 
-            <WrapPanel Grid.Row="1" >
-      <ItemsControl ItemsSource="{Binding FilteredTagList}">
-          <ItemsControl.ItemsPanel>
-              <ItemsPanelTemplate><WrapPanel></WrapPanel></ItemsPanelTemplate>
-          </ItemsControl.ItemsPanel>
-          <ItemsControl.ItemTemplate>
-              <DataTemplate>
-              <StackPanel Orientation="Horizontal"><Button Content="{Binding .}" ></Button></StackPanel>
-              </DataTemplate>
-          </ItemsControl.ItemTemplate>
-      </ItemsControl>
+                <TextBox Grid.Column="0" Text="{Binding TagFilterInput}"></TextBox>
+                <Button Grid.Column="1" Command="{Binding ClearTagFilterInputCommand}">Clear</Button>
+                <Button Command="{Binding AddToTagListCommand}" Grid.Column="2">Add</Button>
+            </Grid>
+            <WrapPanel Grid.Row="1">
+                <ItemsControl Name="AllTagsComponent" ItemsSource="{Binding FilteredTagList}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel></WrapPanel>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <ToggleButton Content="{Binding .}" 
+                                        CommandParameter="{Binding}"
+                                        Command="{ReflectionBinding ElementName=AllTagsComponent, Path=DataContext.ToggleAssignTagToImageCommand}"
+                                        ></ToggleButton>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </WrapPanel>
-            <WrapPanel Grid.Row="2" >
-                <StackPanel Orientation="Horizontal"><TextBlock>Stef</TextBlock><Button>X</Button></StackPanel>
-                <StackPanel Orientation="Horizontal"><TextBlock>Luc</TextBlock><Button>X</Button></StackPanel>
+            <WrapPanel Grid.Row="2">
+                <ItemsControl Name="AssignedTagComponent" ItemsSource="{Binding SelectedImageTag.Tags, FallbackValue=null}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel></WrapPanel>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Name}">Luc</TextBlock><Button 
+                                    CommandParameter="{Binding}"
+                                    Command="{ReflectionBinding ElementName=AssignedTagComponent, Path=DataContext.RemoveTagToImageCommand}">X</Button>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </WrapPanel>
         </Grid>
-
-        
     </Grid>
 </Window>
