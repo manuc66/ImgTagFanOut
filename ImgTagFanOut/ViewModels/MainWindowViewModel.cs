@@ -123,10 +123,15 @@ public class MainWindowViewModel : ViewModelBase
             {
                 TagList.Add(TagFilterInput.Trim());
             }
-        }, this.WhenAnyValue(x => x.TagFilterInput).Select(x => !string.IsNullOrWhiteSpace(x) && !TagList.Any(tag => tag.Equals(x.Trim(), StringComparison.OrdinalIgnoreCase))));
+        }, this.WhenAnyValue(x => x.TagFilterInput)
+            .Select(x => !string.IsNullOrWhiteSpace(x) && !TagList.Any(tag => tag.Equals(x.Trim(), StringComparison.OrdinalIgnoreCase)))
+            .CombineLatest(TagList
+                .ToObservableChangeSet(x => x)
+                .ToCollection()
+                .Select(collection => !collection.Any(tag => tag.Equals(TagFilterInput, StringComparison.OrdinalIgnoreCase))), (b, b1) => b && b1));
         ClearTagFilterInputCommand = ReactiveCommand.Create(() => { TagFilterInput = String.Empty; },
             this.WhenAnyValue(x => x.TagFilterInput).Select(x => !string.IsNullOrWhiteSpace(x)));
-        
+
         this.WhenAnyValue(x => x.TagFilterInput).Subscribe(tagFilterInput =>
         {
             if (string.IsNullOrWhiteSpace(tagFilterInput))
@@ -140,15 +145,8 @@ public class MainWindowViewModel : ViewModelBase
         });
 
         TagList
-            // Convert the collection to a stream of chunks,
-            // so we have IObservable<IChangeSet<TKey, TValue>>
-            // type also known as the DynamicData monad.
             .ToObservableChangeSet(x => x)
-            // Each time the collection changes, we get
-            // all updated items at once.
             .ToCollection()
-            // If the collection isn't empty, we access the
-            // first element and check if it is an empty string.
             .Subscribe(tagList =>
             {
                 if (string.IsNullOrWhiteSpace(TagFilterInput))
