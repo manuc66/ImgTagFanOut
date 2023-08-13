@@ -88,9 +88,14 @@ public class CanHaveTag<T> : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _tags, value);
     }
 
+    public T Item
+    {
+        get => _item;
+    }
+
     public CanHaveTag(T item)
     {
-        this._item = item;
+        _item = item;
     }
 
     public void AddTag(Tag tag)
@@ -208,9 +213,9 @@ public class SelectableTag : ViewModelBase
 public class MainWindowViewModel : ViewModelBase
 {
     private string? _workingFolder;
-    private string? _selectedImage;
+    private CanHaveTag<string>? _selectedImage;
     private Bitmap? _imageToDisplay = null;
-    private ObservableCollection<string> _images = new();
+    private ObservableCollection<CanHaveTag<string>> _images = new();
     private string? _tagFilterInput;
     private ObservableCollection<Tag> _tagList = new();
     private List<SelectableTag> _filteredTagList;
@@ -233,7 +238,7 @@ public class MainWindowViewModel : ViewModelBase
 
     public ReactiveCommand<Tag, Unit> RemoveTagToImageCommand { get; }
 
-    public ObservableCollection<string> Images
+    public ObservableCollection<CanHaveTag<string>> Images
     {
         get => _images;
         set => this.RaiseAndSetIfChanged(ref _images, value);
@@ -251,16 +256,10 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _filteredTagList, value);
     }
 
-    public string? SelectedImage
+    public CanHaveTag<string>? SelectedImage
     {
         get => _selectedImage;
         set => this.RaiseAndSetIfChanged(ref _selectedImage, value);
-    }
-
-    public CanHaveTag<string>? SelectedImageTag
-    {
-        get => _selectedImageTag;
-        set => this.RaiseAndSetIfChanged(ref _selectedImageTag, value);
     }
 
     public Bitmap? ImageToDisplay
@@ -280,8 +279,6 @@ public class MainWindowViewModel : ViewModelBase
         get => _tagFilterInput;
         set => this.RaiseAndSetIfChanged(ref _tagFilterInput, value);
     }
-
-
 
     public MainWindowViewModel()
     {
@@ -343,73 +340,71 @@ public class MainWindowViewModel : ViewModelBase
         ToggleAssignTagToImageCommand = ReactiveCommand.Create(
             (Tag s) =>
             {
-                if (SelectedImageTag != null)
+                if (SelectedImage != null)
                 {
-                    _tagRepository.ToggleToItem(s, SelectedImageTag);
+                    _tagRepository.ToggleToItem(s, SelectedImage);
                 }
 
                 foreach (SelectableTag selectableTag in FilteredTagList)
                 {
-                    selectableTag.IsSelected = IsSelected(selectableTag.Tag);
+                    selectableTag.IsSelected = IsSelected(selectableTag.Tag, SelectedImage);
                 }
             }, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
 
         RemoveTagToImageCommand = ReactiveCommand.Create(
             (Tag s) =>
             {
-                _tagRepository.RemoveTagToItem(s.Name, SelectedImageTag);
+                _tagRepository.RemoveTagToItem(s.Name, SelectedImage);
 
                 foreach (SelectableTag selectableTag in FilteredTagList)
                 {
-                    selectableTag.IsSelected = IsSelected(selectableTag.Tag);
+                    selectableTag.IsSelected = IsSelected(selectableTag.Tag, SelectedImage);
                 }
             });
 
-        this.WhenAnyValue(x => x.TagFilterInput).CombineLatest(
+        this.WhenAnyValue(x => x.TagFilterInput, x => x.SelectedImage).CombineLatest(
                 TagList
                     .ToObservableChangeSet(x => x)
                     .ToCollection(),
                 (filter, list) => (filter, list))
             .Subscribe((current) =>
             {
-                if(string.IsNullOrWhiteSpace(current.filter))
+                if(string.IsNullOrWhiteSpace(current.filter.Item1))
                 {
-                    FilteredTagList = current.list.Select(x => new SelectableTag(x) { IsSelected = IsSelected(x) }).ToList();
+                    FilteredTagList = current.list.Select(x => new SelectableTag(x) { IsSelected = IsSelected(x, current.filter.Item2) }).ToList();
                 }
                 else
                 {
-                    FilteredTagList = current.list.Where(x => x.MatchFilter(current.filter)).Select(x => new SelectableTag(x) { IsSelected = IsSelected(x) }).ToList();
+                    FilteredTagList = current.list.Where(x => x.MatchFilter(current.filter.Item1)).Select(x => new SelectableTag(x) { IsSelected = IsSelected(x, current.filter.Item2) }).ToList();
                 }
             });
         
 
-        SelectedImageTag = new CanHaveTag<string>(String.Empty);
+
         this.WhenAnyValue(x => x.SelectedImage)
-            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Where(x => !string.IsNullOrWhiteSpace(x?.Item))
             .Throttle(TimeSpan.FromMilliseconds(10))
             .ObserveOn(RxApp.MainThreadScheduler).Subscribe(x =>
             {
-                if (WorkingFolder == null)
+                if (WorkingFolder == null || x == null)
                 {
                     return;
                 }
                 Bitmap? previous = ImageToDisplay;
-                string fullFilePath = Path.Combine(WorkingFolder, x!);
+                string fullFilePath = Path.Combine(WorkingFolder, x.Item!);
 
                 using (FileStream fs = new(fullFilePath, FileMode.Open, FileAccess.Read))
                 {
                     ImageToDisplay = new Bitmap(fs);
                 }
 
-                SelectedImageTag = new CanHaveTag<string>(fullFilePath);
-
                 previous?.Dispose();
             });
     }
 
-    private bool IsSelected(Tag x)
+    private bool IsSelected(Tag x, CanHaveTag<string>? canHaveTag)
     {
-        return SelectedImageTag?.Has(x) ?? false;
+        return canHaveTag?.Has(x) ?? false;
     }
 
     private async Task ScanFolder(CancellationToken arg)
@@ -423,7 +418,7 @@ public class MainWindowViewModel : ViewModelBase
 
         foreach (string file in enumerateFiles)
         {
-            Images.Add(Path.GetRelativePath(WorkingFolder, file));
+            Images.Add(new CanHaveTag<string>(Path.GetRelativePath(WorkingFolder, file)));
         }
 
         await Task.CompletedTask;

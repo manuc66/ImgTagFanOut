@@ -46,7 +46,7 @@
 
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding}"></TextBlock>
+                        <TextBlock Text="{Binding Item}"></TextBlock>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
@@ -97,7 +97,7 @@
             </ItemsControl>
 
             <ItemsControl Grid.Row="2" Name="AssignedTagComponent"
-                          ItemsSource="{Binding SelectedImageTag.Tags, FallbackValue=null}">
+                          ItemsSource="{Binding SelectedImage.Tags}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel></WrapPanel>
@@ -107,7 +107,7 @@
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
                             <ToggleButton Content="{Binding Path=Name}" IsChecked="True"
-                                    CommandParameter="{Binding}"
+                                    CommandParameter="{Binding .}"
                                     Command="{ReflectionBinding ElementName=AssignedTagComponent, Path=DataContext.RemoveTagToImageCommand}">
                                 
                             </ToggleButton>
