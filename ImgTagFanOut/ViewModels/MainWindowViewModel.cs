@@ -207,8 +207,8 @@ public class SelectableTag : ViewModelBase
 
 public class MainWindowViewModel : ViewModelBase
 {
-    private string _workingFolder = string.Empty;
-    private string _selectedImage = string.Empty;
+    private string? _workingFolder;
+    private string? _selectedImage;
     private Bitmap? _imageToDisplay = null;
     private ObservableCollection<string> _images = new();
     private string? _tagFilterInput;
@@ -217,7 +217,7 @@ public class MainWindowViewModel : ViewModelBase
     private readonly TagRepository _tagRepository = new();
     private CanHaveTag<string>? _selectedImageTag;
 
-    public string WorkingFolder
+    public string? WorkingFolder
     {
         get => _workingFolder;
         set => this.RaiseAndSetIfChanged(ref _workingFolder, value);
@@ -251,7 +251,7 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _filteredTagList, value);
     }
 
-    public string SelectedImage
+    public string? SelectedImage
     {
         get => _selectedImage;
         set => this.RaiseAndSetIfChanged(ref _selectedImage, value);
@@ -290,7 +290,7 @@ public class MainWindowViewModel : ViewModelBase
         ScanFolderCommand = ReactiveCommand.CreateFromObservable(
             () => Observable
                 .StartAsync(ScanFolder, RxApp.TaskpoolScheduler)
-                .TakeUntil(CancelScanCommand!));
+                .TakeUntil(CancelScanCommand!), this.WhenAnyValue(x => x.WorkingFolder).Select(x=> !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)) );
         ScanFolderCommand.Subscribe(x => { });
         SelectFolderCommand = ReactiveCommand.CreateFromTask<Window, string>(async window =>
         {
@@ -298,13 +298,13 @@ public class MainWindowViewModel : ViewModelBase
             {
                 AllowMultiple = false,
                 Title = "Select an export folder",
-                SuggestedStartLocation = await window.StorageProvider.TryGetFolderFromPathAsync(WorkingFolder)
+                SuggestedStartLocation = await window.StorageProvider.TryGetFolderFromPathAsync(WorkingFolder ?? String.Empty)
             };
             IReadOnlyList<IStorageFolder> folders = await window.StorageProvider.OpenFolderPickerAsync(folderPickerOptions);
 
             if (folders.Count == 0)
             {
-                return WorkingFolder;
+                return WorkingFolder ?? string.Empty;
             }
 
             string? tryGetLocalPath = folders[0].TryGetLocalPath();
@@ -313,7 +313,7 @@ public class MainWindowViewModel : ViewModelBase
                 return tryGetLocalPath;
             }
 
-            return WorkingFolder;
+            return WorkingFolder ?? String.Empty;
         }, ScanFolderCommand.IsExecuting.Select(x => !x));
         SelectFolderCommand.Subscribe(path => { WorkingFolder = path; });
         CancelScanCommand = ReactiveCommand.Create(
@@ -344,7 +344,7 @@ public class MainWindowViewModel : ViewModelBase
                 {
                     selectableTag.IsSelected = IsSelected(selectableTag.Tag);
                 }
-            });
+            }, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
 
         RemoveTagToImageCommand = ReactiveCommand.Create(
             (Tag s) =>
@@ -390,8 +390,12 @@ public class MainWindowViewModel : ViewModelBase
             .Throttle(TimeSpan.FromMilliseconds(10))
             .ObserveOn(RxApp.MainThreadScheduler).Subscribe(x =>
             {
+                if (WorkingFolder == null)
+                {
+                    return;
+                }
                 Bitmap? previous = ImageToDisplay;
-                string fullFilePath = Path.Combine(WorkingFolder, x);
+                string fullFilePath = Path.Combine(WorkingFolder, x!);
 
                 using (FileStream fs = new(fullFilePath, FileMode.Open, FileAccess.Read))
                 {
@@ -411,6 +415,11 @@ public class MainWindowViewModel : ViewModelBase
 
     private async Task ScanFolder(CancellationToken arg)
     {
+        if (WorkingFolder == null)
+        {
+            return;
+        }
+        
         IEnumerable<string> enumerateFiles = Directory.EnumerateFiles(WorkingFolder, "*.jpg", SearchOption.AllDirectories);
 
         foreach (string file in enumerateFiles)
