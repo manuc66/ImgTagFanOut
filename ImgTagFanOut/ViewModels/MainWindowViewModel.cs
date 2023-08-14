@@ -77,7 +77,8 @@ public class MainWindowViewModel : ViewModelBase
         get => _hideDone;
         set => this.RaiseAndSetIfChanged(ref _hideDone, value);
     }
-    public int SelectedIndex 
+
+    public int SelectedIndex
     {
         get => _selectedIndex;
         set => this.RaiseAndSetIfChanged(ref _selectedIndex, value);
@@ -100,7 +101,7 @@ public class MainWindowViewModel : ViewModelBase
         TagList = new ObservableCollection<Tag>(_tagRepository.GetAll());
         _filteredTagList = new List<SelectableTag>();
         HideDone = true;
-        
+
         _images.Connect()
             .AutoRefresh(x => x.Done)
             .Filter(this.WhenValueChanged(@this => @this.HideDone)
@@ -123,29 +124,7 @@ public class MainWindowViewModel : ViewModelBase
             () => Observable
                 .StartAsync(ScanFolder, RxApp.TaskpoolScheduler)
                 .TakeUntil(CancelScanCommand!), this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)));
-        SelectFolderCommand = ReactiveCommand.CreateFromTask<Window, string>(async window =>
-        {
-            FolderPickerOpenOptions folderPickerOptions = new()
-            {
-                AllowMultiple = false,
-                Title = "Select an export folder",
-                SuggestedStartLocation = await window.StorageProvider.TryGetFolderFromPathAsync(WorkingFolder ?? String.Empty)
-            };
-            IReadOnlyList<IStorageFolder> folders = await window.StorageProvider.OpenFolderPickerAsync(folderPickerOptions);
-
-            if (folders.Count == 0)
-            {
-                return WorkingFolder ?? string.Empty;
-            }
-
-            string? tryGetLocalPath = folders[0].TryGetLocalPath();
-            if (tryGetLocalPath != null && Directory.Exists(tryGetLocalPath))
-            {
-                return tryGetLocalPath;
-            }
-
-            return WorkingFolder ?? String.Empty;
-        }, ScanFolderCommand.IsExecuting.Select(x => !x));
+        SelectFolderCommand = ReactiveCommand.CreateFromTask<Window, string>(SelectFolder, ScanFolderCommand.IsExecuting.Select(x => !x));
         SelectFolderCommand.Subscribe(path => { WorkingFolder = path; });
         CancelScanCommand = ReactiveCommand.Create(
             () => { },
@@ -163,53 +142,50 @@ public class MainWindowViewModel : ViewModelBase
         ClearTagFilterInputCommand = ReactiveCommand.Create(() => { TagFilterInput = String.Empty; },
             this.WhenAnyValue(x => x.TagFilterInput).Select(x => !string.IsNullOrWhiteSpace(x)));
 
-        ToggleAssignTagToImageCommand = ReactiveCommand.Create(
-            (Tag s) =>
+        ToggleAssignTagToImageCommand = ReactiveCommand.Create((Tag s) =>
+        {
+            if (SelectedImage != null)
             {
-                if (SelectedImage != null)
-                {
-                    _tagRepository.ToggleToItem(s, SelectedImage);
-                }
+                _tagRepository.ToggleToItem(s, SelectedImage);
+            }
 
-                foreach (SelectableTag selectableTag in FilteredTagList)
-                {
-                    selectableTag.IsSelected = IsSelected(selectableTag.Tag, SelectedImage);
-                }
-            }, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
-
-        RemoveTagToImageCommand = ReactiveCommand.Create(
-            (Tag s) =>
+            foreach (SelectableTag selectableTag in FilteredTagList)
             {
-                _tagRepository.RemoveTagToItem(s.Name, SelectedImage);
+                selectableTag.IsSelected = IsSelected(selectableTag.Tag, SelectedImage);
+            }
+        }, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
 
-                foreach (SelectableTag selectableTag in FilteredTagList)
-                {
-                    selectableTag.IsSelected = IsSelected(selectableTag.Tag, SelectedImage);
-                }
-            });
+        RemoveTagToImageCommand = ReactiveCommand.Create((Tag s) =>
+        {
+            _tagRepository.RemoveTagToItem(s.Name, SelectedImage);
 
-        this.WhenAnyValue(x => x.TagFilterInput, x => x.SelectedImage).CombineLatest(
-                TagList
-                    .ToObservableChangeSet(x => x)
-                    .ToCollection(),
-                (properties, list) =>
-                {
-                    (string? tagFilterInput, CanHaveTag<string>? selectedImage) = properties;
-                    return (tagFilterInput, selectedImage, list);
-                })
-            .Subscribe((current) =>
+            foreach (SelectableTag selectableTag in FilteredTagList)
             {
-                FilteredTagList = current.list
-                    .Where(x => string.IsNullOrWhiteSpace(current.tagFilterInput) || x.MatchFilter(current.tagFilterInput))
-                    .Select(x => new SelectableTag(x) { IsSelected = IsSelected(x, current.selectedImage) })
+                selectableTag.IsSelected = IsSelected(selectableTag.Tag, SelectedImage);
+            }
+        });
+
+        this.WhenAnyValue(x => x.TagFilterInput, x => x.SelectedImage)
+            .CombineLatest(TagList
+                .ToObservableChangeSet(x => x)
+                .ToCollection()
+            )
+            .Subscribe((watched) =>
+            {
+                (string? tagFilterInput, CanHaveTag<string>? selectedImage) = watched.First;
+                IReadOnlyCollection<Tag> list = watched.Second;
+
+                FilteredTagList = list
+                    .Where(tag => string.IsNullOrWhiteSpace(tagFilterInput) || tag.MatchFilter(tagFilterInput))
+                    .Select(tag => new SelectableTag(tag) { IsSelected = IsSelected(tag, selectedImage) })
                     .ToList();
             });
-
 
         this.WhenAnyValue(x => x.SelectedImage)
             .Where(x => !string.IsNullOrWhiteSpace(x?.Item))
             .Throttle(TimeSpan.FromMilliseconds(10))
-            .ObserveOn(RxApp.MainThreadScheduler).Subscribe(x =>
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(x =>
             {
                 if (WorkingFolder == null || x == null)
                 {
@@ -226,6 +202,25 @@ public class MainWindowViewModel : ViewModelBase
 
                 previous?.Dispose();
             });
+    }
+
+    private async Task<string> SelectFolder(Window window)
+    {
+        FolderPickerOpenOptions folderPickerOptions = new() { AllowMultiple = false, Title = "Select an export folder", SuggestedStartLocation = await window.StorageProvider.TryGetFolderFromPathAsync(WorkingFolder ?? String.Empty) };
+        IReadOnlyList<IStorageFolder> folders = await window.StorageProvider.OpenFolderPickerAsync(folderPickerOptions);
+
+        if (folders.Count == 0)
+        {
+            return WorkingFolder ?? string.Empty;
+        }
+
+        string? tryGetLocalPath = folders[0].TryGetLocalPath();
+        if (tryGetLocalPath != null && Directory.Exists(tryGetLocalPath))
+        {
+            return tryGetLocalPath;
+        }
+
+        return WorkingFolder ?? String.Empty;
     }
 
     private Func<CanHaveTag<string>, bool> CreatePredicate(bool arg)
