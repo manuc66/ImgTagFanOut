@@ -113,9 +113,9 @@ public class MainWindowViewModel : ViewModelBase
         {
             if (SelectedImage != null)
             {
-                var s = SelectedIndex;
+                int selectedIndex = SelectedIndex;
                 SelectedImage.Done = true;
-                SelectedIndex = s;
+                SelectedIndex = Math.Min(selectedIndex, FilteredImages.Count - 1);
             }
         }, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
 
