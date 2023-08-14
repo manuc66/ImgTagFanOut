@@ -27,7 +27,7 @@ public class MainWindowViewModel : ViewModelBase
     private List<SelectableTag> _filteredTagList;
     private readonly TagRepository _tagRepository = new();
     private bool _hideDone;
-    private readonly SourceList<CanHaveTag<string>> _images = new SourceList<CanHaveTag<string>>();
+    private readonly SourceList<CanHaveTag<string>> _images = new();
     private int _selectedIndex;
 
     public string? WorkingFolder
@@ -105,7 +105,7 @@ public class MainWindowViewModel : ViewModelBase
         _images.Connect()
             .AutoRefresh(x => x.Done)
             .Filter(this.WhenValueChanged(@this => @this.HideDone)
-                .Select(CreatePredicate))
+                .Select(CreateFilterForDone))
             .Sort(SortExpressionComparer<CanHaveTag<string>>.Ascending(t => t.Item))
             .Bind(out _filteredImages)
             .Subscribe();
@@ -223,15 +223,7 @@ public class MainWindowViewModel : ViewModelBase
         return WorkingFolder ?? String.Empty;
     }
 
-    private Func<CanHaveTag<string>, bool> CreatePredicate(bool arg)
-    {
-        if (!arg)
-        {
-            return item => true;
-        }
-
-        return item => !item.Done;
-    }
+    private Func<CanHaveTag<string>, bool> CreateFilterForDone(bool arg) => arg ? item => !item.Done : _ => true;
 
     private bool IsSelected(Tag x, CanHaveTag<string>? canHaveTag)
     {
