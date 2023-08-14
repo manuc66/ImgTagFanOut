@@ -21,11 +21,14 @@ public class MainWindowViewModel : ViewModelBase
     private string? _workingFolder;
     private CanHaveTag<string>? _selectedImage;
     private Bitmap? _imageToDisplay;
-    private ObservableCollection<CanHaveTag<string>> _images = new();
+    private ReadOnlyObservableCollection<CanHaveTag<string>> _filteredImages;
     private string? _tagFilterInput;
     private readonly ObservableCollection<Tag> _tagList = new();
     private List<SelectableTag> _filteredTagList;
     private readonly TagRepository _tagRepository = new();
+    private bool _hideDone;
+    private readonly SourceList<CanHaveTag<string>> _images = new SourceList<CanHaveTag<string>>();
+    private int _selectedIndex;
 
     public string? WorkingFolder
     {
@@ -33,20 +36,10 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _workingFolder, value);
     }
 
-    public ReactiveCommand<Window, string> SelectFolderCommand { get; }
-
-    public ReactiveCommand<Unit, Unit> ScanFolderCommand { get; }
-
-    public ReactiveCommand<Unit, Unit> CancelScanCommand { get; }
-
-    public ReactiveCommand<Tag, Unit> ToggleAssignTagToImageCommand { get; }
-
-    public ReactiveCommand<Tag, Unit> RemoveTagToImageCommand { get; }
-
-    public ObservableCollection<CanHaveTag<string>> Images
+    public ReadOnlyObservableCollection<CanHaveTag<string>> FilteredImages
     {
-        get => _images;
-        set => this.RaiseAndSetIfChanged(ref _images, value);
+        get => _filteredImages;
+        set => _filteredImages = value;
     }
 
     private ObservableCollection<Tag> TagList
@@ -73,17 +66,31 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _imageToDisplay, value);
     }
 
-    public ReactiveCommand<Unit, Unit> AddToTagListCommand { get; }
-    public ReactiveCommand<Unit, Unit> ClearTagFilterInputCommand { get; }
-    public ReactiveCommand<Unit, Unit>  DoneCommand { get; }
-    public ReactiveCommand<Unit, Unit>  PreviousCommand { get; }
-    public ReactiveCommand<Unit, Unit>  NextCommand { get; }
-
     public String? TagFilterInput
     {
         get => _tagFilterInput;
         set => this.RaiseAndSetIfChanged(ref _tagFilterInput, value);
     }
+
+    public bool HideDone
+    {
+        get => _hideDone;
+        set => this.RaiseAndSetIfChanged(ref _hideDone, value);
+    }
+    public int SelectedIndex 
+    {
+        get => _selectedIndex;
+        set => this.RaiseAndSetIfChanged(ref _selectedIndex, value);
+    }
+
+    public ReactiveCommand<Window, string> SelectFolderCommand { get; }
+    public ReactiveCommand<Unit, Unit> ScanFolderCommand { get; }
+    public ReactiveCommand<Unit, Unit> CancelScanCommand { get; }
+    public ReactiveCommand<Tag, Unit> ToggleAssignTagToImageCommand { get; }
+    public ReactiveCommand<Tag, Unit> RemoveTagToImageCommand { get; }
+    public ReactiveCommand<Unit, Unit> AddToTagListCommand { get; }
+    public ReactiveCommand<Unit, Unit> ClearTagFilterInputCommand { get; }
+    public ReactiveCommand<Unit, Unit> DoneCommand { get; }
 
     public MainWindowViewModel()
     {
@@ -92,15 +99,30 @@ public class MainWindowViewModel : ViewModelBase
         _tagRepository.TryCreateTag("Filip", out _);
         TagList = new ObservableCollection<Tag>(_tagRepository.GetAll());
         _filteredTagList = new List<SelectableTag>();
+        HideDone = true;
+        
+        _images.Connect()
+            .AutoRefresh(x => x.Done)
+            .Filter(this.WhenValueChanged(@this => @this.HideDone)
+                .Select(CreatePredicate))
+            .Sort(SortExpressionComparer<CanHaveTag<string>>.Ascending(t => t.Item))
+            .Bind(out _filteredImages)
+            .Subscribe();
 
-        DoneCommand = ReactiveCommand.Create(() => { }, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
-        PreviousCommand = ReactiveCommand.Create(() => { }, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
-        NextCommand = ReactiveCommand.Create(() => { }, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
+        DoneCommand = ReactiveCommand.Create(() =>
+        {
+            if (SelectedImage != null)
+            {
+                var s = SelectedIndex;
+                SelectedImage.Done = true;
+                SelectedIndex = s;
+            }
+        }, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
 
         ScanFolderCommand = ReactiveCommand.CreateFromObservable(
             () => Observable
                 .StartAsync(ScanFolder, RxApp.TaskpoolScheduler)
-                .TakeUntil(CancelScanCommand!), this.WhenAnyValue(x => x.WorkingFolder).Select(x=> !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)) );
+                .TakeUntil(CancelScanCommand!), this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)));
         SelectFolderCommand = ReactiveCommand.CreateFromTask<Window, string>(async window =>
         {
             FolderPickerOpenOptions folderPickerOptions = new()
@@ -177,15 +199,12 @@ public class MainWindowViewModel : ViewModelBase
                 })
             .Subscribe((current) =>
             {
-                if(string.IsNullOrWhiteSpace(current.tagFilterInput))
-                {
-                    FilteredTagList = current.list.Select(x => new SelectableTag(x) { IsSelected = IsSelected(x, current.selectedImage) }).ToList();
-                }
-                else
-                {
-                    FilteredTagList = current.list.Where(x => x.MatchFilter(current.tagFilterInput)).Select(x => new SelectableTag(x) { IsSelected = IsSelected(x, current.selectedImage) }).ToList();
-                }
+                FilteredTagList = current.list
+                    .Where(x => string.IsNullOrWhiteSpace(current.tagFilterInput) || x.MatchFilter(current.tagFilterInput))
+                    .Select(x => new SelectableTag(x) { IsSelected = IsSelected(x, current.selectedImage) })
+                    .ToList();
             });
+
 
         this.WhenAnyValue(x => x.SelectedImage)
             .Where(x => !string.IsNullOrWhiteSpace(x?.Item))
@@ -196,6 +215,7 @@ public class MainWindowViewModel : ViewModelBase
                 {
                     return;
                 }
+
                 Bitmap? previous = ImageToDisplay;
                 string fullFilePath = Path.Combine(WorkingFolder, x.Item);
 
@@ -208,6 +228,16 @@ public class MainWindowViewModel : ViewModelBase
             });
     }
 
+    private Func<CanHaveTag<string>, bool> CreatePredicate(bool arg)
+    {
+        if (!arg)
+        {
+            return item => true;
+        }
+
+        return item => !item.Done;
+    }
+
     private bool IsSelected(Tag x, CanHaveTag<string>? canHaveTag)
     {
         return canHaveTag?.Has(x) ?? false;
@@ -215,16 +245,18 @@ public class MainWindowViewModel : ViewModelBase
 
     private async Task ScanFolder(CancellationToken arg)
     {
+        _images.Clear();
+
         if (WorkingFolder == null)
         {
             return;
         }
-        
+
         IEnumerable<string> enumerateFiles = Directory.EnumerateFiles(WorkingFolder, "*.jpg", SearchOption.AllDirectories);
 
         foreach (string file in enumerateFiles)
         {
-            Images.Add(new CanHaveTag<string>(Path.GetRelativePath(WorkingFolder, file)));
+            _images.Add(new CanHaveTag<string>(Path.GetRelativePath(WorkingFolder, file)));
         }
 
         await Task.CompletedTask;

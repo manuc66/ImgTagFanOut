@@ -8,11 +8,18 @@ public class CanHaveTag<T> : ViewModelBase
 {
     private T _item;
     private ObservableCollection<Tag> _tags = new();
+    private bool _done;
 
     public ObservableCollection<Tag> Tags
     {
         get => _tags;
         set => this.RaiseAndSetIfChanged(ref _tags, value);
+    }
+    
+    public bool Done
+    {
+        get => _done;
+        set => this.RaiseAndSetIfChanged(ref _done, value);
     }
 
     public T Item

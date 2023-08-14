@@ -3,8 +3,6 @@
         xmlns:vm="using:ImgTagFanOut.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:system="clr-namespace:System;assembly=System.Runtime"
-        xmlns:imgTagFanOut="clr-namespace:ImgTagFanOut"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ImgTagFanOut.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -42,7 +40,7 @@
                     HorizontalAlignment="Right" />
             <Button Grid.Row="1" Grid.Column="0" Content="Cancel" Command="{Binding CancelScanCommand}"
                     HorizontalAlignment="Right" />
-            <ListBox Grid.Row="2" Grid.Column="0" ItemsSource="{Binding Images}" SelectedItem="{Binding SelectedImage}">
+            <ListBox Grid.Row="2" Grid.Column="0" SelectedIndex="{Binding SelectedIndex}" ItemsSource="{Binding FilteredImages}" SelectedItem="{Binding SelectedImage}">
 
                 <ListBox.ItemTemplate>
                     <DataTemplate>
@@ -50,13 +48,11 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <StackPanel Grid.Row="2" Grid.Column="1">
-                <ToggleSwitch>Hide done</ToggleSwitch>
-                <Button  Command="{Binding PreviousCommand}">Previous</Button>
-                <Button  Command="{Binding NextCommand}">Next</Button>
+   
+            <StackPanel Grid.Row="2" Grid.Column="1" >
+                <ToggleSwitch IsChecked="{Binding HideDone}">Hide done</ToggleSwitch>
                 <Button Command="{Binding DoneCommand}">Done</Button>
             </StackPanel>
-
             <Image Source="{Binding ImageToDisplay}" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"></Image>
         </Grid>
 
