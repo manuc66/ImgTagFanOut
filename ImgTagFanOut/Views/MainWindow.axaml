@@ -85,7 +85,7 @@
                             <ToggleButton Content="{Binding Tag.Name}"
                                           IsChecked="{Binding IsSelected}"
                                           CommandParameter="{Binding Tag}"
-                                          Command="{ReflectionBinding ElementName=AllTagsComponent, Path=DataContext.ToggleAssignTagToImageCommand}">
+                                          Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).ToggleAssignTagToImageCommand, DataType={x:Type vm:MainWindowViewModel}}">
                             </ToggleButton>
                         </StackPanel>
                     </DataTemplate>
@@ -104,7 +104,7 @@
                         <StackPanel Orientation="Horizontal">
                             <ToggleButton Content="{Binding Path=Name}" IsChecked="True"
                                     CommandParameter="{Binding .}"
-                                    Command="{ReflectionBinding ElementName=AssignedTagComponent, Path=DataContext.RemoveTagToImageCommand}">
+                                    Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).RemoveTagToImageCommand}">
                                 
                             </ToggleButton>
                         </StackPanel>

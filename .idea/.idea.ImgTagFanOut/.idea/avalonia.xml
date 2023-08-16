@@ -3,6 +3,7 @@
   <component name="AvaloniaProject">
     <option name="projectPerEditor">
       <map>
+        <entry key="ImgTagFanOut/App.axaml" value="ImgTagFanOut/ImgTagFanOut.csproj" />
         <entry key="ImgTagFanOut/Views/MainWindow.axaml" value="ImgTagFanOut/ImgTagFanOut.csproj" />
       </map>
     </option>
