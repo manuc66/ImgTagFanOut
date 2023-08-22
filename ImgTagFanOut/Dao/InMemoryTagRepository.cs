@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using ImgTagFanOut.ViewModels;
 
-namespace ImgTagFanOut.ViewModels;
+namespace ImgTagFanOut.Dao;
 
-class TagRepository
+class InMemoryTagRepository : ITagRepository
 {
-    private readonly HashSet<Tag> _tags = new HashSet<Tag>(Tag.Comparer);
+    private readonly HashSet<Tag> _tags = new(Tag.Comparer);
 
     public bool TryCreateTag(string? tagName, [MaybeNullWhen(false)] out Tag newTag)
     {
@@ -29,7 +30,12 @@ class TagRepository
         return _tags.ToImmutableList();
     }
 
-    public void AddTagToItem<T>(string tagName, CanHaveTag<T> tagAssignation)
+    public void AddItem(CanHaveTag tagAssignation)
+    {
+        
+    }
+
+    public void AddTagToItem(string tagName, CanHaveTag tagAssignation)
     {
         if (_tags.TryGetValue(new Tag(tagName), out Tag? existingTag))
         {
@@ -37,7 +43,7 @@ class TagRepository
         }
     }
 
-    public void RemoveTagToItem<T>(string tagName, CanHaveTag<T>? tagAssignation)
+    public void RemoveTagToItem(string tagName, CanHaveTag? tagAssignation)
     {
         if (_tags.TryGetValue(new Tag(tagName), out Tag? existingTag))
         {
@@ -45,16 +51,21 @@ class TagRepository
         }
     }
 
-    public void ToggleToItem(string tagName, CanHaveTag<string> tagAssignation)
+    public void ToggleToItem(string tagName, CanHaveTag tagAssignation)
     {
         ToggleToItem(new Tag(tagName), tagAssignation);
     }
 
-    public void ToggleToItem(Tag tagName, CanHaveTag<string> tagAssignation)
+    public void ToggleToItem(Tag tagName, CanHaveTag tagAssignation)
     {
         if (_tags.TryGetValue(tagName, out Tag? existingTag))
         {
             tagAssignation.Toggle(existingTag);
         }
+    }
+
+    public void CleanAll()
+    {
+        
     }
 }

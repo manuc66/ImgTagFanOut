@@ -12,6 +12,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using DynamicData;
 using DynamicData.Binding;
+using ImgTagFanOut.Dao;
 using ReactiveUI;
 
 namespace ImgTagFanOut.ViewModels;
@@ -19,16 +20,17 @@ namespace ImgTagFanOut.ViewModels;
 public class MainWindowViewModel : ViewModelBase
 {
     private string? _workingFolder;
-    private CanHaveTag<string>? _selectedImage;
+    private CanHaveTag? _selectedImage;
     private Bitmap? _imageToDisplay;
-    private ReadOnlyObservableCollection<CanHaveTag<string>> _filteredImages;
+    private ReadOnlyObservableCollection<CanHaveTag> _filteredImages;
     private string? _tagFilterInput;
     private readonly ObservableCollection<Tag> _tagList = new();
     private List<SelectableTag> _filteredTagList;
-    private readonly TagRepository _tagRepository = new();
+
     private bool _hideDone;
-    private readonly SourceList<CanHaveTag<string>> _images = new();
+    private readonly SourceList<CanHaveTag> _images = new();
     private int _selectedIndex;
+    private TagCache _tagCache = new TagCache();
 
     public string? WorkingFolder
     {
@@ -36,7 +38,7 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _workingFolder, value);
     }
 
-    public ReadOnlyObservableCollection<CanHaveTag<string>> FilteredImages
+    public ReadOnlyObservableCollection<CanHaveTag> FilteredImages
     {
         get => _filteredImages;
         set => _filteredImages = value;
@@ -54,7 +56,7 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _filteredTagList, value);
     }
 
-    public CanHaveTag<string>? SelectedImage
+    public CanHaveTag? SelectedImage
     {
         get => _selectedImage;
         set => this.RaiseAndSetIfChanged(ref _selectedImage, value);
@@ -93,20 +95,37 @@ public class MainWindowViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> ClearTagFilterInputCommand { get; }
     public ReactiveCommand<Unit, Unit> DoneCommand { get; }
 
+    internal ImgTagFanOutDbContext GetRepo( out ITagRepository repo, string? path = null)
+    {
+        ImgTagFanOutDbContext imgTagFanOutDbContext = new (path);
+        imgTagFanOutDbContext.Database.EnsureCreated();
+        repo = new TagRepository(imgTagFanOutDbContext, _tagCache);
+        return imgTagFanOutDbContext;
+    }
+
     public MainWindowViewModel()
     {
-        _tagRepository.TryCreateTag("Lucas", out _);
-        _tagRepository.TryCreateTag("Louis", out _);
-        _tagRepository.TryCreateTag("Filip", out _);
-        TagList = new ObservableCollection<Tag>(_tagRepository.GetAll());
-        _filteredTagList = new List<SelectableTag>();
+       // TagList.Remove(new Tag("test"));
+       using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out ITagRepository tagRepository))
+       {
+           imgTagFanOutDbContext.Database.EnsureCreated();
+           _tagCache = new TagCache();
+           tagRepository = new TagRepository(imgTagFanOutDbContext, _tagCache);
+           tagRepository.CleanAll();
+           imgTagFanOutDbContext.SaveChanges();
+           TagList = new ObservableCollection<Tag>(new List<Tag>());
+       }
+
+       _filteredTagList = new List<SelectableTag>();
         HideDone = true;
+        TagFilterInput = String.Empty;
+        
 
         _images.Connect()
             .AutoRefresh(x => x.Done)
             .Filter(this.WhenValueChanged(@this => @this.HideDone)
                 .Select(CreateFilterForDone))
-            .Sort(SortExpressionComparer<CanHaveTag<string>>.Ascending(t => t.Item))
+            .Sort(SortExpressionComparer<CanHaveTag>.Ascending(t => t.Item))
             .Bind(out _filteredImages)
             .Subscribe();
 
@@ -125,43 +144,72 @@ public class MainWindowViewModel : ViewModelBase
                 .StartAsync(ScanFolder, RxApp.TaskpoolScheduler)
                 .TakeUntil(CancelScanCommand!), this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)));
         SelectFolderCommand = ReactiveCommand.CreateFromTask<Window, string>(SelectFolder, ScanFolderCommand.IsExecuting.Select(x => !x));
-        SelectFolderCommand.Subscribe(path => { WorkingFolder = path; });
+        SelectFolderCommand.Subscribe(path =>
+        {
+            WorkingFolder = path;
+            using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out _, path))
+            {
+                imgTagFanOutDbContext.Database.EnsureCreated();
+            }
+        });
         CancelScanCommand = ReactiveCommand.Create(
             () => { },
             ScanFolderCommand.IsExecuting);
 
         AddToTagListCommand = ReactiveCommand.Create(() =>
         {
-            if (_tagRepository.TryCreateTag(TagFilterInput, out Tag? newTag))
+            using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out ITagRepository tagRepository, WorkingFolder))
             {
-                TagList.Add(newTag);
+                if (tagRepository.TryCreateTag(TagFilterInput, out Tag? newTag))
+                {
+                    TagList.Add(newTag);
+                }
+
+                imgTagFanOutDbContext.SaveChanges();
             }
         }, this.WhenAnyValue(x => x.TagFilterInput)
-            .CombineLatest(TagList.ToObservableChangeSet(x => x).ToCollection(),
-                (tagFilterInput, tagList) => !string.IsNullOrWhiteSpace(tagFilterInput) && !tagList.Any(tag => tag.Same(tagFilterInput))));
+            .CombineLatest(TagList
+                    .ToObservableChangeSet(x => x)
+                    .ToCollection()
+                    .Prepend(new ReadOnlyCollection<Tag>(new List<Tag>())),
+                ( tagFilterInput, tagList) => !string.IsNullOrWhiteSpace(tagFilterInput) && !tagList.Any(tag => tag.Same(tagFilterInput))));
         ClearTagFilterInputCommand = ReactiveCommand.Create(() => { TagFilterInput = String.Empty; },
             this.WhenAnyValue(x => x.TagFilterInput).Select(x => !string.IsNullOrWhiteSpace(x)));
 
         ToggleAssignTagToImageCommand = ReactiveCommand.Create((Tag s) =>
         {
-            if (SelectedImage != null)
+            using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out ITagRepository tagRepository, WorkingFolder))
             {
-                _tagRepository.ToggleToItem(s, SelectedImage);
-            }
+                if (SelectedImage != null)
+                {
+                    tagRepository.ToggleToItem(s, SelectedImage);
+                }
 
-            foreach (SelectableTag selectableTag in FilteredTagList)
-            {
-                selectableTag.IsSelected = IsSelected(selectableTag.Tag, SelectedImage);
+                imgTagFanOutDbContext.SaveChanges();
+
+                foreach (SelectableTag selectableTag in FilteredTagList)
+                {
+                    selectableTag.IsSelected = IsSelected(selectableTag.Tag, SelectedImage);
+                }
             }
         }, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
 
         RemoveTagToImageCommand = ReactiveCommand.Create((Tag s) =>
         {
-            _tagRepository.RemoveTagToItem(s.Name, SelectedImage);
-
-            foreach (SelectableTag selectableTag in FilteredTagList)
+            if (SelectedImage == null)
             {
-                selectableTag.IsSelected = IsSelected(selectableTag.Tag, SelectedImage);
+                return;
+            }
+            using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out ITagRepository tagRepository, WorkingFolder))
+            {
+                tagRepository.RemoveTagToItem(s.Name, SelectedImage);
+
+                imgTagFanOutDbContext.SaveChanges();
+
+                foreach (SelectableTag selectableTag in FilteredTagList)
+                {
+                    selectableTag.IsSelected = IsSelected(selectableTag.Tag, SelectedImage);
+                }
             }
         });
 
@@ -172,9 +220,8 @@ public class MainWindowViewModel : ViewModelBase
             )
             .Subscribe((watched) =>
             {
-                (string? tagFilterInput, CanHaveTag<string>? selectedImage) = watched.First;
+                (string? tagFilterInput, CanHaveTag? selectedImage) = watched.First;
                 IReadOnlyCollection<Tag> list = watched.Second;
-
                 FilteredTagList = list
                     .Where(tag => string.IsNullOrWhiteSpace(tagFilterInput) || tag.MatchFilter(tagFilterInput))
                     .Select(tag => new SelectableTag(tag) { IsSelected = IsSelected(tag, selectedImage) })
@@ -223,9 +270,9 @@ public class MainWindowViewModel : ViewModelBase
         return WorkingFolder ?? String.Empty;
     }
 
-    private Func<CanHaveTag<string>, bool> CreateFilterForDone(bool arg) => arg ? item => !item.Done : _ => true;
+    private Func<CanHaveTag, bool> CreateFilterForDone(bool arg) => arg ? item => !item.Done : _ => true;
 
-    private bool IsSelected(Tag x, CanHaveTag<string>? canHaveTag)
+    private bool IsSelected(Tag x, CanHaveTag? canHaveTag)
     {
         return canHaveTag?.Has(x) ?? false;
     }
@@ -239,11 +286,24 @@ public class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        IEnumerable<string> enumerateFiles = Directory.EnumerateFiles(WorkingFolder, "*.jpg", SearchOption.AllDirectories);
-
-        foreach (string file in enumerateFiles)
+        using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out ITagRepository? tagRepository, WorkingFolder))
         {
-            _images.Add(new CanHaveTag<string>(Path.GetRelativePath(WorkingFolder, file)));
+            tagRepository.CleanAll();
+            imgTagFanOutDbContext.SaveChanges();
+
+            IEnumerable<string> enumerateFiles = Directory.EnumerateFiles(WorkingFolder, "*.jpg", SearchOption.AllDirectories)
+                .Union(Directory.EnumerateFiles(WorkingFolder, "*.png", SearchOption.AllDirectories));
+
+            foreach (string file in enumerateFiles)
+            {
+                CanHaveTag canHaveTag = new (Path.GetRelativePath(WorkingFolder, file));
+
+                _images.Add(canHaveTag);
+
+                tagRepository.AddItem(canHaveTag);
+            }
+
+            imgTagFanOutDbContext.SaveChanges();
         }
 
         await Task.CompletedTask;

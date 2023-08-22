@@ -4,9 +4,9 @@ using ReactiveUI;
 
 namespace ImgTagFanOut.ViewModels;
 
-public class CanHaveTag<T> : ViewModelBase
+public class CanHaveTag : ViewModelBase
 {
-    private T _item;
+    private readonly string _item;
     private ObservableCollection<Tag> _tags = new();
     private bool _done;
 
@@ -22,12 +22,9 @@ public class CanHaveTag<T> : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _done, value);
     }
 
-    public T Item
-    {
-        get => _item;
-    }
+    public string Item => _item;
 
-    public CanHaveTag(T item)
+    public CanHaveTag(string item)
     {
         _item = item;
     }
