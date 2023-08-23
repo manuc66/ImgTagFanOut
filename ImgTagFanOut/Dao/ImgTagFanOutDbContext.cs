@@ -42,7 +42,6 @@ public class ImgTagFanOutDbContext : DbContext
         
         modelBuilder.Entity<ItemTagDao>()
             .HasIndex(b => new { b.OrderIndex})
-            .IsUnique()
             .IsDescending();
         
         modelBuilder.Entity<ItemDao>()

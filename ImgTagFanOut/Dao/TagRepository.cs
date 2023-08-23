@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -38,13 +39,27 @@ public class TagRepository : ITagRepository
     public ImmutableList<Tag> GetAll()
     {
         return _dbContext.Set<TagDao>().Select(x => _tagCache.GetOrCreate(x)).ToImmutableList()
-         //   .Union(new [] {new Tag("Test")}).ToImmutableList()
+            //   .Union(new [] {new Tag("Test")}).ToImmutableList()
             ;
     }
 
-    public void AddItem(CanHaveTag tagAssignation)
+    public void AddOrUpdateItem(CanHaveTag tagAssignation)
     {
-        _dbContext.Set<ItemDao>().Add(new ItemDao() { Name = tagAssignation.Item });
+        ItemDao? existingItem = _dbContext.Set<ItemDao>()
+            .Include(i => i.ItemTags)
+            .ThenInclude(x => x.Tag)
+            .FirstOrDefault(t => t.Name == tagAssignation.Item);
+        if (existingItem != null)
+        {
+            foreach (ItemTagDao itemTagDao in existingItem.ItemTags)
+            {
+                tagAssignation.AddTag(_tagCache.GetOrCreate(itemTagDao.Tag));
+            }
+        }
+        else
+        {
+            _dbContext.Set<ItemDao>().Add(new ItemDao() { Name = tagAssignation.Item });
+        }
     }
 
     public void AddTagToItem(string tagName, CanHaveTag tagAssignation)
@@ -62,6 +77,8 @@ public class TagRepository : ITagRepository
             {
                 ItemForeignKey = existingItem.ItemId,
                 TagForeignKey = existingTag.TagId,
+                Tag = existingTag,
+                Item = existingItem,
                 OrderIndex = existingItem.Tags.Count - 1
             });
         tagAssignation.AddTag(_tagCache.GetOrCreate(existingTag));
@@ -69,10 +86,10 @@ public class TagRepository : ITagRepository
 
     public void RemoveTagToItem(string tagName, CanHaveTag tagAssignation)
     {
-        Tag? existingTag = _dbContext.Set<Tag>().FirstOrDefault(t => t.Name == tagName.Trim());
+        TagDao? existingTag = _dbContext.Set<TagDao>().FirstOrDefault(t => t.Name == tagName.Trim());
         if (existingTag != null)
         {
-            tagAssignation.RemoveTag(existingTag);
+            tagAssignation.RemoveTag(_tagCache.GetOrCreate(existingTag));
         }
     }
 
@@ -109,6 +126,8 @@ public class TagRepository : ITagRepository
         {
             ItemTagDao newItemTag = new()
             {
+                ItemForeignKey = existingItem.ItemId,
+                TagForeignKey = existingTag.TagId,
                 Tag = existingTag,
                 Item = existingItem,
                 OrderIndex = existingItem.Tags.Count

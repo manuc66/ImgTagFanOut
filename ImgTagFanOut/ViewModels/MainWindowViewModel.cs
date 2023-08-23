@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive;
@@ -30,7 +31,7 @@ public class MainWindowViewModel : ViewModelBase
     private bool _hideDone;
     private readonly SourceList<CanHaveTag> _images = new();
     private int _selectedIndex;
-    private TagCache _tagCache = new TagCache();
+    private readonly TagCache _tagCache;
 
     public string? WorkingFolder
     {
@@ -105,15 +106,13 @@ public class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel()
     {
-       // TagList.Remove(new Tag("test"));
+        _tagCache = new TagCache();
+        TagList = new ObservableCollection<Tag>();
        using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out ITagRepository tagRepository))
        {
            imgTagFanOutDbContext.Database.EnsureCreated();
-           _tagCache = new TagCache();
-           tagRepository = new TagRepository(imgTagFanOutDbContext, _tagCache);
-           tagRepository.CleanAll();
            imgTagFanOutDbContext.SaveChanges();
-           TagList = new ObservableCollection<Tag>(new List<Tag>());
+           ReloadTagList(tagRepository);
        }
 
        _filteredTagList = new List<SelectableTag>();
@@ -147,9 +146,10 @@ public class MainWindowViewModel : ViewModelBase
         SelectFolderCommand.Subscribe(path =>
         {
             WorkingFolder = path;
-            using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out _, path))
+            using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out ITagRepository tagRepository, path))
             {
                 imgTagFanOutDbContext.Database.EnsureCreated();
+                ReloadTagList(tagRepository);
             }
         });
         CancelScanCommand = ReactiveCommand.Create(
@@ -191,6 +191,8 @@ public class MainWindowViewModel : ViewModelBase
                 {
                     selectableTag.IsSelected = IsSelected(selectableTag.Tag, SelectedImage);
                 }
+
+                imgTagFanOutDbContext.SaveChanges();
             }
         }, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
 
@@ -251,6 +253,13 @@ public class MainWindowViewModel : ViewModelBase
             });
     }
 
+    private void ReloadTagList(ITagRepository tagRepository)
+    {
+        _tagCache.Clear();
+        TagList.Clear();
+        TagList.AddRange(tagRepository.GetAll());
+    }
+
     private async Task<string> SelectFolder(Window window)
     {
         FolderPickerOpenOptions folderPickerOptions = new() { AllowMultiple = false, Title = "Select an export folder", SuggestedStartLocation = await window.StorageProvider.TryGetFolderFromPathAsync(WorkingFolder ?? String.Empty) };
@@ -288,9 +297,6 @@ public class MainWindowViewModel : ViewModelBase
 
         using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out ITagRepository? tagRepository, WorkingFolder))
         {
-            tagRepository.CleanAll();
-            imgTagFanOutDbContext.SaveChanges();
-
             IEnumerable<string> enumerateFiles = Directory.EnumerateFiles(WorkingFolder, "*.jpg", SearchOption.AllDirectories)
                 .Union(Directory.EnumerateFiles(WorkingFolder, "*.png", SearchOption.AllDirectories));
 
@@ -300,7 +306,7 @@ public class MainWindowViewModel : ViewModelBase
 
                 _images.Add(canHaveTag);
 
-                tagRepository.AddItem(canHaveTag);
+                tagRepository.AddOrUpdateItem(canHaveTag);
             }
 
             imgTagFanOutDbContext.SaveChanges();

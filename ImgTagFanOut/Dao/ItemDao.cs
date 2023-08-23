@@ -6,8 +6,6 @@ namespace ImgTagFanOut.Dao;
 public class ItemDao
 {
     [Key]
-    public int ItemTagId { get; set; }
-    
     public int ItemId { get; set; }
     
     public string Name { get; set; }

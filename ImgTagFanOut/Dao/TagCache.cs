@@ -23,4 +23,9 @@ public class TagCache : ITagCache
     {
         _tags.Remove(tag);
     }
+
+    public void Clear()
+    {
+        _tags.Clear();
+    }
 }
