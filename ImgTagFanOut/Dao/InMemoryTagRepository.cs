@@ -32,7 +32,7 @@ class InMemoryTagRepository : ITagRepository
 
     public void AddOrUpdateItem(CanHaveTag tagAssignation)
     {
-        
+
     }
 
     public void AddTagToItem(string tagName, CanHaveTag tagAssignation)
@@ -62,10 +62,5 @@ class InMemoryTagRepository : ITagRepository
         {
             tagAssignation.Toggle(existingTag);
         }
-    }
-
-    public void CleanAll()
-    {
-        
     }
 }

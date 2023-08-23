@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 
 namespace ImgTagFanOut.Dao;
 
+[DebuggerDisplay("{Name}#{ItemId}")]
 public class ItemDao
 {
     [Key]

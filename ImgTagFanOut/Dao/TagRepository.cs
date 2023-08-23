@@ -38,9 +38,7 @@ public class TagRepository : ITagRepository
 
     public ImmutableList<Tag> GetAll()
     {
-        return _dbContext.Set<TagDao>().Select(x => _tagCache.GetOrCreate(x)).ToImmutableList()
-            //   .Union(new [] {new Tag("Test")}).ToImmutableList()
-            ;
+        return _dbContext.Set<TagDao>().Select(x => _tagCache.GetOrCreate(x)).ToImmutableList();
     }
 
     public void AddOrUpdateItem(CanHaveTag tagAssignation)
@@ -51,14 +49,14 @@ public class TagRepository : ITagRepository
             .FirstOrDefault(t => t.Name == tagAssignation.Item);
         if (existingItem != null)
         {
-            foreach (ItemTagDao itemTagDao in existingItem.ItemTags)
+            foreach (ItemTagDao itemTagDao in existingItem.ItemTags.OrderBy(x => x.OrderIndex))
             {
                 tagAssignation.AddTag(_tagCache.GetOrCreate(itemTagDao.Tag));
             }
         }
         else
         {
-            _dbContext.Set<ItemDao>().Add(new ItemDao() { Name = tagAssignation.Item });
+            _dbContext.Set<ItemDao>().Add(new ItemDao { Name = tagAssignation.Item });
         }
     }
 
@@ -67,7 +65,9 @@ public class TagRepository : ITagRepository
         TagDao? existingTag = _dbContext.Set<TagDao>().FirstOrDefault(t => t.Name == tagName);
         if (existingTag == null) return;
 
-        ItemDao? existingItem = _dbContext.Set<ItemDao>().FirstOrDefault(t => t.Name == tagAssignation.Item);
+        ItemDao? existingItem = _dbContext.Set<ItemDao>()
+            .Include(x => x.Tags)
+            .FirstOrDefault(t => t.Name == tagAssignation.Item);
         if (existingItem == null) return;
 
         existingItem.Tags.Add(existingTag);
@@ -100,10 +100,16 @@ public class TagRepository : ITagRepository
 
     public void ToggleToItem(Tag tag, CanHaveTag tagAssignation)
     {
-        TagDao? existingTag = _dbContext.Set<TagDao>().FirstOrDefault(t => t.Name == tag.Name);
+        TagDao? existingTag = _dbContext.Set<TagDao>()
+            .Include(x => x.Items)
+            .Include(x => x.ItemTags)
+            .FirstOrDefault(t => t.Name == tag.Name);
         if (existingTag == null) return;
 
-        ItemDao? existingItem = _dbContext.Set<ItemDao>().FirstOrDefault(t => t.Name == tagAssignation.Item);
+        ItemDao? existingItem = _dbContext.Set<ItemDao>()
+            .Include(x => x.Tags)
+            .Include(x => x.ItemTags)
+            .FirstOrDefault(t => t.Name == tagAssignation.Item);
         if (existingItem == null) return;
 
         ItemTagDao? existingItemTag = _dbContext.Set<ItemTagDao>().FirstOrDefault(t => t.Item.Name == tagAssignation.Item && t.Tag.Name == tag.Name);
@@ -115,7 +121,7 @@ public class TagRepository : ITagRepository
             existingItem.ItemTags.Remove(existingItemTag);
             existingTag.ItemTags.Remove(existingItemTag);
             _dbContext.Set<ItemTagDao>().Remove(existingItemTag);
-            for (int i = 0; i < existingItem.ItemTags.Count; i++)
+            for (int i = 0; i < existingItem.ItemTags.OrderBy(x=> x.OrderIndex).ToList().Count; i++)
             {
                 existingItem.ItemTags[i].OrderIndex = i;
             }
@@ -138,19 +144,6 @@ public class TagRepository : ITagRepository
             existingTag.ItemTags.Add(newItemTag);
             _dbContext.Set<ItemTagDao>().Add(newItemTag);
             tagAssignation.AddTag(_tagCache.GetOrCreate(existingTag));
-        }
-    }
-
-    public void CleanAll()
-    {
-        var tableNames = _dbContext.Model.GetEntityTypes()
-            .Select(t => t.GetTableName())
-            .Distinct()
-            .ToList();
-
-        foreach (var tableName in tableNames)
-        {
-            _dbContext.Database.ExecuteSqlRaw($"Delete from `{tableName}`;");
         }
     }
 }

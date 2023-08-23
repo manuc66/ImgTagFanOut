@@ -1,5 +1,8 @@
+using System.Diagnostics;
+
 namespace ImgTagFanOut.Dao;
 
+[DebuggerDisplay("{OrderIndex}-{ItemForeignKey}-{TagForeignKey}")]
 public class ItemTagDao
 {
     public int ItemForeignKey { get; set; }
