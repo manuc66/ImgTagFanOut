@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -53,6 +51,8 @@ public class TagRepository : ITagRepository
             {
                 tagAssignation.AddTag(_tagCache.GetOrCreate(itemTagDao.Tag));
             }
+
+            tagAssignation.Done = existingItem.Done;
         }
         else
         {
@@ -121,7 +121,7 @@ public class TagRepository : ITagRepository
             existingItem.ItemTags.Remove(existingItemTag);
             existingTag.ItemTags.Remove(existingItemTag);
             _dbContext.Set<ItemTagDao>().Remove(existingItemTag);
-            for (int i = 0; i < existingItem.ItemTags.OrderBy(x=> x.OrderIndex).ToList().Count; i++)
+            for (int i = 0; i < existingItem.ItemTags.OrderBy(x => x.OrderIndex).ToList().Count; i++)
             {
                 existingItem.ItemTags[i].OrderIndex = i;
             }
@@ -145,5 +145,20 @@ public class TagRepository : ITagRepository
             _dbContext.Set<ItemTagDao>().Add(newItemTag);
             tagAssignation.AddTag(_tagCache.GetOrCreate(existingTag));
         }
+    }
+
+    public void MarkDone(CanHaveTag tagAssignation)
+    {
+        ItemDao? existingItem = _dbContext.Set<ItemDao>()
+            .FirstOrDefault(t => t.Name == tagAssignation.Item);
+
+        if (existingItem == null)
+        {
+            return;
+        }
+
+        existingItem.Done = true;
+
+        tagAssignation.Done = true;
     }
 }

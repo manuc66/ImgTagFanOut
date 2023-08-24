@@ -11,6 +11,7 @@ public class ItemDao
     public int ItemId { get; set; }
     
     public string Name { get; set; }
+    public bool Done { get; set; }
 
     public List<ItemTagDao> ItemTags { get; } = new();
     public List<TagDao> Tags { get; } = new();

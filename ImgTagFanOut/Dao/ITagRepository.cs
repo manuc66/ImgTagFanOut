@@ -13,4 +13,5 @@ internal interface ITagRepository
     void RemoveTagToItem(string tagName, CanHaveTag tagAssignation);
     void ToggleToItem(string tagName, CanHaveTag tagAssignation);
     void ToggleToItem(Tag tagName, CanHaveTag tagAssignation);
+    void MarkDone(CanHaveTag tagAssignation);
 }

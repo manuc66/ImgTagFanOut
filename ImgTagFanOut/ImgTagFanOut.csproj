@@ -39,5 +39,9 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.6" />
+        <PackageReference Include="SQLitePCLRaw.core" Version="2.1.6" />
+        <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.6" />
+        <PackageReference Include="SQLitePCLRaw.provider.e_sqlite3" Version="2.1.6" />
     </ItemGroup>
 </Project>

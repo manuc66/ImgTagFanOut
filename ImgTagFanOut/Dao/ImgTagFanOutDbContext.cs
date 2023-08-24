@@ -16,7 +16,9 @@ public class ImgTagFanOutDbContext : DbContext
     }
     
     protected override void OnConfiguring(DbContextOptionsBuilder options)
-        => options.UseSqlite($"Data Source={DbPath}");
+        => options.UseSqlite($"Data Source={DbPath}")
+          //  .LogTo(Console.WriteLine)
+        ;
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -24,7 +26,8 @@ public class ImgTagFanOutDbContext : DbContext
             .HasIndex(b => new { b.Name})
             .IsUnique()
             .IsDescending();
-        
+
+      
         modelBuilder.Entity<ItemDao>().HasKey(x => x.ItemId);
         modelBuilder.Entity<ItemDao>().Property(x => x.ItemId)
             .IsRequired()

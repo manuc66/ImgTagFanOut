@@ -16,8 +16,8 @@ namespace ImgTagFanOut.Migrations
                 {
                     ItemId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    ItemTagId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false)
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Done = table.Column<bool>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -73,7 +73,6 @@ namespace ImgTagFanOut.Migrations
                 name: "IX_ItemTagDao_OrderIndex",
                 table: "ItemTagDao",
                 column: "OrderIndex",
-                unique: true,
                 descending: new bool[0]);
 
             migrationBuilder.CreateIndex(

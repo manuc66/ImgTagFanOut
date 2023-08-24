@@ -63,4 +63,9 @@ class InMemoryTagRepository : ITagRepository
             tagAssignation.Toggle(existingTag);
         }
     }
+
+    public void MarkDone(CanHaveTag tagAssignation)
+    {
+        tagAssignation.Done = true;
+    }
 }

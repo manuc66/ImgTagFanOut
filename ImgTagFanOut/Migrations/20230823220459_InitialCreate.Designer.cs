@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ImgTagFanOut.Migrations
 {
     [DbContext(typeof(ImgTagFanOutDbContext))]
-    [Migration("20230818214135_InitialCreate")]
+    [Migration("20230823220459_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -25,7 +25,7 @@ namespace ImgTagFanOut.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("ItemTagId")
+                    b.Property<bool>("Done")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
@@ -55,7 +55,6 @@ namespace ImgTagFanOut.Migrations
                     b.HasKey("ItemForeignKey", "TagForeignKey");
 
                     b.HasIndex("OrderIndex")
-                        .IsUnique()
                         .IsDescending();
 
                     b.HasIndex("TagForeignKey");

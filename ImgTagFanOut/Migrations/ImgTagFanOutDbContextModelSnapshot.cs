@@ -22,7 +22,7 @@ namespace ImgTagFanOut.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("ItemTagId")
+                    b.Property<bool>("Done")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
@@ -52,7 +52,6 @@ namespace ImgTagFanOut.Migrations
                     b.HasKey("ItemForeignKey", "TagForeignKey");
 
                     b.HasIndex("OrderIndex")
-                        .IsUnique()
                         .IsDescending();
 
                     b.HasIndex("TagForeignKey");

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive;
@@ -130,12 +129,19 @@ public class MainWindowViewModel : ViewModelBase
 
         DoneCommand = ReactiveCommand.Create(() =>
         {
-            if (SelectedImage != null)
+            if (SelectedImage == null)
             {
-                int selectedIndex = SelectedIndex;
-                SelectedImage.Done = true;
-                SelectedIndex = Math.Min(selectedIndex, FilteredImages.Count - 1);
+                return;
             }
+
+            int selectedIndex = SelectedIndex;
+            using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out ITagRepository tagRepository, WorkingFolder))
+            {
+                tagRepository.MarkDone(SelectedImage);
+                imgTagFanOutDbContext.SaveChanges();
+            }
+
+            SelectedIndex = Math.Min(selectedIndex, FilteredImages.Count - 1);
         }, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
 
         ScanFolderCommand = ReactiveCommand.CreateFromObservable(
