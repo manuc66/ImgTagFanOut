@@ -40,7 +40,8 @@
                     HorizontalAlignment="Right" />
             <Button Grid.Row="1" Grid.Column="0" Content="Cancel" Command="{Binding CancelScanCommand}"
                     HorizontalAlignment="Right" />
-            <ListBox Grid.Row="2" Grid.Column="0" SelectedIndex="{Binding SelectedIndex}" ItemsSource="{Binding FilteredImages}" SelectedItem="{Binding SelectedImage}">
+            <ListBox Grid.Row="2" Grid.Column="0" SelectedIndex="{Binding SelectedIndex}"
+                     ItemsSource="{Binding FilteredImages}" SelectedItem="{Binding SelectedImage}">
 
                 <ListBox.ItemTemplate>
                     <DataTemplate>
@@ -48,8 +49,8 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-   
-            <StackPanel Grid.Row="2" Grid.Column="1" >
+
+            <StackPanel Grid.Row="2" Grid.Column="1">
                 <ToggleSwitch IsChecked="{Binding HideDone}">Hide done</ToggleSwitch>
                 <Button Command="{Binding DoneCommand}">Done</Button>
             </StackPanel>
@@ -86,6 +87,14 @@
                                           IsChecked="{Binding IsSelected}"
                                           CommandParameter="{Binding Tag}"
                                           Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).ToggleAssignTagToImageCommand, DataType={x:Type vm:MainWindowViewModel}}">
+                                <ToggleButton.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="Delete"
+                                                  Command="{Binding ElementName=AllTagsComponent, Path=((vm:MainWindowViewModel)DataContext).DeleteTagCommand, DataType={x:Type vm:MainWindowViewModel}}"
+                                                  CommandParameter="{Binding .}"
+                                                  ></MenuItem>
+                                    </ContextMenu>
+                                </ToggleButton.ContextMenu>
                             </ToggleButton>
                         </StackPanel>
                     </DataTemplate>
@@ -103,9 +112,9 @@
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
                             <ToggleButton Content="{Binding Path=Name}" IsChecked="True"
-                                    CommandParameter="{Binding .}"
-                                    Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).RemoveTagToImageCommand}">
-                                
+                                          CommandParameter="{Binding .}"
+                                          Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).RemoveTagToImageCommand}">
+
                             </ToggleButton>
                         </StackPanel>
                     </DataTemplate>

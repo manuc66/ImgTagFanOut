@@ -1,11 +1,18 @@
 using System;
 using System.Collections.Generic;
+using ReactiveUI;
 
 namespace ImgTagFanOut.ViewModels;
 
-public class Tag : IEquatable<Tag>
+public class Tag : ViewModelBase, IEquatable<Tag>
 {
-    public string Name { get; }
+    private string _name;
+
+    public string Name
+    {
+        get => _name;
+        set => this.RaiseAndSetIfChanged(ref _name, value);
+    }
 
     public Tag(string name)
     {

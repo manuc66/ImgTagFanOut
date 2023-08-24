@@ -56,9 +56,9 @@ class InMemoryTagRepository : ITagRepository
         ToggleToItem(new Tag(tagName), tagAssignation);
     }
 
-    public void ToggleToItem(Tag tagName, CanHaveTag tagAssignation)
+    public void ToggleToItem(Tag tag, CanHaveTag tagAssignation)
     {
-        if (_tags.TryGetValue(tagName, out Tag? existingTag))
+        if (_tags.TryGetValue(tag, out Tag? existingTag))
         {
             tagAssignation.Toggle(existingTag);
         }
@@ -67,5 +67,13 @@ class InMemoryTagRepository : ITagRepository
     public void MarkDone(CanHaveTag tagAssignation)
     {
         tagAssignation.Done = true;
+    }
+
+    public void DeleteTag(Tag tag)
+    {
+        if (_tags.TryGetValue(tag, out Tag? existingTag))
+        {
+            _tags.Remove(existingTag);
+        }
     }
 }

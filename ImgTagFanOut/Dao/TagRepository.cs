@@ -161,4 +161,29 @@ public class TagRepository : ITagRepository
 
         tagAssignation.Done = true;
     }
+
+    public void DeleteTag(Tag tag)
+    {
+        TagDao? existingTag = _dbContext.Set<TagDao>()
+            .Include(x => x.Items)
+            .Include(x => x.ItemTags)
+            .FirstOrDefault(t => t.Name == tag.Name);
+        
+        if (existingTag == null)
+        {
+            return;
+        }
+
+        foreach (ItemDao existingItem in existingTag.Items)
+        {
+            existingItem.Tags.Remove(existingTag);
+        }
+        
+        foreach (ItemTagDao itemTag in existingTag.ItemTags)
+        {
+            _dbContext.Set<ItemTagDao>().Remove(itemTag);
+        }
+
+        _dbContext.Set<TagDao>().Remove(existingTag);
+    }
 }

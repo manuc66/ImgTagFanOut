@@ -94,6 +94,7 @@ public class MainWindowViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> AddToTagListCommand { get; }
     public ReactiveCommand<Unit, Unit> ClearTagFilterInputCommand { get; }
     public ReactiveCommand<Unit, Unit> DoneCommand { get; }
+    public ReactiveCommand<SelectableTag, Unit>  DeleteTagCommand { get; }
 
     internal ImgTagFanOutDbContext GetRepo( out ITagRepository repo, string? path = null)
     {
@@ -220,6 +221,18 @@ public class MainWindowViewModel : ViewModelBase
                 }
             }
         });
+
+        DeleteTagCommand = ReactiveCommand.Create((SelectableTag s) =>
+        {
+            using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out ITagRepository tagRepository, WorkingFolder))
+            {
+                tagRepository.DeleteTag(s.Tag);
+                
+                TagList.Remove(s.Tag);
+
+                imgTagFanOutDbContext.SaveChanges();
+            }
+        }, ScanFolderCommand.IsExecuting.Select(x => !x));
 
         this.WhenAnyValue(x => x.TagFilterInput, x => x.SelectedImage)
             .CombineLatest(TagList
