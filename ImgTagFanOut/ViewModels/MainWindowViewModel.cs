@@ -231,6 +231,11 @@ public class MainWindowViewModel : ViewModelBase
                 TagList.Remove(s.Tag);
 
                 imgTagFanOutDbContext.SaveChanges();
+
+                foreach (CanHaveTag item in _images.Items)
+                {
+                    item.RemoveTag(s.Tag);
+                }
             }
         }, ScanFolderCommand.IsExecuting.Select(x => !x));
 
