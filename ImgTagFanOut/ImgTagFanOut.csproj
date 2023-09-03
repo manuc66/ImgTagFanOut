@@ -44,4 +44,10 @@
         <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.6" />
         <PackageReference Include="SQLitePCLRaw.provider.e_sqlite3" Version="2.1.6" />
     </ItemGroup>
+
+
+    <ItemGroup>
+      <None Remove="NoPreview.png" />
+      <EmbeddedResource Include="NoPreview.png" />
+    </ItemGroup>
 </Project>

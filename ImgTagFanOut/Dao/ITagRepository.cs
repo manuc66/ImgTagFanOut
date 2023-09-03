@@ -9,8 +9,8 @@ internal interface ITagRepository
     bool TryCreateTag(string tagName, [MaybeNullWhen(false)] out Tag newTag);
     ImmutableList<Tag> GetAll();
     void AddOrUpdateItem(CanHaveTag tagAssignation);
-    void AddTagToItem(string tagName, CanHaveTag tagAssignation);
-    void RemoveTagToItem(string tagName, CanHaveTag tagAssignation);
+    void AddTagToItem(Tag tag, CanHaveTag tagAssignation);
+    void RemoveTagToItem(Tag tag, CanHaveTag tagAssignation);
     void ToggleToItem(string tagName, CanHaveTag tagAssignation);
     void ToggleToItem(Tag tag, CanHaveTag tagAssignation);
     void MarkDone(CanHaveTag tagAssignation);

@@ -15,12 +15,35 @@
         <vm:MainWindowViewModel />
     </Design.DataContext>
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition></ColumnDefinition>
             <ColumnDefinition></ColumnDefinition>
         </Grid.ColumnDefinitions>
+        <Grid Grid.Row="0" Grid.Column="0" ColumnSpan="2">
+            
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" ></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            
+            <TextBox Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch"
+                     Text="{Binding Path=WorkingFolder}" />
+            <Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch" Content="Browse" Command="{Binding SelectFolderCommand}"
+                    CommandParameter="{Binding $parent[Window]}" HorizontalAlignment="Right" />
 
-        <Grid Grid.Column="0">
+            <Button Grid.Row="0" Grid.Column="2" VerticalAlignment="Stretch" Content="Scan" Command="{Binding ScanFolderCommand}"
+                    HorizontalAlignment="Right" />
+            <Button Grid.Row="0" Grid.Column="3" VerticalAlignment="Stretch" Content="Cancel" Command="{Binding CancelScanCommand}"
+                    HorizontalAlignment="Right" />
+        </Grid>
+
+        <Grid Grid.Row="1" Grid.Column="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"></ColumnDefinition>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
@@ -31,15 +54,6 @@
                 <RowDefinition Height="*"></RowDefinition>
                 <RowDefinition Height="*"></RowDefinition>
             </Grid.RowDefinitions>
-            <TextBox Grid.Row="0" Grid.Column="0" Name="DestinationPath" VerticalAlignment="Center"
-                     Text="{Binding Path=WorkingFolder}" />
-            <Button Grid.Row="0" Grid.Column="1" Content="Browse" Command="{Binding SelectFolderCommand}"
-                    CommandParameter="{Binding $parent[Window]}" HorizontalAlignment="Right" />
-
-            <Button Grid.Row="1" Grid.Column="1" Content="Scan" Command="{Binding ScanFolderCommand}"
-                    HorizontalAlignment="Right" />
-            <Button Grid.Row="1" Grid.Column="0" Content="Cancel" Command="{Binding CancelScanCommand}"
-                    HorizontalAlignment="Right" />
             <ListBox Grid.Row="2" Grid.Column="0" SelectedIndex="{Binding SelectedIndex}"
                      ItemsSource="{Binding FilteredImages}" SelectedItem="{Binding SelectedImage}">
 
@@ -52,12 +66,15 @@
 
             <StackPanel Grid.Row="2" Grid.Column="1">
                 <ToggleSwitch IsChecked="{Binding HideDone}">Hide done</ToggleSwitch>
+                <Button Command="{Binding AllCommand}">All</Button>
+                <Button Command="{Binding NoneCommand}">None</Button>
                 <Button Command="{Binding DoneCommand}">Done</Button>
             </StackPanel>
-            <Image Source="{Binding ImageToDisplay}" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"></Image>
+            <Image HorizontalAlignment="Left" Source="{Binding ImageToDisplay}" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2">
+            </Image>
         </Grid>
 
-        <Grid Grid.Row="0" Grid.Column="1">
+        <Grid Grid.Row="1" Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition Height="1*"></RowDefinition>
@@ -91,8 +108,8 @@
                                     <ContextMenu>
                                         <MenuItem Header="Delete"
                                                   Command="{Binding ElementName=AllTagsComponent, Path=((vm:MainWindowViewModel)DataContext).DeleteTagCommand, DataType={x:Type vm:MainWindowViewModel}}"
-                                                  CommandParameter="{Binding .}"
-                                                  ></MenuItem>
+                                                  CommandParameter="{Binding .}">
+                                        </MenuItem>
                                     </ContextMenu>
                                 </ToggleButton.ContextMenu>
                             </ToggleButton>

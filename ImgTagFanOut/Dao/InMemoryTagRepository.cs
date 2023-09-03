@@ -35,17 +35,17 @@ class InMemoryTagRepository : ITagRepository
 
     }
 
-    public void AddTagToItem(string tagName, CanHaveTag tagAssignation)
+    public void AddTagToItem(Tag tag, CanHaveTag tagAssignation)
     {
-        if (_tags.TryGetValue(new Tag(tagName), out Tag? existingTag))
+        if (_tags.TryGetValue(tag, out Tag? existingTag))
         {
             tagAssignation.AddTag(existingTag);
         }
     }
 
-    public void RemoveTagToItem(string tagName, CanHaveTag? tagAssignation)
+    public void RemoveTagToItem(Tag tag, CanHaveTag? tagAssignation)
     {
-        if (_tags.TryGetValue(new Tag(tagName), out Tag? existingTag))
+        if (_tags.TryGetValue(tag, out Tag? existingTag))
         {
             tagAssignation?.RemoveTag(existingTag);
         }
