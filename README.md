@@ -12,6 +12,10 @@ ImgTagFanOut is a versatile image tagging and organization tool designed to simp
 
 - **Shareable Collections**: Easily share specific image sets with individuals or groups by sending them the corresponding subdirectory containing images matching their interests or needs.
 
+## Supported Image Formats
+
+ImgTagFanOut supports the following image formats: ".jpeg", ".jpg", ".png", ".gif", ".webp", ".bmp". These formats are supported for image tagging, organization, and sharing.
+
 ## How It Works
 
 1. **Select a Directory**: Choose the directory containing your images that you want to organize.

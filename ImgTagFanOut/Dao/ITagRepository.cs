@@ -7,7 +7,7 @@ namespace ImgTagFanOut.Dao;
 internal interface ITagRepository
 {
     bool TryCreateTag(string tagName, [MaybeNullWhen(false)] out Tag newTag);
-    ImmutableList<Tag> GetAll();
+    ImmutableList<Tag> GetAllTag();
     void AddOrUpdateItem(CanHaveTag tagAssignation);
     void AddTagToItem(Tag tag, CanHaveTag tagAssignation);
     void RemoveTagToItem(Tag tag, CanHaveTag tagAssignation);
@@ -15,4 +15,5 @@ internal interface ITagRepository
     void ToggleToItem(Tag tag, CanHaveTag tagAssignation);
     void MarkDone(CanHaveTag tagAssignation);
     void DeleteTag(Tag tag);
+    ImmutableList<string> GetItemsWithTag(Tag tag);
 }

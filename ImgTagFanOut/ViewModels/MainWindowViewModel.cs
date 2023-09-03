@@ -16,12 +16,14 @@ using DynamicData;
 using DynamicData.Binding;
 using ImgTagFanOut.Dao;
 using ReactiveUI;
+using SkiaSharp;
 
 namespace ImgTagFanOut.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
     private string? _workingFolder;
+    private string? _targetFolder;
     private CanHaveTag? _selectedImage;
     private Bitmap? _imageToDisplay;
     private Bitmap? _noPreviewToDisplay;
@@ -39,6 +41,12 @@ public class MainWindowViewModel : ViewModelBase
     {
         get => _workingFolder;
         set => this.RaiseAndSetIfChanged(ref _workingFolder, value);
+    }
+
+    public string? TargetFolder
+    {
+        get => _targetFolder;
+        set => this.RaiseAndSetIfChanged(ref _targetFolder, value);
     }
 
     public ReadOnlyObservableCollection<CanHaveTag> FilteredImages
@@ -70,6 +78,7 @@ public class MainWindowViewModel : ViewModelBase
         get => _imageToDisplay;
         set => this.RaiseAndSetIfChanged(ref _imageToDisplay, value);
     }
+
     public Bitmap? NoPreviewToDisplay
     {
         get => _noPreviewToDisplay;
@@ -94,8 +103,12 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _selectedIndex, value);
     }
 
+
     public ReactiveCommand<Window, string> SelectFolderCommand { get; }
+    public ReactiveCommand<Window, string> SelectTargetFolderCommand { get; }
+
     public ReactiveCommand<Unit, Unit> ScanFolderCommand { get; }
+    public ReactiveCommand<Unit, Unit> PublishCommand { get; }
     public ReactiveCommand<Unit, Unit> CancelScanCommand { get; }
     public ReactiveCommand<Tag, Unit> ToggleAssignTagToImageCommand { get; }
     public ReactiveCommand<Tag, Unit> RemoveTagToImageCommand { get; }
@@ -130,7 +143,7 @@ public class MainWindowViewModel : ViewModelBase
         {
             if (x is { Item1: not null, Item2: not null }) return;
             Bitmap? previous = ImageToDisplay;
-   
+
             ImageToDisplay = NoPreviewToDisplay;
 
             if (previous != NoPreviewToDisplay)
@@ -170,11 +183,11 @@ public class MainWindowViewModel : ViewModelBase
 
             SelectedIndex = Math.Min(selectedIndex, FilteredImages.Count - 1);
         }, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
-
         ScanFolderCommand = ReactiveCommand.CreateFromObservable(
             () => Observable
                 .StartAsync(ScanFolder, RxApp.TaskpoolScheduler)
                 .TakeUntil(CancelScanCommand!), this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)));
+        
         SelectFolderCommand = ReactiveCommand.CreateFromTask<Window, string>(SelectFolder, ScanFolderCommand.IsExecuting.Select(x => !x));
         SelectFolderCommand.Subscribe(path =>
         {
@@ -189,10 +202,17 @@ public class MainWindowViewModel : ViewModelBase
             () => { },
             ScanFolderCommand.IsExecuting);
 
+        SelectTargetFolderCommand = ReactiveCommand.CreateFromTask<Window, string>(SelectTargetFolder, ScanFolderCommand.IsExecuting.Select(x => !x));
+
+        PublishCommand = ReactiveCommand.CreateFromObservable(
+            () => Observable
+                .StartAsync(PublishToFolder, RxApp.TaskpoolScheduler)
+                .TakeUntil(CancelScanCommand!), this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)));
+
+
         AllCommand = ReactiveCommand.Create(
             () =>
             {
-      
                 if (SelectedImage == null)
                 {
                     return;
@@ -217,7 +237,6 @@ public class MainWindowViewModel : ViewModelBase
         NoneCommand = ReactiveCommand.Create(
             () =>
             {
-      
                 if (SelectedImage == null)
                 {
                     return;
@@ -376,18 +395,32 @@ public class MainWindowViewModel : ViewModelBase
     {
         _tagCache.Clear();
         TagList.Clear();
-        TagList.AddRange(tagRepository.GetAll());
+        TagList.AddRange(tagRepository.GetAllTag());
     }
 
     private async Task<string> SelectFolder(Window window)
     {
+        string selectedFolder = await SelectAFolder(window, "Select source folder", WorkingFolder);
+        WorkingFolder = selectedFolder;
+        return selectedFolder;
+    }
+
+    private async Task<string> SelectTargetFolder(Window window)
+    {
+        string selectedFolder = await SelectAFolder(window, "Select an export folder", TargetFolder);
+        TargetFolder = selectedFolder;
+        return selectedFolder;
+    }
+
+    private static async Task<string> SelectAFolder(Window window, string selectAnExportFolder, string? previousFolder)
+    {
         FolderPickerOpenOptions folderPickerOptions = new()
-            { AllowMultiple = false, Title = "Select an export folder", SuggestedStartLocation = await window.StorageProvider.TryGetFolderFromPathAsync(WorkingFolder ?? String.Empty) };
+            { AllowMultiple = false, Title = selectAnExportFolder, SuggestedStartLocation = await window.StorageProvider.TryGetFolderFromPathAsync(previousFolder ?? String.Empty) };
         IReadOnlyList<IStorageFolder> folders = await window.StorageProvider.OpenFolderPickerAsync(folderPickerOptions);
 
         if (folders.Count == 0)
         {
-            return WorkingFolder ?? string.Empty;
+            return previousFolder ?? string.Empty;
         }
 
         string? tryGetLocalPath = folders[0].TryGetLocalPath();
@@ -396,7 +429,7 @@ public class MainWindowViewModel : ViewModelBase
             return tryGetLocalPath;
         }
 
-        return WorkingFolder ?? String.Empty;
+        return previousFolder ?? String.Empty;
     }
 
     private Func<CanHaveTag, bool> CreateFilterForDone(bool arg) => arg ? item => !item.Done : _ => true;
@@ -415,10 +448,12 @@ public class MainWindowViewModel : ViewModelBase
             return;
         }
 
+        HashSet<string> allowedExtensions = new() { ".jpeg", ".jpg", ".png", ".gif", ".webp", ".bmp" };
+
         using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out ITagRepository? tagRepository, WorkingFolder))
         {
-            IEnumerable<string> enumerateFiles = Directory.EnumerateFiles(WorkingFolder, "*.jpg", SearchOption.AllDirectories)
-                .Union(Directory.EnumerateFiles(WorkingFolder, "*.png", SearchOption.AllDirectories));
+            IEnumerable<string> enumerateFiles = Directory.EnumerateFiles(WorkingFolder, "*", SearchOption.AllDirectories)
+                .Where(x => allowedExtensions.Contains(Path.GetExtension(x)));
 
             foreach (string file in enumerateFiles)
             {
@@ -429,7 +464,63 @@ public class MainWindowViewModel : ViewModelBase
                 tagRepository.AddOrUpdateItem(canHaveTag);
             }
 
-            imgTagFanOutDbContext.SaveChanges();
+            await imgTagFanOutDbContext.SaveChangesAsync(arg);
+        }
+    }
+
+    private async Task PublishToFolder(CancellationToken arg)
+    {
+        if (string.IsNullOrWhiteSpace(WorkingFolder) || string.IsNullOrWhiteSpace(TargetFolder))
+        {
+            return;
+        }
+
+        if (!Directory.Exists(TargetFolder))
+        {
+            Directory.CreateDirectory(TargetFolder);
+        }
+
+        using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out ITagRepository? tagRepository, WorkingFolder))
+        {
+            foreach (Tag tag in tagRepository.GetAllTag())
+            {
+                ImmutableList<string> itemsInDb = tagRepository.GetItemsWithTag(tag);
+
+                if (itemsInDb.Count == 0)
+                {
+                    continue;
+                }
+
+                string targetDirectoryForTag = Path.Combine(TargetFolder, tag.Name);
+                if (!Directory.Exists(targetDirectoryForTag))
+                {
+                    Directory.CreateDirectory(targetDirectoryForTag);
+                }
+
+                foreach (string itemInDb in itemsInDb)
+                {
+                    string itemFullPath = Path.Combine(WorkingFolder, itemInDb);
+
+                    string fileName = Path.GetFileName(itemFullPath);
+
+                    if (File.Exists(itemFullPath))
+                    {
+                        string destFileName = Path.Combine(targetDirectoryForTag, fileName);
+                        if (!File.Exists(destFileName))
+                        {
+                            File.Copy(itemFullPath, destFileName);
+                        }
+                        else
+                        {
+                            // todo: check if source and target are the same in this case do nothing otherwise rename the file
+                        }
+                    }
+                    else
+                    {
+                        // skip, the source file is not found, this could be a warning!
+                    }
+                }
+            }
         }
 
         await Task.CompletedTask;

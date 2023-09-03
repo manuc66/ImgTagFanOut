@@ -34,7 +34,7 @@ public class TagRepository : ITagRepository
         return false;
     }
 
-    public ImmutableList<Tag> GetAll()
+    public ImmutableList<Tag> GetAllTag()
     {
         return _dbContext.Set<TagDao>().Select(x => _tagCache.GetOrCreate(x)).ToImmutableList();
     }
@@ -131,7 +131,7 @@ public class TagRepository : ITagRepository
         TagDao? existingTag = _dbContext.Set<TagDao>()
             .Include(x => x.Items)
             .Include(x => x.ItemTags)
-            .FirstOrDefault(t => t.Name == tag.Name);
+            .FirstOrDefault(t => t.Name == tag.Name.Trim());
         if (existingTag == null) return;
 
         ItemDao? existingItem = _dbContext.Set<ItemDao>()
@@ -140,7 +140,7 @@ public class TagRepository : ITagRepository
             .FirstOrDefault(t => t.Name == tagAssignation.Item);
         if (existingItem == null) return;
 
-        ItemTagDao? existingItemTag = _dbContext.Set<ItemTagDao>().FirstOrDefault(t => t.Item.Name == tagAssignation.Item && t.Tag.Name == tag.Name);
+        ItemTagDao? existingItemTag = _dbContext.Set<ItemTagDao>().FirstOrDefault(t => t.Item.Name == tagAssignation.Item && t.Tag.Name == tag.Name.Trim());
 
         if (existingItemTag != null)
         {
@@ -195,7 +195,7 @@ public class TagRepository : ITagRepository
         TagDao? existingTag = _dbContext.Set<TagDao>()
             .Include(x => x.Items)
             .Include(x => x.ItemTags)
-            .FirstOrDefault(t => t.Name == tag.Name);
+            .FirstOrDefault(t => t.Name == tag.Name.Trim());
 
         if (existingTag == null)
         {
@@ -213,5 +213,14 @@ public class TagRepository : ITagRepository
         }
 
         _dbContext.Set<TagDao>().Remove(existingTag);
+    }
+
+    public ImmutableList<string> GetItemsWithTag(Tag tag)
+    {
+        TagDao? existingTag = _dbContext.Set<TagDao>()
+            .Include(x => x.Items)
+            .FirstOrDefault(t => t.Name == tag.Name.Trim());
+
+        return existingTag == null ? ImmutableList<string>.Empty : existingTag.Items.Select(x => x.Name).ToImmutableList();
     }
 }

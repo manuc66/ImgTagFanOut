@@ -25,7 +25,7 @@ class InMemoryTagRepository : ITagRepository
         return false;
     }
 
-    public ImmutableList<Tag> GetAll()
+    public ImmutableList<Tag> GetAllTag()
     {
         return _tags.ToImmutableList();
     }
@@ -75,5 +75,10 @@ class InMemoryTagRepository : ITagRepository
         {
             _tags.Remove(existingTag);
         }
+    }
+
+    public ImmutableList<string> GetItemsWithTag(Tag tag)
+    {
+        return new List<string>().ToImmutableList();
     }
 }

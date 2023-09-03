@@ -18,6 +18,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition></ColumnDefinition>
@@ -137,6 +138,21 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+        </Grid>
+        <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" ></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            
+            <TextBox Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch"
+                     Text="{Binding Path=TargetFolder}" />
+            <Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch" Content="Browse" Command="{Binding SelectTargetFolderCommand}"
+                    CommandParameter="{Binding $parent[Window]}" HorizontalAlignment="Right" />
+
+            <Button Grid.Row="0" Grid.Column="2" VerticalAlignment="Stretch" Content="Publish" Command="{Binding PublishCommand}"
+                    HorizontalAlignment="Right" />
         </Grid>
     </Grid>
 </Window>
