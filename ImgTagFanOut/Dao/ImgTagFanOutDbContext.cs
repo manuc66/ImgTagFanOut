@@ -12,7 +12,7 @@ public class ImgTagFanOutDbContext : DbContext
     }
     public ImgTagFanOutDbContext(string? folder = ".")
     {
-        DbPath = System.IO.Path.Join(folder ?? ".", "default-folder.db");
+        DbPath = System.IO.Path.Join(folder ?? ".", "ImgTagFanOut.db");
     }
     
     protected override void OnConfiguring(DbContextOptionsBuilder options)
