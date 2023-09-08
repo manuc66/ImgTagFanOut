@@ -134,5 +134,17 @@ namespace ImgTagFanOut.Assets {
                 return ResourceManager.GetString("Locate", resourceCulture);
             }
         }
+        
+        public static string Images {
+            get {
+                return ResourceManager.GetString("Images", resourceCulture);
+            }
+        }
+        
+        public static string Tags {
+            get {
+                return ResourceManager.GetString("Tags", resourceCulture);
+            }
+        }
     }
 }

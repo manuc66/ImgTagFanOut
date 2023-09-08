@@ -63,4 +63,10 @@
     <data name="Locate" xml:space="preserve">
         <value>Locate</value>
     </data>
+    <data name="Images" xml:space="preserve">
+        <value>Images:</value>
+    </data>
+    <data name="Tags" xml:space="preserve">
+        <value>Tags:</value>
+    </data>
 </root>
