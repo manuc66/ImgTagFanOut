@@ -63,12 +63,6 @@ namespace ImgTagFanOut.Assets {
             }
         }
         
-        public static string HideDone {
-            get {
-                return ResourceManager.GetString("HideDone", resourceCulture);
-            }
-        }
-        
         public static string All {
             get {
                 return ResourceManager.GetString("All", resourceCulture);
@@ -111,18 +105,6 @@ namespace ImgTagFanOut.Assets {
             }
         }
         
-        public static string HideDoneOn {
-            get {
-                return ResourceManager.GetString("HideDoneOn", resourceCulture);
-            }
-        }
-        
-        public static string HideDoneOff {
-            get {
-                return ResourceManager.GetString("HideDoneOff", resourceCulture);
-            }
-        }
-        
         public static string ShowDone {
             get {
                 return ResourceManager.GetString("ShowDone", resourceCulture);
@@ -138,6 +120,18 @@ namespace ImgTagFanOut.Assets {
         public static string ShowDoneOff {
             get {
                 return ResourceManager.GetString("ShowDoneOff", resourceCulture);
+            }
+        }
+        
+        public static string Open {
+            get {
+                return ResourceManager.GetString("Open", resourceCulture);
+            }
+        }
+        
+        public static string Locate {
+            get {
+                return ResourceManager.GetString("Locate", resourceCulture);
             }
         }
     }

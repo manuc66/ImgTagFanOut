@@ -71,6 +71,8 @@
                 <Button Command="{Binding AllCommand}" Content="{x:Static assets:Resources.All}"></Button>
                 <Button Command="{Binding NoneCommand}" Content="{x:Static assets:Resources.None}"></Button>
                 <Button Command="{Binding DoneCommand}" Content="{x:Static assets:Resources.Done}"></Button>
+                <Button Command="{Binding OpenCommand}" Content="{x:Static assets:Resources.Open}"></Button>
+                <Button Command="{Binding LocateCommand}" Content="{x:Static assets:Resources.Locate}"></Button>
             </StackPanel>
             <Image HorizontalAlignment="Left" Source="{Binding ImageToDisplay}" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2">
             </Image>

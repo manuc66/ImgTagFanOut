@@ -27,9 +27,6 @@
     <data name="Cancel" xml:space="preserve">
         <value>Cancel</value>
     </data>
-    <data name="HideDone" xml:space="preserve">
-        <value>Done</value>
-    </data>
     <data name="All" xml:space="preserve">
         <value>All</value>
     </data>
@@ -51,12 +48,6 @@
     <data name="Publish" xml:space="preserve">
         <value>Publish</value>
     </data>
-    <data name="HideDoneOn" xml:space="preserve">
-        <value>Hidden</value>
-    </data>
-    <data name="HideDoneOff" xml:space="preserve">
-        <value>Shown</value>
-    </data>
     <data name="ShowDone" xml:space="preserve">
         <value>Done</value>
     </data>
@@ -65,5 +56,11 @@
     </data>
     <data name="ShowDoneOff" xml:space="preserve">
         <value>Hidden</value>
+    </data>
+    <data name="Open" xml:space="preserve">
+        <value>Open</value>
+    </data>
+    <data name="Locate" xml:space="preserve">
+        <value>Locate</value>
     </data>
 </root>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive;
@@ -96,6 +97,7 @@ public class MainWindowViewModel : ViewModelBase
         get => _hideDone;
         set => this.RaiseAndSetIfChanged(ref _hideDone, value);
     }
+
     public bool ShowDone
     {
         get => !_hideDone;
@@ -123,6 +125,8 @@ public class MainWindowViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> AllCommand { get; }
     public ReactiveCommand<Unit, Unit> NoneCommand { get; }
     public ReactiveCommand<SelectableTag, Unit> DeleteTagCommand { get; }
+    public ReactiveCommand<Unit, Unit> OpenCommand { get; }
+    public ReactiveCommand<Unit, Unit> LocateCommand { get; }
 
     internal ImgTagFanOutDbContext GetRepo(out ITagRepository repo, string? path = null)
     {
@@ -188,11 +192,14 @@ public class MainWindowViewModel : ViewModelBase
 
             SelectedIndex = Math.Min(selectedIndex, FilteredImages.Count - 1);
         }, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
+        OpenCommand = ReactiveCommand.CreateFromTask(OpenFile, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
+        LocateCommand = ReactiveCommand.CreateFromTask(LocateFile, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
+
         ScanFolderCommand = ReactiveCommand.CreateFromObservable(
             () => Observable
                 .StartAsync(ScanFolder, RxApp.TaskpoolScheduler)
                 .TakeUntil(CancelScanCommand!), this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)));
-        
+
         SelectFolderCommand = ReactiveCommand.CreateFromTask<Window, string>(SelectFolder, ScanFolderCommand.IsExecuting.Select(x => !x));
         SelectFolderCommand.Subscribe(path =>
         {
@@ -380,6 +387,31 @@ public class MainWindowViewModel : ViewModelBase
                     previous?.Dispose();
                 }
             });
+    }
+
+    private async Task OpenFile()
+    {
+        if (SelectedImage == null || WorkingFolder == null)
+        {
+            return;
+        }
+
+        string path = Path.Combine(WorkingFolder, SelectedImage.Item);
+        
+        await new FileManagerHandler().OpenFile(path);
+    }
+
+
+
+    private async Task LocateFile()
+    {
+        if (SelectedImage == null || WorkingFolder == null)
+        {
+            return;
+        }
+        string path = Path.Combine(WorkingFolder, SelectedImage.Item);
+
+        await new FileManagerHandler().RevealFileInFolder(path);
     }
 
     private static Bitmap LoadNoPreviewToDisplay()
