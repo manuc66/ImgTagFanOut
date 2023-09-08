@@ -3,6 +3,7 @@
         xmlns:vm="using:ImgTagFanOut.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:assets="clr-namespace:ImgTagFanOut.Assets"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ImgTagFanOut.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -35,12 +36,12 @@
             
             <TextBox Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch"
                      Text="{Binding Path=WorkingFolder}" />
-            <Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch" Content="Browse" Command="{Binding SelectFolderCommand}"
+            <Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch" Content="{x:Static assets:Resources.Browse}" Command="{Binding SelectFolderCommand}"
                     CommandParameter="{Binding $parent[Window]}" HorizontalAlignment="Right" />
 
-            <Button Grid.Row="0" Grid.Column="2" VerticalAlignment="Stretch" Content="Scan" Command="{Binding ScanFolderCommand}"
+            <Button Grid.Row="0" Grid.Column="2" VerticalAlignment="Stretch" Content="{x:Static assets:Resources.Scan}" Command="{Binding ScanFolderCommand}"
                     HorizontalAlignment="Right" />
-            <Button Grid.Row="0" Grid.Column="3" VerticalAlignment="Stretch" Content="Cancel" Command="{Binding CancelScanCommand}"
+            <Button Grid.Row="0" Grid.Column="3" VerticalAlignment="Stretch" Content="{x:Static assets:Resources.Cancel}" Command="{Binding CancelScanCommand}"
                     HorizontalAlignment="Right" />
         </Grid>
 
@@ -66,10 +67,10 @@
             </ListBox>
 
             <StackPanel Grid.Row="2" Grid.Column="1">
-                <ToggleSwitch IsChecked="{Binding HideDone}">Hide done</ToggleSwitch>
-                <Button Command="{Binding AllCommand}">All</Button>
-                <Button Command="{Binding NoneCommand}">None</Button>
-                <Button Command="{Binding DoneCommand}">Done</Button>
+                <ToggleSwitch IsChecked="{Binding HideDone}" Content="{x:Static assets:Resources.HideDone}"></ToggleSwitch>
+                <Button Command="{Binding AllCommand}" Content="{x:Static assets:Resources.All}"></Button>
+                <Button Command="{Binding NoneCommand}" Content="{x:Static assets:Resources.None}"></Button>
+                <Button Command="{Binding DoneCommand}" Content="{x:Static assets:Resources.Done}"></Button>
             </StackPanel>
             <Image HorizontalAlignment="Left" Source="{Binding ImageToDisplay}" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2">
             </Image>
@@ -88,8 +89,8 @@
                     <ColumnDefinition Width="Auto"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
                 <TextBox Grid.Column="0" Text="{Binding TagFilterInput}"></TextBox>
-                <Button Grid.Column="1" Command="{Binding ClearTagFilterInputCommand}">Clear</Button>
-                <Button Command="{Binding AddToTagListCommand}" Grid.Column="2">Add</Button>
+                <Button Grid.Column="1" Command="{Binding ClearTagFilterInputCommand}" Content="{x:Static assets:Resources.Clear}"></Button>
+                <Button Command="{Binding AddToTagListCommand}" Grid.Column="2" Content="{x:Static assets:Resources.Add}"></Button>
             </Grid>
 
             <ItemsControl Grid.Row="1" Name="AllTagsComponent" ItemsSource="{Binding FilteredTagList}">
@@ -107,7 +108,7 @@
                                           Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).ToggleAssignTagToImageCommand, DataType={x:Type vm:MainWindowViewModel}}">
                                 <ToggleButton.ContextMenu>
                                     <ContextMenu>
-                                        <MenuItem Header="Delete"
+                                        <MenuItem Header="{x:Static assets:Resources.Delete}"
                                                   Command="{Binding ElementName=AllTagsComponent, Path=((vm:MainWindowViewModel)DataContext).DeleteTagCommand, DataType={x:Type vm:MainWindowViewModel}}"
                                                   CommandParameter="{Binding .}">
                                         </MenuItem>
@@ -148,10 +149,10 @@
             
             <TextBox Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch"
                      Text="{Binding Path=TargetFolder}" />
-            <Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch" Content="Browse" Command="{Binding SelectTargetFolderCommand}"
+            <Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch" Content="{x:Static assets:Resources.Browse}" Command="{Binding SelectTargetFolderCommand}"
                     CommandParameter="{Binding $parent[Window]}" HorizontalAlignment="Right" />
 
-            <Button Grid.Row="0" Grid.Column="2" VerticalAlignment="Stretch" Content="Publish" Command="{Binding PublishCommand}"
+            <Button Grid.Row="0" Grid.Column="2" VerticalAlignment="Stretch" Content="{x:Static assets:Resources.Publish}" Command="{Binding PublishCommand}"
                     HorizontalAlignment="Right" />
         </Grid>
     </Grid>
