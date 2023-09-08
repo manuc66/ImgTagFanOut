@@ -30,6 +30,7 @@ public class MainWindowViewModel : ViewModelBase
     private Bitmap? _noPreviewToDisplay;
     private ReadOnlyObservableCollection<CanHaveTag> _filteredImages;
     private string? _tagFilterInput;
+    private string? _itemFilterInput;
     private readonly ObservableCollection<Tag> _tagList = new();
     private List<SelectableTag> _filteredTagList;
 
@@ -91,6 +92,11 @@ public class MainWindowViewModel : ViewModelBase
         get => _tagFilterInput;
         set => this.RaiseAndSetIfChanged(ref _tagFilterInput, value);
     }
+    public String? ItemFilterInput
+    {
+        get => _itemFilterInput;
+        set => this.RaiseAndSetIfChanged(ref _itemFilterInput, value);
+    }
 
     public bool HideDone
     {
@@ -121,6 +127,7 @@ public class MainWindowViewModel : ViewModelBase
     public ReactiveCommand<Tag, Unit> RemoveTagToImageCommand { get; }
     public ReactiveCommand<Unit, Unit> AddToTagListCommand { get; }
     public ReactiveCommand<Unit, Unit> ClearTagFilterInputCommand { get; }
+    public ReactiveCommand<Unit, Unit> ClearItemFilterInputCommand { get; }
     public ReactiveCommand<Unit, Unit> DoneCommand { get; }
     public ReactiveCommand<Unit, Unit> AllCommand { get; }
     public ReactiveCommand<Unit, Unit> NoneCommand { get; }
@@ -172,6 +179,8 @@ public class MainWindowViewModel : ViewModelBase
             .AutoRefresh(x => x.Done)
             .Filter(this.WhenValueChanged(@this => @this.HideDone)
                 .Select(CreateFilterForDone))
+            .Filter(this.WhenValueChanged(@this => @this.ItemFilterInput)
+                .Select(CreateFilterForItemFilterInput))
             .Sort(SortExpressionComparer<CanHaveTag>.Ascending(t => t.Item))
             .Bind(out _filteredImages)
             .Subscribe();
@@ -290,6 +299,9 @@ public class MainWindowViewModel : ViewModelBase
                 (tagFilterInput, tagList) => !string.IsNullOrWhiteSpace(tagFilterInput) && !tagList.Any(tag => tag.Same(tagFilterInput))));
         ClearTagFilterInputCommand = ReactiveCommand.Create(() => { TagFilterInput = String.Empty; },
             this.WhenAnyValue(x => x.TagFilterInput).Select(x => !string.IsNullOrWhiteSpace(x)));
+        
+        ClearItemFilterInputCommand = ReactiveCommand.Create(() => { ItemFilterInput = String.Empty; },
+            this.WhenAnyValue(x => x.ItemFilterInput).Select(x => !string.IsNullOrWhiteSpace(x)));
 
         ToggleAssignTagToImageCommand = ReactiveCommand.Create((Tag s) =>
         {
@@ -470,6 +482,8 @@ public class MainWindowViewModel : ViewModelBase
     }
 
     private Func<CanHaveTag, bool> CreateFilterForDone(bool arg) => arg ? item => !item.Done : _ => true;
+    
+    private Func<CanHaveTag, bool>  CreateFilterForItemFilterInput(string arg) => !string.IsNullOrWhiteSpace(arg) ? item =>  item.Item.Contains(arg, StringComparison.OrdinalIgnoreCase) : _ => true;
 
     private bool IsSelected(Tag x, CanHaveTag? canHaveTag)
     {

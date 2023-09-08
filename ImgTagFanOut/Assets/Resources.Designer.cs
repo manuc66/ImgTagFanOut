@@ -146,5 +146,11 @@ namespace ImgTagFanOut.Assets {
                 return ResourceManager.GetString("Tags", resourceCulture);
             }
         }
+        
+        public static string Filter {
+            get {
+                return ResourceManager.GetString("Filter", resourceCulture);
+            }
+        }
     }
 }

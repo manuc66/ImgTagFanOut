@@ -62,4 +62,7 @@
     <data name="Tags" xml:space="preserve">
         <value>Libellés :</value>
     </data>
+    <data name="Filter" xml:space="preserve">
+        <value>Filtre :</value>
+    </data>
 </root>

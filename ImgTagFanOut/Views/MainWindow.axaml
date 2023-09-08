@@ -61,6 +61,19 @@
             </Grid.RowDefinitions>
             <DockPanel Grid.Row="2" Grid.Column="0" LastChildFill="True">
                 <TextBlock DockPanel.Dock="Top" Text="{x:Static assets:Resources.Images}"></TextBlock>
+                <Grid DockPanel.Dock="Top">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="Auto"></ColumnDefinition>
+                        <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{x:Static assets:Resources.Filter}"></TextBlock>
+                    <TextBox Grid.Column="1" Text="{Binding ItemFilterInput}"></TextBox>
+                    <Button Grid.Column="2" Command="{Binding ClearItemFilterInputCommand}"
+                            Content="{x:Static assets:Resources.Clear}">
+                    </Button>
+                </Grid>
                 <ListBox DockPanel.Dock="Bottom" SelectedIndex="{Binding SelectedIndex}"
                          ItemsSource="{Binding FilteredImages}" SelectedItem="{Binding SelectedImage}">
 
@@ -99,15 +112,18 @@
                 </Grid.RowDefinitions>
                 <Grid Grid.Row="0">
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"></ColumnDefinition>
                         <ColumnDefinition Width="*"></ColumnDefinition>
                         <ColumnDefinition Width="Auto"></ColumnDefinition>
                         <ColumnDefinition Width="Auto"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <TextBox Grid.Column="0" Text="{Binding TagFilterInput}"></TextBox>
-                    <Button Grid.Column="1" Command="{Binding ClearTagFilterInputCommand}"
+                    
+                    <TextBlock Grid.Column="0" Text="{x:Static assets:Resources.Filter}"></TextBlock>
+                    <TextBox Grid.Column="1" Text="{Binding TagFilterInput}"></TextBox>
+                    <Button Grid.Column="2" Command="{Binding ClearTagFilterInputCommand}"
                             Content="{x:Static assets:Resources.Clear}">
                     </Button>
-                    <Button Command="{Binding AddToTagListCommand}" Grid.Column="2"
+                    <Button Command="{Binding AddToTagListCommand}" Grid.Column="3"
                             Content="{x:Static assets:Resources.Add}">
                     </Button>
                 </Grid>
