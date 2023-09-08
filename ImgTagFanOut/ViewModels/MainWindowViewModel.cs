@@ -92,6 +92,7 @@ public class MainWindowViewModel : ViewModelBase
         get => _tagFilterInput;
         set => this.RaiseAndSetIfChanged(ref _tagFilterInput, value);
     }
+
     public String? ItemFilterInput
     {
         get => _itemFilterInput;
@@ -299,7 +300,7 @@ public class MainWindowViewModel : ViewModelBase
                 (tagFilterInput, tagList) => !string.IsNullOrWhiteSpace(tagFilterInput) && !tagList.Any(tag => tag.Same(tagFilterInput))));
         ClearTagFilterInputCommand = ReactiveCommand.Create(() => { TagFilterInput = String.Empty; },
             this.WhenAnyValue(x => x.TagFilterInput).Select(x => !string.IsNullOrWhiteSpace(x)));
-        
+
         ClearItemFilterInputCommand = ReactiveCommand.Create(() => { ItemFilterInput = String.Empty; },
             this.WhenAnyValue(x => x.ItemFilterInput).Select(x => !string.IsNullOrWhiteSpace(x)));
 
@@ -389,9 +390,24 @@ public class MainWindowViewModel : ViewModelBase
                 Bitmap? previous = ImageToDisplay;
                 string fullFilePath = Path.Combine(WorkingFolder, x.Item);
 
-                using (FileStream fs = new(fullFilePath, FileMode.Open, FileAccess.Read))
+                if (File.Exists(fullFilePath))
                 {
-                    ImageToDisplay = new Bitmap(fs);
+                    try
+                    {
+                        using (FileStream fs = new(fullFilePath, FileMode.Open, FileAccess.Read))
+                        {
+                            ImageToDisplay = new Bitmap(fs);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        ImageToDisplay = NoPreviewToDisplay;
+                    }
+                }
+                else
+                {
+                    ImageToDisplay = NoPreviewToDisplay;
                 }
 
                 if (previous != NoPreviewToDisplay)
@@ -409,10 +425,12 @@ public class MainWindowViewModel : ViewModelBase
         }
 
         string path = Path.Combine(WorkingFolder, SelectedImage.Item);
-        
-        await new FileManagerHandler().OpenFile(path);
-    }
 
+        if (File.Exists(path))
+        {
+            await new FileManagerHandler().OpenFile(path);
+        }
+    }
 
 
     private async Task LocateFile()
@@ -421,9 +439,13 @@ public class MainWindowViewModel : ViewModelBase
         {
             return;
         }
+
         string path = Path.Combine(WorkingFolder, SelectedImage.Item);
 
-        await new FileManagerHandler().RevealFileInFolder(path);
+        if (File.Exists(path))
+        {
+            await new FileManagerHandler().RevealFileInFolder(path);
+        }
     }
 
     private static Bitmap LoadNoPreviewToDisplay()
@@ -482,8 +504,8 @@ public class MainWindowViewModel : ViewModelBase
     }
 
     private Func<CanHaveTag, bool> CreateFilterForDone(bool arg) => arg ? item => !item.Done : _ => true;
-    
-    private Func<CanHaveTag, bool>  CreateFilterForItemFilterInput(string arg) => !string.IsNullOrWhiteSpace(arg) ? item =>  item.Item.Contains(arg, StringComparison.OrdinalIgnoreCase) : _ => true;
+
+    private Func<CanHaveTag, bool> CreateFilterForItemFilterInput(string arg) => !string.IsNullOrWhiteSpace(arg) ? item => item.Item.Contains(arg, StringComparison.OrdinalIgnoreCase) : _ => true;
 
     private bool IsSelected(Tag x, CanHaveTag? canHaveTag)
     {
