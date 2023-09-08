@@ -110,5 +110,35 @@ namespace ImgTagFanOut.Assets {
                 return ResourceManager.GetString("Publish", resourceCulture);
             }
         }
+        
+        public static string HideDoneOn {
+            get {
+                return ResourceManager.GetString("HideDoneOn", resourceCulture);
+            }
+        }
+        
+        public static string HideDoneOff {
+            get {
+                return ResourceManager.GetString("HideDoneOff", resourceCulture);
+            }
+        }
+        
+        public static string ShowDone {
+            get {
+                return ResourceManager.GetString("ShowDone", resourceCulture);
+            }
+        }
+        
+        public static string ShowDoneOn {
+            get {
+                return ResourceManager.GetString("ShowDoneOn", resourceCulture);
+            }
+        }
+        
+        public static string ShowDoneOff {
+            get {
+                return ResourceManager.GetString("ShowDoneOff", resourceCulture);
+            }
+        }
     }
 }

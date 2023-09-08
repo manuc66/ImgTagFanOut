@@ -21,7 +21,7 @@
         <value>Annuler</value>
     </data>
     <data name="HideDone" xml:space="preserve">
-        <value>Cacher terminé</value>
+        <value>Terminés</value>
     </data>
     <data name="None" xml:space="preserve">
         <value>Aucuns</value>
@@ -43,5 +43,20 @@
     </data>
     <data name="Add" xml:space="preserve">
         <value>Ajouter</value>
+    </data>
+    <data name="HideDoneOn" xml:space="preserve">
+        <value>Caché</value>
+    </data>
+    <data name="HideDoneOff" xml:space="preserve">
+        <value>Affichés</value>
+    </data>
+    <data name="ShowDone" xml:space="preserve">
+        <value>Terminés</value>
+    </data>
+    <data name="ShowDoneOff" xml:space="preserve">
+        <value>Cachés</value>
+    </data>
+    <data name="ShowDoneOn" xml:space="preserve">
+        <value>Affichés</value>
     </data>
 </root>

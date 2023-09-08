@@ -67,7 +67,7 @@
             </ListBox>
 
             <StackPanel Grid.Row="2" Grid.Column="1">
-                <ToggleSwitch IsChecked="{Binding HideDone}" Content="{x:Static assets:Resources.HideDone}"></ToggleSwitch>
+                <ToggleSwitch IsChecked="{Binding ShowDone}" Content="{x:Static assets:Resources.ShowDone}" OnContent="{x:Static assets:Resources.ShowDoneOn}" OffContent="{x:Static assets:Resources.ShowDoneOff}"></ToggleSwitch>
                 <Button Command="{Binding AllCommand}" Content="{x:Static assets:Resources.All}"></Button>
                 <Button Command="{Binding NoneCommand}" Content="{x:Static assets:Resources.None}"></Button>
                 <Button Command="{Binding DoneCommand}" Content="{x:Static assets:Resources.Done}"></Button>
@@ -133,7 +133,6 @@
                             <ToggleButton Content="{Binding Path=Name}" IsChecked="True"
                                           CommandParameter="{Binding .}"
                                           Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).RemoveTagToImageCommand}">
-
                             </ToggleButton>
                         </StackPanel>
                     </DataTemplate>

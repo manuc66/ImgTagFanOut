@@ -28,7 +28,7 @@
         <value>Cancel</value>
     </data>
     <data name="HideDone" xml:space="preserve">
-        <value>Hide done</value>
+        <value>Done</value>
     </data>
     <data name="All" xml:space="preserve">
         <value>All</value>
@@ -50,5 +50,20 @@
     </data>
     <data name="Publish" xml:space="preserve">
         <value>Publish</value>
+    </data>
+    <data name="HideDoneOn" xml:space="preserve">
+        <value>Hidden</value>
+    </data>
+    <data name="HideDoneOff" xml:space="preserve">
+        <value>Shown</value>
+    </data>
+    <data name="ShowDone" xml:space="preserve">
+        <value>Done</value>
+    </data>
+    <data name="ShowDoneOn" xml:space="preserve">
+        <value>Shown</value>
+    </data>
+    <data name="ShowDoneOff" xml:space="preserve">
+        <value>Hidden</value>
     </data>
 </root>

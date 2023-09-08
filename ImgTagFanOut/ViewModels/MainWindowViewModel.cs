@@ -96,6 +96,11 @@ public class MainWindowViewModel : ViewModelBase
         get => _hideDone;
         set => this.RaiseAndSetIfChanged(ref _hideDone, value);
     }
+    public bool ShowDone
+    {
+        get => !_hideDone;
+        set => this.RaiseAndSetIfChanged(ref _hideDone, !value);
+    }
 
     public int SelectedIndex
     {
