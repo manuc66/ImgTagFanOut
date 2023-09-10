@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -18,7 +18,6 @@ using DynamicData.Binding;
 using ImgTagFanOut.Dao;
 using ImgTagFanOut.Models;
 using ReactiveUI;
-using SkiaSharp;
 
 namespace ImgTagFanOut.ViewModels;
 
@@ -38,6 +37,7 @@ public class MainWindowViewModel : ViewModelBase
     private bool _hideDone;
     private readonly SourceList<CanHaveTag> _images = new();
     private int _selectedIndex;
+    private readonly Settings _settings;
 
     public string? WorkingFolder
     {
@@ -137,9 +137,10 @@ public class MainWindowViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> LocateCommand { get; }
 
 
-
     public MainWindowViewModel()
     {
+        _settings = new();
+        WorkingFolder = _settings.ReadSettings().LastFolder;
         TagList = new ObservableCollection<Tag>();
         using (ImgTagFanOutDbContext imgTagFanOutDbContext = RepositoryFactory.GetRepo(out ITagRepository tagRepository))
         {
@@ -443,15 +444,9 @@ public class MainWindowViewModel : ViewModelBase
 
     private static Bitmap LoadNoPreviewToDisplay()
     {
-        var assembly = Assembly.GetExecutingAssembly();
-        var resourceName = "ImgTagFanOut.NoPreview.png";
-        Stream? manifestResourceStream = assembly.GetManifestResourceStream(resourceName);
-        Bitmap noPreviewToDisplay;
-        using (Stream stream = manifestResourceStream)
-        {
-            noPreviewToDisplay = new Bitmap(stream);
-        }
-
+        string resourceName = "ImgTagFanOut.NoPreview.png";
+        using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName) ?? throw new Exception("Resource not found: " + resourceName);
+        Bitmap noPreviewToDisplay = new(stream);
         return noPreviewToDisplay;
     }
 
@@ -465,6 +460,11 @@ public class MainWindowViewModel : ViewModelBase
     private async Task<string> SelectFolder(Window window)
     {
         string selectedFolder = await SelectAFolder(window, "Select source folder", WorkingFolder);
+
+        AppSettings appSettings = _settings.ReadSettings();
+        appSettings.LastFolder = selectedFolder;
+        _settings.Save(appSettings);
+
         WorkingFolder = selectedFolder;
         return selectedFolder;
     }
