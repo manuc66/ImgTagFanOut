@@ -222,7 +222,7 @@ public class MainWindowViewModel : ViewModelBase
         PublishCommand = ReactiveCommand.CreateFromObservable(
             () => Observable
                 .StartAsync(PublishToFolder, RxApp.TaskpoolScheduler)
-                .TakeUntil(CancelScanCommand!), this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)));
+                .TakeUntil(CancelScanCommand), this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)));
 
 
         AllCommand = ReactiveCommand.Create(
@@ -233,20 +233,7 @@ public class MainWindowViewModel : ViewModelBase
                     return;
                 }
 
-                using (ImgTagFanOutDbContext imgTagFanOutDbContext = RepositoryFactory.GetRepo(out ITagRepository tagRepository, WorkingFolder))
-                {
-                    foreach (Tag selectedImageTag in TagList)
-                    {
-                        tagRepository.AddTagToItem(selectedImageTag, SelectedImage);
-                    }
-
-                    imgTagFanOutDbContext.SaveChanges();
-
-                    foreach (SelectableTag selectableTag in FilteredTagList)
-                    {
-                        selectableTag.IsSelected = IsSelected(selectableTag.Tag, SelectedImage);
-                    }
-                }
+                AssignAllTags(SelectedImage, TagList);
             },
             this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
         NoneCommand = ReactiveCommand.Create(
@@ -265,12 +252,9 @@ public class MainWindowViewModel : ViewModelBase
                     }
 
                     imgTagFanOutDbContext.SaveChanges();
-
-                    foreach (SelectableTag selectableTag in FilteredTagList)
-                    {
-                        selectableTag.IsSelected = IsSelected(selectableTag.Tag, SelectedImage);
-                    }
                 }
+
+                RefreshTagIsSelected();
             },
             this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
 
@@ -307,14 +291,9 @@ public class MainWindowViewModel : ViewModelBase
                 }
 
                 imgTagFanOutDbContext.SaveChanges();
-
-                foreach (SelectableTag selectableTag in FilteredTagList)
-                {
-                    selectableTag.IsSelected = IsSelected(selectableTag.Tag, SelectedImage);
-                }
-
-                imgTagFanOutDbContext.SaveChanges();
             }
+
+            RefreshTagIsSelected();
         }, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
 
         RemoveTagToImageCommand = ReactiveCommand.Create((Tag tag) =>
@@ -329,12 +308,9 @@ public class MainWindowViewModel : ViewModelBase
                 tagRepository.RemoveTagToItem(tag, SelectedImage);
 
                 imgTagFanOutDbContext.SaveChanges();
-
-                foreach (SelectableTag selectableTag in FilteredTagList)
-                {
-                    selectableTag.IsSelected = IsSelected(selectableTag.Tag, SelectedImage);
-                }
             }
+
+            RefreshTagIsSelected();
         });
 
         DeleteTagCommand = ReactiveCommand.Create((SelectableTag s) =>
@@ -346,11 +322,11 @@ public class MainWindowViewModel : ViewModelBase
                 TagList.Remove(s.Tag);
 
                 imgTagFanOutDbContext.SaveChanges();
+            }
 
-                foreach (CanHaveTag item in _images.Items)
-                {
-                    item.RemoveTag(s.Tag);
-                }
+            foreach (CanHaveTag item in _images.Items)
+            {
+                item.RemoveTag(s.Tag);
             }
         }, ScanFolderCommand.IsExecuting.Select(x => !x));
 
@@ -408,6 +384,29 @@ public class MainWindowViewModel : ViewModelBase
                     previous?.Dispose();
                 }
             });
+    }
+
+    private void RefreshTagIsSelected()
+    {
+        foreach (SelectableTag selectableTag in FilteredTagList)
+        {
+            selectableTag.IsSelected = IsSelected(selectableTag.Tag, SelectedImage);
+        }
+    }
+
+    private void AssignAllTags(CanHaveTag selectedImage, IEnumerable<Tag> allTags)
+    {
+        using (ImgTagFanOutDbContext imgTagFanOutDbContext = RepositoryFactory.GetRepo(out ITagRepository tagRepository, WorkingFolder))
+        {
+            foreach (Tag selectedImageTag in allTags)
+            {
+                tagRepository.AddTagToItem(selectedImageTag, selectedImage);
+            }
+
+            imgTagFanOutDbContext.SaveChanges();
+        }
+
+        RefreshTagIsSelected();
     }
 
     private async Task OpenFile()
