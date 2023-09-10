@@ -8,10 +8,10 @@ public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext, IUnitOfW
 {
     private string DbPath { get; }
 
-    public DbSet<TagDao> Tags { get; set; }
-    public DbSet<ItemDao> Items { get; set; }
-    public DbSet<ItemTagDao> ItemTags { get; set; }
-    public DbSet<ParameterDao> Parameters { get; set; }
+    public DbSet<TagDao> Tags { get; set; } = null!;
+    public DbSet<ItemDao> Items { get; set; }= null!;
+    public DbSet<ItemTagDao> ItemTags { get; set; }= null!;
+    public DbSet<ParameterDao> Parameters { get; set; }= null!;
     public ITagRepository TagRepository { get; }
     public IParameterRepository ParameterRepository { get; }
 
