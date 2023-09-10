@@ -7,7 +7,6 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reflection;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -498,7 +497,7 @@ public class MainWindowViewModel : ViewModelBase
 
     private Func<CanHaveTag, bool> CreateFilterForDone(bool arg) => arg ? item => !item.Done : _ => true;
 
-    private Func<CanHaveTag, bool> CreateFilterForItemFilterInput(string arg) => !string.IsNullOrWhiteSpace(arg) ? item => item.Item.Contains(arg, StringComparison.OrdinalIgnoreCase) : _ => true;
+    private Func<CanHaveTag, bool> CreateFilterForItemFilterInput(string? arg) => !string.IsNullOrWhiteSpace(arg) ? item => item.Item.Contains(arg, StringComparison.OrdinalIgnoreCase) : _ => true;
 
     private bool IsSelected(Tag x, CanHaveTag? canHaveTag)
     {

@@ -21,6 +21,6 @@ public class SelectableTag : ViewModelBase
 
     public SelectableTag(Tag tag)
     {
-        Tag = tag;
+        _tag = tag;
     }
 }

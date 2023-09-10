@@ -16,7 +16,7 @@ public class Tag : ViewModelBase, IEquatable<Tag>
 
     public Tag(string name)
     {
-        Name = name;
+        _name = name;
     }
 
     public bool Equals(Tag? other)
@@ -36,7 +36,7 @@ public class Tag : ViewModelBase, IEquatable<Tag>
 
     private sealed class NameEqualityComparer : IEqualityComparer<Tag>
     {
-        public bool Equals(Tag x, Tag y)
+        public bool Equals(Tag? x, Tag? y)
         {
             if (ReferenceEquals(x, y)) return true;
             if (ReferenceEquals(x, null)) return false;

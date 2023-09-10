@@ -15,4 +15,9 @@ public class ItemDao
 
     public List<ItemTagDao> ItemTags { get; } = new();
     public List<TagDao> Tags { get; } = new();
+
+    public ItemDao(string name)
+    {
+        Name = name;
+    }
 }

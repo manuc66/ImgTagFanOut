@@ -24,7 +24,7 @@ public class TagRepository : ITagRepository
         if (!string.IsNullOrWhiteSpace(newTagLabel)
             && _dbContext.Tags.FirstOrDefault(x => x.Name == newTagLabel) == null)
         {
-            TagDao tagDao = new() { Name = newTagLabel };
+            TagDao tagDao = new(newTagLabel);
             newTag = _tagCache.GetOrCreate(tagDao);
             _dbContext.Tags.Add(tagDao);
             return true;
@@ -58,7 +58,7 @@ public class TagRepository : ITagRepository
         }
         else
         {
-            _dbContext.Items.Add(new ItemDao { Name = tagAssignation.Item });
+            _dbContext.Items.Add(new ItemDao (tagAssignation.Item ));
         }
     }
 
