@@ -16,6 +16,7 @@ using Avalonia.Platform.Storage;
 using DynamicData;
 using DynamicData.Binding;
 using ImgTagFanOut.Dao;
+using ImgTagFanOut.Models;
 using ReactiveUI;
 using SkiaSharp;
 
@@ -37,7 +38,6 @@ public class MainWindowViewModel : ViewModelBase
     private bool _hideDone;
     private readonly SourceList<CanHaveTag> _images = new();
     private int _selectedIndex;
-    private readonly TagCache _tagCache;
 
     public string? WorkingFolder
     {
@@ -136,19 +136,12 @@ public class MainWindowViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> OpenCommand { get; }
     public ReactiveCommand<Unit, Unit> LocateCommand { get; }
 
-    internal ImgTagFanOutDbContext GetRepo(out ITagRepository repo, string? path = null)
-    {
-        ImgTagFanOutDbContext imgTagFanOutDbContext = new(path);
-        imgTagFanOutDbContext.Database.EnsureCreated();
-        repo = new TagRepository(imgTagFanOutDbContext, _tagCache);
-        return imgTagFanOutDbContext;
-    }
+
 
     public MainWindowViewModel()
     {
-        _tagCache = new TagCache();
         TagList = new ObservableCollection<Tag>();
-        using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out ITagRepository tagRepository))
+        using (ImgTagFanOutDbContext imgTagFanOutDbContext = RepositoryFactory.GetRepo(out ITagRepository tagRepository))
         {
             imgTagFanOutDbContext.Database.EnsureCreated();
             imgTagFanOutDbContext.SaveChanges();
@@ -194,7 +187,7 @@ public class MainWindowViewModel : ViewModelBase
             }
 
             int selectedIndex = SelectedIndex;
-            using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out ITagRepository tagRepository, WorkingFolder))
+            using (ImgTagFanOutDbContext imgTagFanOutDbContext = RepositoryFactory.GetRepo(out ITagRepository tagRepository, WorkingFolder))
             {
                 tagRepository.MarkDone(SelectedImage);
                 imgTagFanOutDbContext.SaveChanges();
@@ -214,7 +207,7 @@ public class MainWindowViewModel : ViewModelBase
         SelectFolderCommand.Subscribe(path =>
         {
             WorkingFolder = path;
-            using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out ITagRepository tagRepository, path))
+            using (ImgTagFanOutDbContext imgTagFanOutDbContext = RepositoryFactory.GetRepo(out ITagRepository tagRepository, path))
             {
                 imgTagFanOutDbContext.Database.EnsureCreated();
                 ReloadTagList(tagRepository);
@@ -240,7 +233,7 @@ public class MainWindowViewModel : ViewModelBase
                     return;
                 }
 
-                using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out ITagRepository tagRepository, WorkingFolder))
+                using (ImgTagFanOutDbContext imgTagFanOutDbContext = RepositoryFactory.GetRepo(out ITagRepository tagRepository, WorkingFolder))
                 {
                     foreach (Tag selectedImageTag in TagList)
                     {
@@ -264,7 +257,7 @@ public class MainWindowViewModel : ViewModelBase
                     return;
                 }
 
-                using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out ITagRepository tagRepository, WorkingFolder))
+                using (ImgTagFanOutDbContext imgTagFanOutDbContext = RepositoryFactory.GetRepo(out ITagRepository tagRepository, WorkingFolder))
                 {
                     foreach (Tag selectedImageTag in SelectedImage.Tags.ToImmutableList())
                     {
@@ -283,7 +276,7 @@ public class MainWindowViewModel : ViewModelBase
 
         AddToTagListCommand = ReactiveCommand.Create(() =>
         {
-            using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out ITagRepository tagRepository, WorkingFolder))
+            using (ImgTagFanOutDbContext imgTagFanOutDbContext = RepositoryFactory.GetRepo(out ITagRepository tagRepository, WorkingFolder))
             {
                 if (tagRepository.TryCreateTag(TagFilterInput, out Tag? newTag))
                 {
@@ -306,7 +299,7 @@ public class MainWindowViewModel : ViewModelBase
 
         ToggleAssignTagToImageCommand = ReactiveCommand.Create((Tag s) =>
         {
-            using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out ITagRepository tagRepository, WorkingFolder))
+            using (ImgTagFanOutDbContext imgTagFanOutDbContext = RepositoryFactory.GetRepo(out ITagRepository tagRepository, WorkingFolder))
             {
                 if (SelectedImage != null)
                 {
@@ -331,7 +324,7 @@ public class MainWindowViewModel : ViewModelBase
                 return;
             }
 
-            using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out ITagRepository tagRepository, WorkingFolder))
+            using (ImgTagFanOutDbContext imgTagFanOutDbContext = RepositoryFactory.GetRepo(out ITagRepository tagRepository, WorkingFolder))
             {
                 tagRepository.RemoveTagToItem(tag, SelectedImage);
 
@@ -346,7 +339,7 @@ public class MainWindowViewModel : ViewModelBase
 
         DeleteTagCommand = ReactiveCommand.Create((SelectableTag s) =>
         {
-            using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out ITagRepository tagRepository, WorkingFolder))
+            using (ImgTagFanOutDbContext imgTagFanOutDbContext = RepositoryFactory.GetRepo(out ITagRepository tagRepository, WorkingFolder))
             {
                 tagRepository.DeleteTag(s.Tag);
 
@@ -464,7 +457,7 @@ public class MainWindowViewModel : ViewModelBase
 
     private void ReloadTagList(ITagRepository tagRepository)
     {
-        _tagCache.Clear();
+        RepositoryFactory.ClearTagCache();
         TagList.Clear();
         TagList.AddRange(tagRepository.GetAllTag());
     }
@@ -512,7 +505,7 @@ public class MainWindowViewModel : ViewModelBase
         return canHaveTag?.Has(x) ?? false;
     }
 
-    private async Task ScanFolder(CancellationToken arg)
+    private async Task ScanFolder(CancellationToken cancellationToken)
     {
         _images.Clear();
 
@@ -521,81 +514,16 @@ public class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        HashSet<string> allowedExtensions = new() { ".jpeg", ".jpg", ".png", ".gif", ".webp", ".bmp" };
-
-        using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out ITagRepository? tagRepository, WorkingFolder))
-        {
-            IEnumerable<string> enumerateFiles = Directory.EnumerateFiles(WorkingFolder, "*", SearchOption.AllDirectories)
-                .Where(x => allowedExtensions.Contains(Path.GetExtension(x)));
-
-            foreach (string file in enumerateFiles)
-            {
-                CanHaveTag canHaveTag = new(Path.GetRelativePath(WorkingFolder, file));
-
-                _images.Add(canHaveTag);
-
-                tagRepository.AddOrUpdateItem(canHaveTag);
-            }
-
-            await imgTagFanOutDbContext.SaveChangesAsync(arg);
-        }
+        await new FolderScan().ScanFolder(cancellationToken, WorkingFolder, _images);
     }
 
-    private async Task PublishToFolder(CancellationToken arg)
+    private async Task PublishToFolder(CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(WorkingFolder) || string.IsNullOrWhiteSpace(TargetFolder))
         {
             return;
         }
 
-        if (!Directory.Exists(TargetFolder))
-        {
-            Directory.CreateDirectory(TargetFolder);
-        }
-
-        using (ImgTagFanOutDbContext imgTagFanOutDbContext = GetRepo(out ITagRepository? tagRepository, WorkingFolder))
-        {
-            foreach (Tag tag in tagRepository.GetAllTag())
-            {
-                ImmutableList<string> itemsInDb = tagRepository.GetItemsWithTag(tag);
-
-                if (itemsInDb.Count == 0)
-                {
-                    continue;
-                }
-
-                string targetDirectoryForTag = Path.Combine(TargetFolder, tag.Name);
-                if (!Directory.Exists(targetDirectoryForTag))
-                {
-                    Directory.CreateDirectory(targetDirectoryForTag);
-                }
-
-                foreach (string itemInDb in itemsInDb)
-                {
-                    string itemFullPath = Path.Combine(WorkingFolder, itemInDb);
-
-                    string fileName = Path.GetFileName(itemFullPath);
-
-                    if (File.Exists(itemFullPath))
-                    {
-                        string destFileName = Path.Combine(targetDirectoryForTag, fileName);
-                        if (!File.Exists(destFileName))
-                        {
-                            File.Copy(itemFullPath, destFileName);
-                        }
-                        else
-                        {
-                            // todo: check if source and target are the same in this case do nothing otherwise rename the file
-                        }
-                    }
-                    else
-                    {
-                        // skip, the source file is not found, this could be a warning!
-                    }
-                }
-            }
-        }
-
-        await Task.CompletedTask;
+        await new Publisher().PublishToFolder(cancellationToken, WorkingFolder, TargetFolder);
     }
 }
