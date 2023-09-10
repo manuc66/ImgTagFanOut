@@ -1,29 +1,29 @@
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 namespace ImgTagFanOut.Dao;
 
-public interface IImgTagFanOutDbContext
-{
-    DbSet<TagDao> Tags { get; }
-    DbSet<ItemDao> Items { get; }
-    DbSet<ItemTagDao> ItemTags { get; }
-}
-
-public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext
+public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext, IUnitOfWork
 {
     private string DbPath { get; }
 
-    public DbSet<TagDao> Tags => Set<TagDao>();
-    public DbSet<ItemDao> Items => Set<ItemDao>();
-    public DbSet<ItemTagDao> ItemTags => Set<ItemTagDao>();
+    public DbSet<TagDao> Tags { get; set; }
+    public DbSet<ItemDao> Items { get; set; }
+    public DbSet<ItemTagDao> ItemTags { get; set; }
+    public DbSet<ParameterDao> Parameters { get; set; }
+    public ITagRepository TagRepository { get; }
+    public IParameterRepository ParameterRepository { get; }
 
-    public ImgTagFanOutDbContext() : this(".")
+    public ImgTagFanOutDbContext() : this(new TagCache(), ".")
     {
     }
 
-    public ImgTagFanOutDbContext(string? folder = ".")
+    public ImgTagFanOutDbContext(TagCache tagCache, string? folder = ".")
     {
         DbPath = System.IO.Path.Join(folder ?? ".", "ImgTagFanOut.db");
+        TagRepository = new TagRepository(this, tagCache);
+        ParameterRepository = new ParameterRepository(this);
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
@@ -33,16 +33,23 @@ public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // Items
+        modelBuilder.Entity<ItemDao>()
+            .ToTable("items");
+
         modelBuilder.Entity<ItemDao>()
             .HasIndex(b => new { b.Name })
             .IsUnique()
             .IsDescending();
 
-
         modelBuilder.Entity<ItemDao>().HasKey(x => x.ItemId);
         modelBuilder.Entity<ItemDao>().Property(x => x.ItemId)
             .IsRequired()
             .ValueGeneratedOnAdd();
+
+        // Tags
+        modelBuilder.Entity<TagDao>()
+            .ToTable("tags");
 
         modelBuilder.Entity<TagDao>()
             .HasIndex(b => new { b.Name })
@@ -54,6 +61,10 @@ public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext
             .IsRequired()
             .ValueGeneratedOnAdd();
 
+        // ItemTags
+        modelBuilder.Entity<ItemTagDao>()
+            .ToTable("item_tags");
+
         modelBuilder.Entity<ItemTagDao>()
             .HasIndex(b => new { b.OrderIndex })
             .IsDescending();
@@ -64,5 +75,18 @@ public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext
             .UsingEntity<ItemTagDao>(
                 l => l.HasOne<TagDao>(e => e.Tag).WithMany(e => e.ItemTags).HasForeignKey(e => e.TagForeignKey),
                 r => r.HasOne<ItemDao>(e => e.Item).WithMany(e => e.ItemTags).HasForeignKey(e => e.ItemForeignKey));
+
+        // Parameters
+        modelBuilder.Entity<ParameterDao>()
+            .ToTable("parameters");
+        
+        modelBuilder.Entity<ParameterDao>()
+            .HasIndex(b => new { b.Name })
+            .IsUnique()
+            .IsDescending();
+        modelBuilder.Entity<ParameterDao>().HasKey(x => x.ParameterId);
+        modelBuilder.Entity<ParameterDao>().Property(x => x.ParameterId)
+            .IsRequired()
+            .ValueGeneratedOnAdd();
     }
 }

@@ -11,7 +11,7 @@ namespace ImgTagFanOut.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "ItemDao",
+                name: "items",
                 columns: table => new
                 {
                     ItemId = table.Column<int>(type: "INTEGER", nullable: false)
@@ -21,11 +21,25 @@ namespace ImgTagFanOut.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ItemDao", x => x.ItemId);
+                    table.PrimaryKey("PK_items", x => x.ItemId);
                 });
 
             migrationBuilder.CreateTable(
-                name: "TagDao",
+                name: "parameters",
+                columns: table => new
+                {
+                    ParameterId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Value = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_parameters", x => x.ParameterId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "tags",
                 columns: table => new
                 {
                     TagId = table.Column<int>(type: "INTEGER", nullable: false)
@@ -34,11 +48,11 @@ namespace ImgTagFanOut.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TagDao", x => x.TagId);
+                    table.PrimaryKey("PK_tags", x => x.TagId);
                 });
 
             migrationBuilder.CreateTable(
-                name: "ItemTagDao",
+                name: "item_tags",
                 columns: table => new
                 {
                     ItemForeignKey = table.Column<int>(type: "INTEGER", nullable: false),
@@ -47,42 +61,49 @@ namespace ImgTagFanOut.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ItemTagDao", x => new { x.ItemForeignKey, x.TagForeignKey });
+                    table.PrimaryKey("PK_item_tags", x => new { x.ItemForeignKey, x.TagForeignKey });
                     table.ForeignKey(
-                        name: "FK_ItemTagDao_ItemDao_ItemForeignKey",
+                        name: "FK_item_tags_items_ItemForeignKey",
                         column: x => x.ItemForeignKey,
-                        principalTable: "ItemDao",
+                        principalTable: "items",
                         principalColumn: "ItemId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ItemTagDao_TagDao_TagForeignKey",
+                        name: "FK_item_tags_tags_TagForeignKey",
                         column: x => x.TagForeignKey,
-                        principalTable: "TagDao",
+                        principalTable: "tags",
                         principalColumn: "TagId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_ItemDao_Name",
-                table: "ItemDao",
+                name: "IX_item_tags_OrderIndex",
+                table: "item_tags",
+                column: "OrderIndex",
+                descending: new bool[0]);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_item_tags_TagForeignKey",
+                table: "item_tags",
+                column: "TagForeignKey");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_items_Name",
+                table: "items",
                 column: "Name",
                 unique: true,
                 descending: new bool[0]);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ItemTagDao_OrderIndex",
-                table: "ItemTagDao",
-                column: "OrderIndex",
+                name: "IX_parameters_Name",
+                table: "parameters",
+                column: "Name",
+                unique: true,
                 descending: new bool[0]);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ItemTagDao_TagForeignKey",
-                table: "ItemTagDao",
-                column: "TagForeignKey");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TagDao_Name",
-                table: "TagDao",
+                name: "IX_tags_Name",
+                table: "tags",
                 column: "Name",
                 unique: true,
                 descending: new bool[0]);
@@ -92,13 +113,16 @@ namespace ImgTagFanOut.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ItemTagDao");
+                name: "item_tags");
 
             migrationBuilder.DropTable(
-                name: "ItemDao");
+                name: "parameters");
 
             migrationBuilder.DropTable(
-                name: "TagDao");
+                name: "items");
+
+            migrationBuilder.DropTable(
+                name: "tags");
         }
     }
 }

@@ -35,7 +35,7 @@ namespace ImgTagFanOut.Migrations
                         .IsUnique()
                         .IsDescending();
 
-                    b.ToTable("ItemDao");
+                    b.ToTable("items", (string)null);
                 });
 
             modelBuilder.Entity("ImgTagFanOut.Dao.ItemTagDao", b =>
@@ -56,7 +56,29 @@ namespace ImgTagFanOut.Migrations
 
                     b.HasIndex("TagForeignKey");
 
-                    b.ToTable("ItemTagDao");
+                    b.ToTable("item_tags", (string)null);
+                });
+
+            modelBuilder.Entity("ImgTagFanOut.Dao.ParameterDao", b =>
+                {
+                    b.Property<int>("ParameterId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ParameterId");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .IsDescending();
+
+                    b.ToTable("parameters", (string)null);
                 });
 
             modelBuilder.Entity("ImgTagFanOut.Dao.TagDao", b =>
@@ -75,7 +97,7 @@ namespace ImgTagFanOut.Migrations
                         .IsUnique()
                         .IsDescending();
 
-                    b.ToTable("TagDao");
+                    b.ToTable("tags", (string)null);
                 });
 
             modelBuilder.Entity("ImgTagFanOut.Dao.ItemTagDao", b =>

@@ -15,7 +15,7 @@ public class FolderScan
     {
         HashSet<string> allowedExtensions = new() { ".jpeg", ".jpg", ".png", ".gif", ".webp", ".bmp" };
 
-        using (ImgTagFanOutDbContext imgTagFanOutDbContext = RepositoryFactory.GetRepo(out ITagRepository? tagRepository, workingFolder))
+        await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(workingFolder))
         {
             IEnumerable<string> enumerateFiles = Directory.EnumerateFiles(workingFolder, "*", SearchOption.AllDirectories)
                 .Where(x => allowedExtensions.Contains(Path.GetExtension(x)));
@@ -26,10 +26,10 @@ public class FolderScan
 
                 images.Add(canHaveTag);
 
-                tagRepository.AddOrUpdateItem(canHaveTag);
+                unitOfWork.TagRepository.AddOrUpdateItem(canHaveTag);
             }
 
-            await imgTagFanOutDbContext.SaveChangesAsync(cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
         }
     }
 }

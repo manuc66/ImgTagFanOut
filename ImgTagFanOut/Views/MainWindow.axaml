@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:assets="clr-namespace:ImgTagFanOut.Assets"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="550"
         x:Class="ImgTagFanOut.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
@@ -86,17 +86,17 @@
             </DockPanel>
 
 
-            <StackPanel Grid.Row="2" Grid.Column="1">
-                <ToggleSwitch IsChecked="{Binding ShowDone}" Content="{x:Static assets:Resources.ShowDone}"
+            <DockPanel Grid.Row="2" Grid.Column="1" LastChildFill="False">
+                <ToggleSwitch DockPanel.Dock="Top" IsChecked="{Binding ShowDone}" Content="{x:Static assets:Resources.ShowDone}"
                               OnContent="{x:Static assets:Resources.ShowDoneOn}"
                               OffContent="{x:Static assets:Resources.ShowDoneOff}">
                 </ToggleSwitch>
-                <Button Command="{Binding AllCommand}" Content="{x:Static assets:Resources.All}"></Button>
-                <Button Command="{Binding NoneCommand}" Content="{x:Static assets:Resources.None}"></Button>
-                <Button Command="{Binding DoneCommand}" Content="{x:Static assets:Resources.Done}"></Button>
-                <Button Command="{Binding OpenCommand}" Content="{x:Static assets:Resources.Open}"></Button>
-                <Button Command="{Binding LocateCommand}" Content="{x:Static assets:Resources.Locate}"></Button>
-            </StackPanel>
+                <Button DockPanel.Dock="Top" Command="{Binding AllCommand}" Content="{x:Static assets:Resources.All}"></Button>
+                <Button DockPanel.Dock="Top" Command="{Binding NoneCommand}" Content="{x:Static assets:Resources.None}"></Button>
+                <Button DockPanel.Dock="Top" Command="{Binding DoneCommand}" Content="{x:Static assets:Resources.Done}"></Button>
+                <Button DockPanel.Dock="Bottom" Command="{Binding OpenCommand}" Content="{x:Static assets:Resources.Open}"></Button>
+                <Button DockPanel.Dock="Bottom" Command="{Binding LocateCommand}" Content="{x:Static assets:Resources.Locate}"></Button>
+            </DockPanel>
             <Image HorizontalAlignment="Left" Source="{Binding ImageToDisplay}" Grid.Row="3" Grid.Column="0"
                    Grid.ColumnSpan="2">
             </Image>

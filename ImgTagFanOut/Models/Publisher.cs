@@ -16,16 +16,16 @@ public class Publisher
             Directory.CreateDirectory(targetFolder);
         }
 
-        using (ImgTagFanOutDbContext imgTagFanOutDbContext = RepositoryFactory.GetRepo(out ITagRepository? tagRepository, workingFolder))
+        await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(workingFolder))
         {
-            foreach (Tag tag in tagRepository.GetAllTag())
+            foreach (Tag tag in unitOfWork.TagRepository.GetAllTag())
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
                     break;
                 }
                 
-                ImmutableList<string> itemsInDb = tagRepository.GetItemsWithTag(tag);
+                ImmutableList<string> itemsInDb = unitOfWork.TagRepository.GetItemsWithTag(tag);
 
                 if (itemsInDb.Count == 0)
                 {

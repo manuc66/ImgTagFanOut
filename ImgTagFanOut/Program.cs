@@ -3,6 +3,7 @@ using Avalonia.ReactiveUI;
 using System;
 using System.IO;
 using System.Reflection;
+using Avalonia.Dialogs;
 
 namespace ImgTagFanOut;
 
@@ -19,6 +20,10 @@ class Program
     public static AppBuilder BuildAvaloniaApp() =>
         AppBuilder.Configure<App>()
             .UsePlatformDetect()
+            .With(new X11PlatformOptions
+            {
+                UseDBusFilePicker = false // to disable FreeDesktop file picker
+            })
             .WithInterFont()
             .LogToTrace()
             .UseReactiveUI();

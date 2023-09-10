@@ -22,6 +22,8 @@ namespace ImgTagFanOut.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
+    private const string TargetFolderSettingKey = "target_folder";
+    private const string ShowDoneSettingKey = "show_done";
     private string? _workingFolder;
     private string? _targetFolder;
     private CanHaveTag? _selectedImage;
@@ -34,6 +36,7 @@ public class MainWindowViewModel : ViewModelBase
     private List<SelectableTag> _filteredTagList;
 
     private bool _hideDone;
+    private bool _showDone;
     private readonly SourceList<CanHaveTag> _images = new();
     private int _selectedIndex;
     private readonly Settings _settings;
@@ -86,13 +89,13 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _noPreviewToDisplay, value);
     }
 
-    public String? TagFilterInput
+    public string? TagFilterInput
     {
         get => _tagFilterInput;
         set => this.RaiseAndSetIfChanged(ref _tagFilterInput, value);
     }
 
-    public String? ItemFilterInput
+    public string? ItemFilterInput
     {
         get => _itemFilterInput;
         set => this.RaiseAndSetIfChanged(ref _itemFilterInput, value);
@@ -106,8 +109,8 @@ public class MainWindowViewModel : ViewModelBase
 
     public bool ShowDone
     {
-        get => !_hideDone;
-        set => this.RaiseAndSetIfChanged(ref _hideDone, !value);
+        get => _showDone;
+        set { this.RaiseAndSetIfChanged(ref _showDone, value); }
     }
 
     public int SelectedIndex
@@ -115,7 +118,6 @@ public class MainWindowViewModel : ViewModelBase
         get => _selectedIndex;
         set => this.RaiseAndSetIfChanged(ref _selectedIndex, value);
     }
-
 
     public ReactiveCommand<Window, string> SelectFolderCommand { get; }
     public ReactiveCommand<Window, string> SelectTargetFolderCommand { get; }
@@ -135,18 +137,24 @@ public class MainWindowViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> OpenCommand { get; }
     public ReactiveCommand<Unit, Unit> LocateCommand { get; }
 
-
     public MainWindowViewModel()
     {
         _settings = new();
-        WorkingFolder = _settings.ReadSettings().LastFolder;
+        WorkingFolder = "";
         TagList = new ObservableCollection<Tag>();
-        using (ImgTagFanOutDbContext imgTagFanOutDbContext = RepositoryFactory.GetRepo(out ITagRepository tagRepository))
-        {
-            imgTagFanOutDbContext.Database.EnsureCreated();
-            imgTagFanOutDbContext.SaveChanges();
-            ReloadTagList(tagRepository);
-        }
+
+        this.WhenAnyValue(x => x.ShowDone)
+            .SelectMany(async x =>
+            {
+                await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder))
+                {
+                    unitOfWork.ParameterRepository.Update(ShowDoneSettingKey, x.ToString());
+                    unitOfWork.SaveChanges();
+                }
+
+                return x;
+            })
+            .Subscribe(x => { HideDone = !x; });
 
         NoPreviewToDisplay = LoadNoPreviewToDisplay();
         this.WhenAnyValue(x => x.ImageToDisplay, x => x.SelectedImage).Subscribe(x =>
@@ -166,12 +174,12 @@ public class MainWindowViewModel : ViewModelBase
 
         _filteredTagList = new List<SelectableTag>();
         HideDone = true;
-        TagFilterInput = String.Empty;
+        TagFilterInput = string.Empty;
 
 
         _images.Connect()
             .AutoRefresh(x => x.Done)
-            .Filter(this.WhenValueChanged(@this => @this.HideDone)
+            .Filter(this.WhenAnyValue(@this => @this.HideDone)
                 .Select(CreateFilterForDone))
             .Filter(this.WhenValueChanged(@this => @this.ItemFilterInput)
                 .Select(CreateFilterForItemFilterInput))
@@ -179,7 +187,7 @@ public class MainWindowViewModel : ViewModelBase
             .Bind(out _filteredImages)
             .Subscribe();
 
-        DoneCommand = ReactiveCommand.Create(() =>
+        DoneCommand = ReactiveCommand.CreateFromTask(async () =>
         {
             if (SelectedImage == null)
             {
@@ -187,10 +195,10 @@ public class MainWindowViewModel : ViewModelBase
             }
 
             int selectedIndex = SelectedIndex;
-            using (ImgTagFanOutDbContext imgTagFanOutDbContext = RepositoryFactory.GetRepo(out ITagRepository tagRepository, WorkingFolder))
+            await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder))
             {
-                tagRepository.MarkDone(SelectedImage);
-                imgTagFanOutDbContext.SaveChanges();
+                unitOfWork.TagRepository.MarkDone(SelectedImage);
+                unitOfWork.SaveChanges();
             }
 
             SelectedIndex = Math.Min(selectedIndex, FilteredImages.Count - 1);
@@ -204,15 +212,8 @@ public class MainWindowViewModel : ViewModelBase
                 .TakeUntil(CancelScanCommand!), this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)));
 
         SelectFolderCommand = ReactiveCommand.CreateFromTask<Window, string>(SelectFolder, ScanFolderCommand.IsExecuting.Select(x => !x));
-        SelectFolderCommand.Subscribe(path =>
-        {
-            WorkingFolder = path;
-            using (ImgTagFanOutDbContext imgTagFanOutDbContext = RepositoryFactory.GetRepo(out ITagRepository tagRepository, path))
-            {
-                imgTagFanOutDbContext.Database.EnsureCreated();
-                ReloadTagList(tagRepository);
-            }
-        });
+        SelectFolderCommand.SelectMany(OpenFolder)
+            .Subscribe(x => WorkingFolder = x);
         CancelScanCommand = ReactiveCommand.Create(
             () => { },
             ScanFolderCommand.IsExecuting);
@@ -225,103 +226,99 @@ public class MainWindowViewModel : ViewModelBase
                 .TakeUntil(CancelScanCommand), this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)));
 
 
-        AllCommand = ReactiveCommand.Create(
-            () =>
+        AllCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 if (SelectedImage == null)
                 {
                     return;
                 }
 
-                AssignAllTags(SelectedImage, TagList);
+                await AssignAllTags(SelectedImage, TagList);
             },
             this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
-        NoneCommand = ReactiveCommand.Create(
-            () =>
+        NoneCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 if (SelectedImage == null)
                 {
                     return;
                 }
 
-                using (ImgTagFanOutDbContext imgTagFanOutDbContext = RepositoryFactory.GetRepo(out ITagRepository tagRepository, WorkingFolder))
+                await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder))
                 {
                     foreach (Tag selectedImageTag in SelectedImage.Tags.ToImmutableList())
                     {
-                        tagRepository.RemoveTagToItem(selectedImageTag, SelectedImage);
+                        unitOfWork.TagRepository.RemoveTagToItem(selectedImageTag, SelectedImage);
                     }
 
-                    imgTagFanOutDbContext.SaveChanges();
+                    unitOfWork.SaveChanges();
                 }
 
                 RefreshTagIsSelected();
             },
             this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
 
-        AddToTagListCommand = ReactiveCommand.Create(() =>
+        AddToTagListCommand = ReactiveCommand.CreateFromTask(async () =>
         {
-            using (ImgTagFanOutDbContext imgTagFanOutDbContext = RepositoryFactory.GetRepo(out ITagRepository tagRepository, WorkingFolder))
+            await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder);
+            if (unitOfWork.TagRepository.TryCreateTag(TagFilterInput, out Tag? newTag))
             {
-                if (tagRepository.TryCreateTag(TagFilterInput, out Tag? newTag))
-                {
-                    TagList.Add(newTag);
-                }
-
-                imgTagFanOutDbContext.SaveChanges();
+                TagList.Add(newTag);
             }
+
+            unitOfWork.SaveChanges();
         }, this.WhenAnyValue(x => x.TagFilterInput)
             .CombineLatest(TagList
                     .ToObservableChangeSet(x => x)
                     .ToCollection()
                     .Prepend(new ReadOnlyCollection<Tag>(new List<Tag>())),
                 (tagFilterInput, tagList) => !string.IsNullOrWhiteSpace(tagFilterInput) && !tagList.Any(tag => tag.Same(tagFilterInput))));
-        ClearTagFilterInputCommand = ReactiveCommand.Create(() => { TagFilterInput = String.Empty; },
+        ClearTagFilterInputCommand = ReactiveCommand.Create(() => { TagFilterInput = string.Empty; },
             this.WhenAnyValue(x => x.TagFilterInput).Select(x => !string.IsNullOrWhiteSpace(x)));
 
-        ClearItemFilterInputCommand = ReactiveCommand.Create(() => { ItemFilterInput = String.Empty; },
+        ClearItemFilterInputCommand = ReactiveCommand.Create(() => { ItemFilterInput = string.Empty; },
             this.WhenAnyValue(x => x.ItemFilterInput).Select(x => !string.IsNullOrWhiteSpace(x)));
 
-        ToggleAssignTagToImageCommand = ReactiveCommand.Create((Tag s) =>
+        ToggleAssignTagToImageCommand = ReactiveCommand.CreateFromTask(async (Tag s) =>
         {
-            using (ImgTagFanOutDbContext imgTagFanOutDbContext = RepositoryFactory.GetRepo(out ITagRepository tagRepository, WorkingFolder))
+            await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder))
             {
                 if (SelectedImage != null)
                 {
-                    tagRepository.ToggleToItem(s, SelectedImage);
+                    unitOfWork.TagRepository.ToggleToItem(s, SelectedImage);
                 }
 
-                imgTagFanOutDbContext.SaveChanges();
+                unitOfWork.SaveChanges();
             }
 
             RefreshTagIsSelected();
         }, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
 
-        RemoveTagToImageCommand = ReactiveCommand.Create((Tag tag) =>
+        RemoveTagToImageCommand = ReactiveCommand.CreateFromTask(async (Tag tag) =>
         {
             if (SelectedImage == null)
             {
                 return;
             }
 
-            using (ImgTagFanOutDbContext imgTagFanOutDbContext = RepositoryFactory.GetRepo(out ITagRepository tagRepository, WorkingFolder))
+            await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder))
             {
-                tagRepository.RemoveTagToItem(tag, SelectedImage);
+                unitOfWork.TagRepository.RemoveTagToItem(tag, SelectedImage);
 
-                imgTagFanOutDbContext.SaveChanges();
+                unitOfWork.SaveChanges();
             }
 
             RefreshTagIsSelected();
         });
 
-        DeleteTagCommand = ReactiveCommand.Create((SelectableTag s) =>
+        DeleteTagCommand = ReactiveCommand.CreateFromTask(async (SelectableTag s) =>
         {
-            using (ImgTagFanOutDbContext imgTagFanOutDbContext = RepositoryFactory.GetRepo(out ITagRepository tagRepository, WorkingFolder))
+            await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder))
             {
-                tagRepository.DeleteTag(s.Tag);
+                unitOfWork.TagRepository.DeleteTag(s.Tag);
 
                 TagList.Remove(s.Tag);
 
-                imgTagFanOutDbContext.SaveChanges();
+                unitOfWork.SaveChanges();
             }
 
             foreach (CanHaveTag item in _images.Items)
@@ -363,10 +360,8 @@ public class MainWindowViewModel : ViewModelBase
                 {
                     try
                     {
-                        using (FileStream fs = new(fullFilePath, FileMode.Open, FileAccess.Read))
-                        {
-                            ImageToDisplay = new Bitmap(fs);
-                        }
+                        using FileStream fs = new(fullFilePath, FileMode.Open, FileAccess.Read);
+                        ImageToDisplay = new Bitmap(fs);
                     }
                     catch (Exception e)
                     {
@@ -386,6 +381,18 @@ public class MainWindowViewModel : ViewModelBase
             });
     }
 
+    private async Task<string> OpenFolder(string path)
+    {
+        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(path);
+
+        TargetFolder = unitOfWork.ParameterRepository.Get(TargetFolderSettingKey);
+        ShowDone = Boolean.Parse(unitOfWork.ParameterRepository.Get(ShowDoneSettingKey) ?? false.ToString());
+
+        ReloadTagList(unitOfWork.TagRepository);
+
+        return path;
+    }
+
     private void RefreshTagIsSelected()
     {
         foreach (SelectableTag selectableTag in FilteredTagList)
@@ -394,16 +401,16 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private void AssignAllTags(CanHaveTag selectedImage, IEnumerable<Tag> allTags)
+    private async Task AssignAllTags(CanHaveTag selectedImage, IEnumerable<Tag> allTags)
     {
-        using (ImgTagFanOutDbContext imgTagFanOutDbContext = RepositoryFactory.GetRepo(out ITagRepository tagRepository, WorkingFolder))
+        await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder))
         {
             foreach (Tag selectedImageTag in allTags)
             {
-                tagRepository.AddTagToItem(selectedImageTag, selectedImage);
+                unitOfWork.TagRepository.AddTagToItem(selectedImageTag, selectedImage);
             }
 
-            imgTagFanOutDbContext.SaveChanges();
+            await unitOfWork.SaveChangesAsync();
         }
 
         RefreshTagIsSelected();
@@ -450,34 +457,46 @@ public class MainWindowViewModel : ViewModelBase
 
     private void ReloadTagList(ITagRepository tagRepository)
     {
-        RepositoryFactory.ClearTagCache();
+        DbContextFactory.ClearTagCache();
         TagList.Clear();
         TagList.AddRange(tagRepository.GetAllTag());
     }
 
     private async Task<string> SelectFolder(Window window)
     {
-        string selectedFolder = await SelectAFolder(window, "Select source folder", WorkingFolder);
+        string? lastFolder = _settings.ReadSettings().LastFolder;
+
+        string selectedFolder = await SelectAFolder(window, "Select source folder", lastFolder);
 
         AppSettings appSettings = _settings.ReadSettings();
         appSettings.LastFolder = selectedFolder;
         _settings.Save(appSettings);
 
         WorkingFolder = selectedFolder;
+
+
         return selectedFolder;
     }
 
     private async Task<string> SelectTargetFolder(Window window)
     {
         string selectedFolder = await SelectAFolder(window, "Select an export folder", TargetFolder);
+
         TargetFolder = selectedFolder;
+
+        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder);
+
+        unitOfWork.ParameterRepository.Update(TargetFolderSettingKey, selectedFolder);
+
+        await unitOfWork.SaveChangesAsync();
+
         return selectedFolder;
     }
 
     private static async Task<string> SelectAFolder(Window window, string selectAnExportFolder, string? previousFolder)
     {
         FolderPickerOpenOptions folderPickerOptions = new()
-            { AllowMultiple = false, Title = selectAnExportFolder, SuggestedStartLocation = await window.StorageProvider.TryGetFolderFromPathAsync(previousFolder ?? String.Empty) };
+            { AllowMultiple = false, Title = selectAnExportFolder, SuggestedStartLocation = await window.StorageProvider.TryGetFolderFromPathAsync(previousFolder ?? string.Empty) };
         IReadOnlyList<IStorageFolder> folders = await window.StorageProvider.OpenFolderPickerAsync(folderPickerOptions);
 
         if (folders.Count == 0)
@@ -491,7 +510,7 @@ public class MainWindowViewModel : ViewModelBase
             return tryGetLocalPath;
         }
 
-        return previousFolder ?? String.Empty;
+        return previousFolder ?? string.Empty;
     }
 
     private Func<CanHaveTag, bool> CreateFilterForDone(bool arg) => arg ? item => !item.Done : _ => true;

@@ -4,7 +4,7 @@ using ImgTagFanOut.ViewModels;
 
 namespace ImgTagFanOut.Dao;
 
-internal interface ITagRepository
+public interface ITagRepository
 {
     bool TryCreateTag(string tagName, [MaybeNullWhen(false)] out Tag newTag);
     ImmutableList<Tag> GetAllTag();
