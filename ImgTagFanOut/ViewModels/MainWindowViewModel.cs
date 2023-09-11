@@ -350,33 +350,43 @@ public class MainWindowViewModel : ViewModelBase
             .Where(x => !string.IsNullOrWhiteSpace(x?.Item))
             .Throttle(TimeSpan.FromMilliseconds(10))
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(x =>
+            .SelectMany(async x =>
             {
+                await Task.CompletedTask;
+
                 if (WorkingFolder == null || x == null)
                 {
-                    return;
+                    return null;
                 }
 
-                Bitmap? previous = ImageToDisplay;
+                Bitmap result;
+
                 string fullFilePath = Path.Combine(WorkingFolder, x.Item);
 
                 if (File.Exists(fullFilePath))
                 {
                     try
                     {
-                        using FileStream fs = new(fullFilePath, FileMode.Open, FileAccess.Read);
-                        ImageToDisplay = new Bitmap(fs);
+                        await using FileStream fs = new(fullFilePath, FileMode.Open, FileAccess.Read);
+                        result = await Task.Run(() => Bitmap.DecodeToWidth(fs, 400));
+                        return result;
                     }
                     catch (Exception e)
                     {
                         Console.WriteLine(e);
-                        ImageToDisplay = NoPreviewToDisplay;
+                        return null;
                     }
                 }
                 else
                 {
-                    ImageToDisplay = NoPreviewToDisplay;
+                    return null;
                 }
+            })
+            .Subscribe(x =>
+            {
+                Bitmap? previous = ImageToDisplay;
+
+                ImageToDisplay = x ?? NoPreviewToDisplay;
 
                 if (previous != NoPreviewToDisplay)
                 {
