@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using ImgTagFanOut.Dao;
+using ImgTagFanOut.Models.CompareAlgorithms;
 using ImgTagFanOut.ViewModels;
 
 namespace ImgTagFanOut.Models;
@@ -24,7 +25,7 @@ public class Publisher
                 {
                     break;
                 }
-                
+
                 ImmutableList<string> itemsInDb = unitOfWork.TagRepository.GetItemsWithTag(tag);
 
                 if (itemsInDb.Count == 0)
@@ -40,29 +41,52 @@ public class Publisher
 
                 foreach (string itemInDb in itemsInDb)
                 {
-                    string itemFullPath = Path.Combine(workingFolder, itemInDb);
-
-                    string fileName = Path.GetFileName(itemFullPath);
-
-                    if (File.Exists(itemFullPath))
-                    {
-                        string destFileName = Path.Combine(targetDirectoryForTag, fileName);
-                        if (!File.Exists(destFileName))
-                        {
-                           await CopyFileAsync(itemFullPath, destFileName, cancellationToken);
-                        }
-                        else
-                        {
-                            // todo: check if source and target are the same in this case do nothing otherwise rename the file
-                        }
-                    }
-                    else
-                    {
-                        // skip, the source file is not found, this could be a warning!
-                    }
+                    await PublishFile(cancellationToken, workingFolder, itemInDb, targetDirectoryForTag);
                 }
             }
         }
+    }
+
+    private static async Task PublishFile(CancellationToken cancellationToken, string workingFolder, string itemInDb, string targetDirectoryForTag)
+    {
+        string itemFullPath = Path.Combine(workingFolder, itemInDb);
+
+        string fileName = Path.GetFileName(itemFullPath);
+
+        if (!File.Exists(itemFullPath))
+        {
+            // skip, the source file is not found, this could be a warning!
+            return;
+        }
+
+        string destFileName = Path.Combine(targetDirectoryForTag, fileName);
+        if (File.Exists(destFileName))
+        {
+            FileInfo itemFullPathFi = new(itemFullPath);
+            FileInfo destFileNameFi = new(destFileName);
+            if (FileExt.FilesAreEqual(itemFullPathFi, destFileNameFi))
+            {
+                // skip, the source file is the same as the target
+                return;
+            }
+
+            string fileExtension = Path.GetExtension(fileName);
+            string nameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+            int num = 0;
+            do
+            {
+                num++;
+                destFileName = Path.Combine(targetDirectoryForTag, nameWithoutExtension + " (" + num + ")" + fileExtension);
+                destFileNameFi = new(destFileName);
+                if (destFileNameFi.Exists && FileExt.FilesAreEqual(itemFullPathFi, destFileNameFi))
+                {
+                    // skip, the source file is the same as the target, so already copied
+                    return;
+                }
+            } while (File.Exists(destFileName));
+        }
+
+        await CopyFileAsync(itemFullPath, destFileName, cancellationToken);
     }
 
     private static async Task CopyFileAsync(string sourceFile, string destinationFile, CancellationToken cancellationToken)
@@ -71,7 +95,7 @@ public class Publisher
         await using (FileStream sourceStream = new(sourceFile, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan))
         await using (FileStream destinationStream = new(destinationFile, FileMode.CreateNew, FileAccess.Write, FileShare.None, bufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan))
             await sourceStream.CopyToAsync(destinationStream, cancellationToken);
-        
+
         File.SetLastWriteTime(destinationFile, File.GetLastWriteTime(sourceFile));
     }
 }
