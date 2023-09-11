@@ -165,9 +165,27 @@ namespace ImgTagFanOut.Resources {
             }
         }
         
-        public static string t {
+        public static string Close {
             get {
-                return ResourceManager.GetString("t", resourceCulture);
+                return ResourceManager.GetString("Close", resourceCulture);
+            }
+        }
+        
+        public static string NotFoundSkipped {
+            get {
+                return ResourceManager.GetString("NotFoundSkipped", resourceCulture);
+            }
+        }
+        
+        public static string AlreadyAt {
+            get {
+                return ResourceManager.GetString("AlreadyAt", resourceCulture);
+            }
+        }
+        
+        public static string CopiedTo {
+            get {
+                return ResourceManager.GetString("CopiedTo", resourceCulture);
             }
         }
     }

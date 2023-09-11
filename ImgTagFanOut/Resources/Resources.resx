@@ -78,7 +78,16 @@
     <data name="SelectWorkingFolder" xml:space="preserve">
         <value>Select the working folder</value>
     </data>
-    <data name="t" xml:space="preserve">
-        <value />
+    <data name="Close" xml:space="preserve">
+        <value>Close</value>
+    </data>
+    <data name="NotFoundSkipped" xml:space="preserve">
+        <value>not found, file skipped</value>
+    </data>
+    <data name="AlreadyAt" xml:space="preserve">
+        <value>already at</value>
+    </data>
+    <data name="CopiedTo" xml:space="preserve">
+        <value>copied to</value>
     </data>
 </root>

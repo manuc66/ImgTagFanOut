@@ -71,4 +71,16 @@
     <data name="SelectWorkingFolder" xml:space="preserve">
         <value>Sélectionner un dossier de travail</value>
     </data>
+    <data name="Close" xml:space="preserve">
+        <value>Fermer</value>
+    </data>
+    <data name="NotFoundSkipped" xml:space="preserve">
+        <value>non trouvé, fichier ignoré</value>
+    </data>
+    <data name="AlreadyAt" xml:space="preserve">
+        <value>déjà à l'emplacement</value>
+    </data>
+    <data name="CopiedTo" xml:space="preserve">
+        <value>copié vers</value>
+    </data>
 </root>

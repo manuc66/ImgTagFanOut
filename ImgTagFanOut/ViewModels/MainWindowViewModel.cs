@@ -123,7 +123,7 @@ public class MainWindowViewModel : ViewModelBase
     public ReactiveCommand<Window, string?> SelectTargetFolderCommand { get; }
 
     public ReactiveCommand<Unit, Unit> ScanFolderCommand { get; }
-    public ReactiveCommand<Unit, Unit> PublishCommand { get; }
+    public ReactiveCommand<Window, Unit> PublishCommand { get; }
     public ReactiveCommand<Unit, Unit> CancelScanCommand { get; }
     public ReactiveCommand<Tag, Unit> ToggleAssignTagToImageCommand { get; }
     public ReactiveCommand<Tag, Unit> RemoveTagToImageCommand { get; }
@@ -137,8 +137,12 @@ public class MainWindowViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> OpenCommand { get; }
     public ReactiveCommand<Unit, Unit> LocateCommand { get; }
 
+
+    public Interaction<PublishProgressViewModel, int?> ShowDialog { get; }
+
     public MainWindowViewModel()
     {
+        ShowDialog = new Interaction<PublishProgressViewModel, int?>();
         _settings = new();
         WorkingFolder = "";
         TagList = new ObservableCollection<Tag>();
@@ -221,8 +225,8 @@ public class MainWindowViewModel : ViewModelBase
         SelectTargetFolderCommand = ReactiveCommand.CreateFromTask<Window, string?>(SelectTargetFolder, ScanFolderCommand.IsExecuting.Select(x => !x));
 
         PublishCommand = ReactiveCommand.CreateFromObservable(
-            () => Observable
-                .StartAsync(PublishToFolder, RxApp.TaskpoolScheduler)
+            (Window window) => Observable
+                .StartAsync(cts => PublishToFolder(cts), RxApp.TaskpoolScheduler)
                 .TakeUntil(CancelScanCommand), this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)));
 
 
@@ -407,7 +411,7 @@ public class MainWindowViewModel : ViewModelBase
         {
             return;
         }
-        
+
         await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder))
         {
             foreach (Tag selectedImageTag in allTags)
@@ -471,7 +475,7 @@ public class MainWindowViewModel : ViewModelBase
     {
         string? lastFolder = _settings.ReadSettings().LastFolder;
 
-        string selectedFolder = await SelectAFolder(window, "Select source folder", lastFolder);
+        string selectedFolder = await SelectAFolder(window, Resources.Resources.SelectWorkingFolder, lastFolder);
 
         AppSettings appSettings = _settings.ReadSettings();
         appSettings.LastFolder = selectedFolder;
@@ -489,7 +493,7 @@ public class MainWindowViewModel : ViewModelBase
         {
             return null;
         }
-       
+
 
         string selectedFolder = await SelectAFolder(window, Resources.Resources.SelectExportFolder, TargetFolder);
 
@@ -552,6 +556,8 @@ public class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        await new Publisher().PublishToFolder(cancellationToken, WorkingFolder, TargetFolder);
+        PublishProgressViewModel store = new(WorkingFolder, TargetFolder, cancellationToken);
+
+        await ShowDialog.Handle(store);
     }
 }
