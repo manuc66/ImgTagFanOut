@@ -480,7 +480,13 @@ public class MainWindowViewModel : ViewModelBase
 
     private async Task<string> SelectTargetFolder(Window window)
     {
-        string selectedFolder = await SelectAFolder(window, "Select an export folder", TargetFolder);
+        if (WorkingFolder == null)
+        {
+            return null;
+        }
+       
+
+        string selectedFolder = await SelectAFolder(window, Resources.Resources.SelectExportFolder, TargetFolder);
 
         TargetFolder = selectedFolder;
 

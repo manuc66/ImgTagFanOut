@@ -3,7 +3,7 @@
         xmlns:vm="using:ImgTagFanOut.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:assets="clr-namespace:ImgTagFanOut.Assets"
+        xmlns:resources="clr-namespace:ImgTagFanOut.Resources"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="550"
         x:Class="ImgTagFanOut.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -37,14 +37,14 @@
             <TextBox Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch"
                      Text="{Binding Path=WorkingFolder}" />
             <Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch"
-                    Content="{x:Static assets:Resources.Browse}" Command="{Binding SelectFolderCommand}"
+                    Content="{x:Static resources:Resources.Browse}" Command="{Binding SelectFolderCommand}"
                     CommandParameter="{Binding $parent[Window]}" HorizontalAlignment="Right" />
 
-            <Button Grid.Row="0" Grid.Column="2" VerticalAlignment="Stretch" Content="{x:Static assets:Resources.Scan}"
+            <Button Grid.Row="0" Grid.Column="2" VerticalAlignment="Stretch" Content="{x:Static resources:Resources.Scan}"
                     Command="{Binding ScanFolderCommand}"
                     HorizontalAlignment="Right" />
             <Button Grid.Row="0" Grid.Column="3" VerticalAlignment="Stretch"
-                    Content="{x:Static assets:Resources.Cancel}" Command="{Binding CancelScanCommand}"
+                    Content="{x:Static resources:Resources.Cancel}" Command="{Binding CancelScanCommand}"
                     HorizontalAlignment="Right" />
         </Grid>
 
@@ -60,7 +60,7 @@
                 <RowDefinition Height="*"></RowDefinition>
             </Grid.RowDefinitions>
             <DockPanel Grid.Row="2" Grid.Column="0" LastChildFill="True">
-                <TextBlock DockPanel.Dock="Top" Text="{x:Static assets:Resources.Images}"></TextBlock>
+                <TextBlock DockPanel.Dock="Top" Text="{x:Static resources:Resources.Images}"></TextBlock>
                 <Grid DockPanel.Dock="Top">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"></ColumnDefinition>
@@ -68,10 +68,10 @@
                         <ColumnDefinition Width="Auto"></ColumnDefinition>
                         <ColumnDefinition Width="Auto"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="{x:Static assets:Resources.Filter}"></TextBlock>
+                    <TextBlock Grid.Column="0" Text="{x:Static resources:Resources.Filter}"></TextBlock>
                     <TextBox Grid.Column="1" Text="{Binding ItemFilterInput}"></TextBox>
                     <Button Grid.Column="2" Command="{Binding ClearItemFilterInputCommand}"
-                            Content="{x:Static assets:Resources.Clear}">
+                            Content="{x:Static resources:Resources.Clear}">
                     </Button>
                 </Grid>
                 <ListBox DockPanel.Dock="Bottom" SelectedIndex="{Binding SelectedIndex}"
@@ -87,15 +87,15 @@
 
 
             <DockPanel Grid.Row="2" Grid.Column="1" LastChildFill="False">
-                <ToggleSwitch DockPanel.Dock="Top" IsChecked="{Binding ShowDone}" Content="{x:Static assets:Resources.ShowDone}"
-                              OnContent="{x:Static assets:Resources.ShowDoneOn}"
-                              OffContent="{x:Static assets:Resources.ShowDoneOff}">
+                <ToggleSwitch DockPanel.Dock="Top" IsChecked="{Binding ShowDone}" Content="{x:Static resources:Resources.ShowDone}"
+                              OnContent="{x:Static resources:Resources.ShowDoneOn}"
+                              OffContent="{x:Static resources:Resources.ShowDoneOff}">
                 </ToggleSwitch>
-                <Button DockPanel.Dock="Top" Command="{Binding AllCommand}" Content="{x:Static assets:Resources.All}"></Button>
-                <Button DockPanel.Dock="Top" Command="{Binding NoneCommand}" Content="{x:Static assets:Resources.None}"></Button>
-                <Button DockPanel.Dock="Top" Command="{Binding DoneCommand}" Content="{x:Static assets:Resources.Done}"></Button>
-                <Button DockPanel.Dock="Bottom" Command="{Binding OpenCommand}" Content="{x:Static assets:Resources.Open}"></Button>
-                <Button DockPanel.Dock="Bottom" Command="{Binding LocateCommand}" Content="{x:Static assets:Resources.Locate}"></Button>
+                <Button DockPanel.Dock="Top" Command="{Binding AllCommand}" Content="{x:Static resources:Resources.All}"></Button>
+                <Button DockPanel.Dock="Top" Command="{Binding NoneCommand}" Content="{x:Static resources:Resources.None}"></Button>
+                <Button DockPanel.Dock="Top" Command="{Binding DoneCommand}" Content="{x:Static resources:Resources.Done}"></Button>
+                <Button DockPanel.Dock="Bottom" Command="{Binding OpenCommand}" Content="{x:Static resources:Resources.Open}"></Button>
+                <Button DockPanel.Dock="Bottom" Command="{Binding LocateCommand}" Content="{x:Static resources:Resources.Locate}"></Button>
             </DockPanel>
             <Image HorizontalAlignment="Left" Source="{Binding ImageToDisplay}" Grid.Row="3" Grid.Column="0"
                    Grid.ColumnSpan="2">
@@ -103,7 +103,7 @@
         </Grid>
 
         <DockPanel Grid.Row="1" Grid.Column="1" LastChildFill="True">
-            <TextBlock DockPanel.Dock="Top" Text="{x:Static assets:Resources.Tags}"></TextBlock>
+            <TextBlock DockPanel.Dock="Top" Text="{x:Static resources:Resources.Tags}"></TextBlock>
             <Grid DockPanel.Dock="Bottom">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"></RowDefinition>
@@ -118,13 +118,13 @@
                         <ColumnDefinition Width="Auto"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
                     
-                    <TextBlock Grid.Column="0" Text="{x:Static assets:Resources.Filter}"></TextBlock>
+                    <TextBlock Grid.Column="0" Text="{x:Static resources:Resources.Filter}"></TextBlock>
                     <TextBox Grid.Column="1" Text="{Binding TagFilterInput}"></TextBox>
                     <Button Grid.Column="2" Command="{Binding ClearTagFilterInputCommand}"
-                            Content="{x:Static assets:Resources.Clear}">
+                            Content="{x:Static resources:Resources.Clear}">
                     </Button>
                     <Button Command="{Binding AddToTagListCommand}" Grid.Column="3"
-                            Content="{x:Static assets:Resources.Add}">
+                            Content="{x:Static resources:Resources.Add}">
                     </Button>
                 </Grid>
 
@@ -143,7 +143,7 @@
                                               Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).ToggleAssignTagToImageCommand, DataType={x:Type vm:MainWindowViewModel}}">
                                     <ToggleButton.ContextMenu>
                                         <ContextMenu>
-                                            <MenuItem Header="{x:Static assets:Resources.Delete}"
+                                            <MenuItem Header="{x:Static resources:Resources.Delete}"
                                                       Command="{Binding ElementName=AllTagsComponent, Path=((vm:MainWindowViewModel)DataContext).DeleteTagCommand, DataType={x:Type vm:MainWindowViewModel}}"
                                                       CommandParameter="{Binding .}">
                                             </MenuItem>
@@ -185,11 +185,11 @@
             <TextBox Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch"
                      Text="{Binding Path=TargetFolder}" />
             <Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch"
-                    Content="{x:Static assets:Resources.Browse}" Command="{Binding SelectTargetFolderCommand}"
+                    Content="{x:Static resources:Resources.Browse}" Command="{Binding SelectTargetFolderCommand}"
                     CommandParameter="{Binding $parent[Window]}" HorizontalAlignment="Right" />
 
             <Button Grid.Row="0" Grid.Column="2" VerticalAlignment="Stretch"
-                    Content="{x:Static assets:Resources.Publish}" Command="{Binding PublishCommand}"
+                    Content="{x:Static resources:Resources.Publish}" Command="{Binding PublishCommand}"
                     HorizontalAlignment="Right" />
         </Grid>
     </Grid>

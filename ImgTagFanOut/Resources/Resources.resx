@@ -72,4 +72,13 @@
     <data name="Filter" xml:space="preserve">
         <value>Filter:</value>
     </data>
+    <data name="SelectExportFolder" xml:space="preserve">
+        <value>Select an export folder</value>
+    </data>
+    <data name="SelectWorkingFolder" xml:space="preserve">
+        <value>Select the working folder</value>
+    </data>
+    <data name="t" xml:space="preserve">
+        <value />
+    </data>
 </root>

@@ -65,4 +65,10 @@
     <data name="Filter" xml:space="preserve">
         <value>Filtre :</value>
     </data>
+    <data name="SelectExportFolder" xml:space="preserve">
+        <value>Sélectionner un dossier d'export</value>
+    </data>
+    <data name="SelectWorkingFolder" xml:space="preserve">
+        <value>Sélectionner un dossier de travail</value>
+    </data>
 </root>

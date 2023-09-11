@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ImgTagFanOut.Assets {
+namespace ImgTagFanOut.Resources {
     using System;
     
     
@@ -28,7 +28,7 @@ namespace ImgTagFanOut.Assets {
         public static System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.Equals(null, resourceMan)) {
-                    System.Resources.ResourceManager temp = new System.Resources.ResourceManager("ImgTagFanOut.Assets.Resources", typeof(Resources).Assembly);
+                    System.Resources.ResourceManager temp = new System.Resources.ResourceManager("ImgTagFanOut.Resources.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -150,6 +150,24 @@ namespace ImgTagFanOut.Assets {
         public static string Filter {
             get {
                 return ResourceManager.GetString("Filter", resourceCulture);
+            }
+        }
+        
+        public static string SelectExportFolder {
+            get {
+                return ResourceManager.GetString("SelectExportFolder", resourceCulture);
+            }
+        }
+        
+        public static string SelectWorkingFolder {
+            get {
+                return ResourceManager.GetString("SelectWorkingFolder", resourceCulture);
+            }
+        }
+        
+        public static string t {
+            get {
+                return ResourceManager.GetString("t", resourceCulture);
             }
         }
     }
