@@ -19,7 +19,7 @@ public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext, IUnitOfW
     {
     }
 
-    public ImgTagFanOutDbContext(TagCache tagCache, string? folder = ".")
+    public ImgTagFanOutDbContext(TagCache tagCache, string folder)
     {
         DbPath = System.IO.Path.Join(folder ?? ".", "ImgTagFanOut.db");
         TagRepository = new TagRepository(this, tagCache);

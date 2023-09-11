@@ -120,7 +120,7 @@ public class MainWindowViewModel : ViewModelBase
     }
 
     public ReactiveCommand<Window, string> SelectFolderCommand { get; }
-    public ReactiveCommand<Window, string> SelectTargetFolderCommand { get; }
+    public ReactiveCommand<Window, string?> SelectTargetFolderCommand { get; }
 
     public ReactiveCommand<Unit, Unit> ScanFolderCommand { get; }
     public ReactiveCommand<Unit, Unit> PublishCommand { get; }
@@ -218,7 +218,7 @@ public class MainWindowViewModel : ViewModelBase
             () => { },
             ScanFolderCommand.IsExecuting);
 
-        SelectTargetFolderCommand = ReactiveCommand.CreateFromTask<Window, string>(SelectTargetFolder, ScanFolderCommand.IsExecuting.Select(x => !x));
+        SelectTargetFolderCommand = ReactiveCommand.CreateFromTask<Window, string?>(SelectTargetFolder, ScanFolderCommand.IsExecuting.Select(x => !x));
 
         PublishCommand = ReactiveCommand.CreateFromObservable(
             () => Observable
@@ -403,6 +403,11 @@ public class MainWindowViewModel : ViewModelBase
 
     private async Task AssignAllTags(CanHaveTag selectedImage, IEnumerable<Tag> allTags)
     {
+        if (WorkingFolder == null)
+        {
+            return;
+        }
+        
         await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder))
         {
             foreach (Tag selectedImageTag in allTags)
@@ -478,7 +483,7 @@ public class MainWindowViewModel : ViewModelBase
         return selectedFolder;
     }
 
-    private async Task<string> SelectTargetFolder(Window window)
+    private async Task<string?> SelectTargetFolder(Window window)
     {
         if (WorkingFolder == null)
         {
