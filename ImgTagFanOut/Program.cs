@@ -30,8 +30,9 @@ class Program
                 {
                     // Tells which project in Sentry to send events to:
                     o.Dsn = "https://2fd61307fdf9b3a63804db34c9bc51eb@o4505868956860416.ingest.sentry.io/4505869112639488";
+                   
                     // When configuring for the first time, to see what the SDK is doing:
-                    o.Debug = true;
+                    //o.Debug = true;
                     
                     // This option is recommended. It enables Sentry's "Release Health" feature.
                     o.AutoSessionTracking = true;
