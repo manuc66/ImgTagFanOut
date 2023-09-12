@@ -9,7 +9,6 @@ using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -231,7 +230,7 @@ public class MainWindowViewModel : ViewModelBase
         SelectTargetFolderCommand = ReactiveCommand.CreateFromTask<Window, string?>(SelectTargetFolder, ScanFolderCommand.IsExecuting.Select(x => !x));
 
         PublishCommand = ReactiveCommand.CreateFromObservable(
-            (Window window) => Observable
+            (Window _) => Observable
                 .StartAsync(cts => PublishToFolder(cts), RxApp.TaskpoolScheduler)
                 .TakeUntil(CancelScanCommand), this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)));
 
@@ -407,15 +406,15 @@ public class MainWindowViewModel : ViewModelBase
             });
     }
 
-    private CancellationTokenSource currentHashLookup = new CancellationTokenSource();
+    private CancellationTokenSource _currentHashLookup = new();
 
     private void SearchForTagBasedOnFileHash(string fullFilePath, CanHaveTag canHaveTag)
     {
-        currentHashLookup.Cancel();
-        currentHashLookup = new CancellationTokenSource();
+        _currentHashLookup.Cancel();
+        _currentHashLookup = new CancellationTokenSource();
         RxApp.MainThreadScheduler.ScheduleAsync(async (_, ct) =>
         {
-            CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(ct, currentHashLookup.Token);
+            CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(ct, _currentHashLookup.Token);
             if (WorkingFolder == null || cts.IsCancellationRequested)
             {
                 return;
