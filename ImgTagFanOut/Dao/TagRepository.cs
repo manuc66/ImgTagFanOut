@@ -34,11 +34,21 @@ public class TagRepository : ITagRepository
         return false;
     }
 
-
-
     public ImmutableList<Tag> GetAllTag()
     {
         return _dbContext.Tags.Select(x => _tagCache.GetOrCreate(x)).ToImmutableList();
+    }
+
+    public ImmutableList<Tag> GetAllTagForHash(string hash)
+    {
+        ImmutableList<Tag> tags = _dbContext.ItemTags
+            .Include(x => x.Item)
+            .Include(x => x.Tag)
+            .Where(t => t.Item.Hash == hash)
+            .Select(t => t.Tag)
+            .Distinct()
+            .Select(x => _tagCache.GetOrCreate(x)).ToImmutableList();
+        return tags;
     }
 
     public void AddOrUpdateItem(CanHaveTag tagAssignation)
@@ -54,6 +64,10 @@ public class TagRepository : ITagRepository
                 tagAssignation.AddTag(_tagCache.GetOrCreate(itemTagDao.Tag));
             }
 
+            if (existingItem.Hash != null)
+            {
+                tagAssignation.Hash = existingItem.Hash;
+            }
             tagAssignation.Done = existingItem.Done;
         }
         else
@@ -70,7 +84,13 @@ public class TagRepository : ITagRepository
         ItemDao? existingItem = _dbContext.Items
             .Include(x => x.Tags)
             .FirstOrDefault(t => t.Name == tagAssignation.Item);
+        
         if (existingItem == null) return;
+
+        if (tagAssignation.Hash != null)
+        {
+            existingItem.Hash = tagAssignation.Hash;
+        }
 
         if (existingItem.Tags.Any(x => x.TagId == existingTag.TagId))
         {
@@ -105,7 +125,13 @@ public class TagRepository : ITagRepository
         ItemDao? existingItem = _dbContext.Items
             .Include(x => x.Tags)
             .FirstOrDefault(t => t.Name == tagAssignation.Item);
+        
         if (existingItem == null) return;
+        
+        if (tagAssignation.Hash != null)
+        {
+            existingItem.Hash = tagAssignation.Hash;
+        }
 
         existingItem.Tags.Remove(existingTag);
         existingTag.Items.Remove(existingItem);
@@ -134,13 +160,20 @@ public class TagRepository : ITagRepository
             .Include(x => x.Items)
             .Include(x => x.ItemTags)
             .FirstOrDefault(t => t.Name == tag.Name.Trim());
+        
         if (existingTag == null) return;
 
         ItemDao? existingItem = _dbContext.Items
             .Include(x => x.Tags)
             .Include(x => x.ItemTags)
             .FirstOrDefault(t => t.Name == tagAssignation.Item);
+       
         if (existingItem == null) return;
+
+        if (tagAssignation.Hash != null)
+        {
+            existingItem.Hash = tagAssignation.Hash;
+        }
 
         ItemTagDao? existingItemTag = _dbContext.ItemTags.FirstOrDefault(t => t.Item.Name == tagAssignation.Item && t.Tag.Name == tag.Name.Trim());
 
@@ -185,6 +218,11 @@ public class TagRepository : ITagRepository
         if (existingItem == null)
         {
             return;
+        }
+
+        if (tagAssignation.Hash != null)
+        {
+            existingItem.Hash = tagAssignation.Hash;
         }
 
         existingItem.Done = true;

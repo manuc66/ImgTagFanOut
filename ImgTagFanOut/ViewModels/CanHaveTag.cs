@@ -10,6 +10,8 @@ public class CanHaveTag : ViewModelBase
     private ObservableCollection<Tag> _tags = new();
     private bool _done;
 
+    public string? Hash { get; set; }
+
     public ObservableCollection<Tag> Tags
     {
         get => _tags;

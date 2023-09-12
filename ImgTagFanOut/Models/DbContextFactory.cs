@@ -11,7 +11,6 @@ public class DbContextFactory
     internal static async Task<IUnitOfWork> GetUnitOfWorkAsync(string path)
     {
         ImgTagFanOutDbContext imgTagFanOutDbContext = new(TagCache, path);
-        //await imgTagFanOutDbContext.Database.EnsureCreatedAsync();
         await imgTagFanOutDbContext.Database.MigrateAsync();
         return imgTagFanOutDbContext;
     }

@@ -81,4 +81,9 @@ class InMemoryTagRepository : ITagRepository
     {
         return new List<string>().ToImmutableList();
     }
+
+    public ImmutableList<Tag> GetAllTagForHash(string hash)
+    {
+        return new List<Tag>().ToImmutableList();
+    }
 }

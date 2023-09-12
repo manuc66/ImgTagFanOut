@@ -16,4 +16,5 @@ public interface ITagRepository
     void MarkDone(CanHaveTag tagAssignation);
     void DeleteTag(Tag tag);
     ImmutableList<string> GetItemsWithTag(Tag tag);
+    ImmutableList<Tag> GetAllTagForHash(string hash);
 }

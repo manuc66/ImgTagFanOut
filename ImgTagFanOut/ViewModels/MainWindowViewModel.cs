@@ -1,17 +1,21 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
+using Blake3;
 using DynamicData;
 using DynamicData.Binding;
 using ImgTagFanOut.Dao;
@@ -161,18 +165,20 @@ public class MainWindowViewModel : ViewModelBase
             .Subscribe(x => { HideDone = !x; });
 
         NoPreviewToDisplay = LoadNoPreviewToDisplay();
-        this.WhenAnyValue(x => x.ImageToDisplay, x => x.SelectedImage).Subscribe(x =>
-        {
-            if (x is { Item1: not null, Item2: not null }) return;
-            Bitmap? previous = ImageToDisplay;
-
-            ImageToDisplay = NoPreviewToDisplay;
-
-            if (previous != NoPreviewToDisplay)
+        this.WhenAnyValue(x => x.ImageToDisplay, x => x.SelectedImage)
+            .Throttle(TimeSpan.FromMilliseconds(50))
+            .Subscribe(x =>
             {
-                previous?.Dispose();
-            }
-        });
+                if (x is { Item1: not null, Item2: not null }) return;
+                Bitmap? previous = ImageToDisplay;
+
+                ImageToDisplay = NoPreviewToDisplay;
+
+                if (previous != NoPreviewToDisplay)
+                {
+                    previous?.Dispose();
+                }
+            });
 
         ImageToDisplay = NoPreviewToDisplay;
 
@@ -348,51 +354,118 @@ public class MainWindowViewModel : ViewModelBase
 
         this.WhenAnyValue(x => x.SelectedImage)
             .Where(x => !string.IsNullOrWhiteSpace(x?.Item))
-            .Throttle(TimeSpan.FromMilliseconds(10))
+            .Buffer(TimeSpan.FromMilliseconds(30))
+            .Where(x => x.Count > 0)
             .ObserveOn(RxApp.MainThreadScheduler)
             .SelectMany(async x =>
             {
-                await Task.CompletedTask;
-
-                if (WorkingFolder == null || x == null)
+                CanHaveTag? canHaveTag = x.LastOrDefault();
+                if (WorkingFolder == null || canHaveTag == null)
                 {
-                    return null;
+                    return (null, null);
                 }
 
-                Bitmap result;
-
-                string fullFilePath = Path.Combine(WorkingFolder, x.Item);
+                string fullFilePath = Path.Combine(WorkingFolder, canHaveTag.Item);
 
                 if (File.Exists(fullFilePath))
                 {
+                    SearchForTagBasedOnFileHash(fullFilePath, canHaveTag);
+
                     try
                     {
-                        await using FileStream fs = new(fullFilePath, FileMode.Open, FileAccess.Read);
-                        result = await Task.Run(() => Bitmap.DecodeToWidth(fs, 400));
-                        return result;
+                        await using FileStream fs = File.OpenRead(fullFilePath);
+                        Bitmap result = Bitmap.DecodeToWidth(fs, 400, BitmapInterpolationMode.MediumQuality);
+                        return ((CanHaveTag?)canHaveTag, (Bitmap?)result);
                     }
                     catch (Exception e)
                     {
                         Console.WriteLine(e);
-                        return null;
+                        return ((CanHaveTag?)canHaveTag, null);
                     }
                 }
                 else
                 {
-                    return null;
+                    return ((CanHaveTag?)canHaveTag, null);
                 }
             })
             .Subscribe(x =>
             {
+                if (SelectedImage != x.Item1)
+                {
+                    x.Item2?.Dispose();
+                    return;
+                }
+
                 Bitmap? previous = ImageToDisplay;
 
-                ImageToDisplay = x ?? NoPreviewToDisplay;
+                ImageToDisplay = x.Item2 ?? NoPreviewToDisplay;
 
                 if (previous != NoPreviewToDisplay)
                 {
                     previous?.Dispose();
                 }
             });
+    }
+
+    private CancellationTokenSource currentHashLookup = new CancellationTokenSource();
+
+    private void SearchForTagBasedOnFileHash(string fullFilePath, CanHaveTag canHaveTag)
+    {
+        currentHashLookup.Cancel();
+        currentHashLookup = new CancellationTokenSource();
+        RxApp.MainThreadScheduler.ScheduleAsync(async (_, ct) =>
+        {
+            CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(ct, currentHashLookup.Token);
+            if (WorkingFolder == null || cts.IsCancellationRequested)
+            {
+                return;
+            }
+
+            CanHaveTag computeHashAsync = await ComputeHashAsync(fullFilePath, canHaveTag, cts.Token);
+            if (computeHashAsync != SelectedImage || computeHashAsync.Hash == null || SelectedImage.Done || cts.IsCancellationRequested)
+            {
+                return;
+            }
+
+            ImmutableList<Tag> allTagForHash;
+            await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder))
+            {
+                allTagForHash = unitOfWork.TagRepository.GetAllTagForHash(computeHashAsync.Hash);
+            }
+
+            if (computeHashAsync != SelectedImage || cts.IsCancellationRequested)
+            {
+                return;
+            }
+
+            await AssignAllTags(SelectedImage, allTagForHash);
+        });
+    }
+
+    async Task<CanHaveTag> ComputeHashAsync(string filePath, CanHaveTag toUpdate, CancellationToken ctsToken)
+    {
+        using Hasher hasher = Hasher.New();
+        await using FileStream fs = File.OpenRead(filePath);
+        ArrayPool<byte> sharedArrayPool = ArrayPool<byte>.Shared;
+        byte[] buffer = sharedArrayPool.Rent(131072);
+        Array.Fill<byte>(buffer, 0);
+        try
+        {
+            for (int read; (read = await fs.ReadAsync(buffer, ctsToken)) != 0;)
+            {
+                hasher.Update(buffer.AsSpan(start: 0, read));
+            }
+
+            Hash hash = hasher.Finalize();
+
+            toUpdate.Hash = hash.ToString();
+        }
+        finally
+        {
+            sharedArrayPool.Return(buffer);
+        }
+
+        return toUpdate;
     }
 
     private async Task<string> OpenFolder(string path)

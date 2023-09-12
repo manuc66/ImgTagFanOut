@@ -7,9 +7,9 @@ public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext, IUnitOfW
     private string DbPath { get; }
 
     public DbSet<TagDao> Tags { get; set; } = null!;
-    public DbSet<ItemDao> Items { get; set; }= null!;
-    public DbSet<ItemTagDao> ItemTags { get; set; }= null!;
-    public DbSet<ParameterDao> Parameters { get; set; }= null!;
+    public DbSet<ItemDao> Items { get; set; } = null!;
+    public DbSet<ItemTagDao> ItemTags { get; set; } = null!;
+    public DbSet<ParameterDao> Parameters { get; set; } = null!;
     public ITagRepository TagRepository { get; }
     public IParameterRepository ParameterRepository { get; }
 
@@ -39,6 +39,9 @@ public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext, IUnitOfW
             .HasIndex(b => new { b.Name })
             .IsUnique()
             .IsDescending();
+
+        modelBuilder.Entity<ItemDao>()
+            .HasIndex(b => new { b.Hash });
 
         modelBuilder.Entity<ItemDao>().HasKey(x => x.ItemId);
         modelBuilder.Entity<ItemDao>().Property(x => x.ItemId)
@@ -77,7 +80,7 @@ public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext, IUnitOfW
         // Parameters
         modelBuilder.Entity<ParameterDao>()
             .ToTable("parameters");
-        
+
         modelBuilder.Entity<ParameterDao>()
             .HasIndex(b => new { b.Name })
             .IsUnique()
