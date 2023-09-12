@@ -1,6 +1,8 @@
-# ImgTagFanOut
 
-ImgTagFanOut is a versatile image tagging and organization tool designed to simplify the process of categorizing and distributing your image collection. With ImgTagFanOut, you can effortlessly tag your images and automatically organize them into subdirectories based on these tags. This makes it easy to share specific sets of images with individuals or groups, ensuring everyone gets the pictures that matter most to them.
+
+#   ImgTagFanOut
+
+<img src="ImgTagFanOut/Assets/logo.ico" width="100" height="100" hspace="20" align="left" > ImgTagFanOut is a versatile image tagging and organization tool designed to simplify the process of categorizing and distributing your image collection. With ImgTagFanOut, you can effortlessly tag your images and automatically organize them into subdirectories based on these tags. This makes it easy to share specific sets of images with individuals or groups, ensuring everyone gets the pictures that matter most to them.
 
 ## Features
 
