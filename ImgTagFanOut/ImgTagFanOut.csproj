@@ -43,6 +43,9 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Sentry" Version="3.39.1" />
+        <PackageReference Include="Sentry.Extensions.Logging" Version="3.39.1" />
+        <PackageReference Include="Sentry.Serilog" Version="3.39.1" />
+        <PackageReference Include="Splat.Serilog" Version="14.7.1" />
         <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.6" />
         <PackageReference Include="SQLitePCLRaw.core" Version="2.1.6" />
         <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.6" />
