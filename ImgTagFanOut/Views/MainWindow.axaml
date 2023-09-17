@@ -91,11 +91,11 @@
                               OnContent="{x:Static resources:Resources.ShowDoneOn}"
                               OffContent="{x:Static resources:Resources.ShowDoneOff}">
                 </ToggleSwitch>
-                <Button DockPanel.Dock="Top" Command="{Binding AllCommand}" Content="{x:Static resources:Resources.All}"></Button>
-                <Button DockPanel.Dock="Top" Command="{Binding NoneCommand}" Content="{x:Static resources:Resources.None}"></Button>
-                <Button DockPanel.Dock="Top" Command="{Binding DoneCommand}" Content="{x:Static resources:Resources.Done}"></Button>
-                <Button DockPanel.Dock="Bottom" Command="{Binding OpenCommand}" Content="{x:Static resources:Resources.Open}"></Button>
-                <Button DockPanel.Dock="Bottom" Command="{Binding LocateCommand}" Content="{x:Static resources:Resources.Locate}"></Button>
+                <Button DockPanel.Dock="Top" Command="{Binding AllCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.All}"></Button>
+                <Button DockPanel.Dock="Top" Command="{Binding NoneCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.None}"></Button>
+                <Button DockPanel.Dock="Top" Command="{Binding DoneCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.Done}"></Button>
+                <Button DockPanel.Dock="Bottom" Command="{Binding OpenCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.Open}"></Button>
+                <Button DockPanel.Dock="Bottom" Command="{Binding LocateCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.Locate}"></Button>
             </DockPanel>
             <Image HorizontalAlignment="Left" Source="{Binding ImageToDisplay}" Grid.Row="3" Grid.Column="0"
                    Grid.ColumnSpan="2">
