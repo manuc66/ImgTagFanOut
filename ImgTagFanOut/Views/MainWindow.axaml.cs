@@ -1,5 +1,7 @@
+using System;
 using System.Threading.Tasks;
 using Avalonia.ReactiveUI;
+using Avalonia.Threading;
 using ImgTagFanOut.ViewModels;
 using ReactiveUI;
 
@@ -10,13 +12,32 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     public MainWindow()
     {
         InitializeComponent();
-        this.WhenActivated(d => d(ViewModel!.ShowDialog.RegisterHandler(DoShowDialogAsync)));
+        this.WhenActivated(d => d(ViewModel!.ShowPublishProgressDialog.RegisterHandler(DoShowPublishProgressDialogAsync)));
+        this.WhenActivated(d => d(ViewModel!.ShowConsentDialog.RegisterHandler(DoShowConsentDialogAsync)));
+        Activated += OnWindowActivated;
     }
 
-    private async Task DoShowDialogAsync(InteractionContext<PublishProgressViewModel, int?> interaction)
+    private void OnWindowActivated(object? sender, EventArgs e)
     {
-        PublishProgressWindow dialog = new PublishProgressWindow();
-        dialog.DataContext = interaction.Input;
+        Dispatcher.UIThread.Post(() => ViewModel!.WindowActivated = true);
+    }
+
+    private async Task DoShowPublishProgressDialogAsync(InteractionContext<PublishProgressViewModel, int?> interaction)
+    {
+        PublishProgressWindow dialog = new()
+        {
+            DataContext = interaction.Input
+        };
+
+        int? result = await dialog.ShowDialog<int?>(this);
+        interaction.SetOutput(result);
+    }
+    private async Task DoShowConsentDialogAsync(InteractionContext<ConsentViewModel, int?> interaction)
+    {
+        ConsentWindow dialog = new()
+        {
+            DataContext = interaction.Input
+        };
 
         int? result = await dialog.ShowDialog<int?>(this);
         interaction.SetOutput(result);

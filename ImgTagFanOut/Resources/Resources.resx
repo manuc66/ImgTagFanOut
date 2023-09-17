@@ -90,4 +90,16 @@
     <data name="CopiedTo" xml:space="preserve">
         <value>copied to</value>
     </data>
+    <data name="CollectExp" xml:space="preserve">
+        <value>We collect error data to improve your experience</value>
+    </data>
+    <data name="ConsentErrorTracking" xml:space="preserve">
+        <value>I consent to error tracking.</value>
+    </data>
+    <data name="ConsentAccept" xml:space="preserve">
+        <value>Accept</value>
+    </data>
+    <data name="ConsentDecline" xml:space="preserve">
+        <value>Decline</value>
+    </data>
 </root>

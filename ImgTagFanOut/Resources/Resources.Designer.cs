@@ -188,5 +188,29 @@ namespace ImgTagFanOut.Resources {
                 return ResourceManager.GetString("CopiedTo", resourceCulture);
             }
         }
+        
+        public static string CollectExp {
+            get {
+                return ResourceManager.GetString("CollectExp", resourceCulture);
+            }
+        }
+        
+        public static string ConsentErrorTracking {
+            get {
+                return ResourceManager.GetString("ConsentErrorTracking", resourceCulture);
+            }
+        }
+        
+        public static string ConsentAccept {
+            get {
+                return ResourceManager.GetString("ConsentAccept", resourceCulture);
+            }
+        }
+        
+        public static string ConsentDecline {
+            get {
+                return ResourceManager.GetString("ConsentDecline", resourceCulture);
+            }
+        }
     }
 }

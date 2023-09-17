@@ -1,0 +1,37 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"  d:DesignWidth="400" d:DesignHeight="100"
+        x:Class="ImgTagFanOut.Views.ConsentWindow"
+        WindowStartupLocation="CenterOwner"
+        xmlns:vm="using:ImgTagFanOut.ViewModels"
+        xmlns:resources="clr-namespace:ImgTagFanOut.Resources"
+        Title="Error Tracking Consent" Width="400" Height="100"
+        x:DataType="vm:ConsentViewModel"
+ >
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:ConsentViewModel />
+    </Design.DataContext>
+    <Grid>
+        <!-- Place your UI elements within the Grid -->
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="{x:Static resources:Resources.CollectExp}" />
+        <CheckBox Grid.Row="1" Grid.ColumnSpan="2" Grid.Column="0" Name="ConsentCheckBox"  IsChecked="{Binding ConsentErrorTracking}"  Content="{x:Static resources:Resources.ConsentErrorTracking}" />
+        <Button Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center" Background="OrangeRed" Command="{Binding DeclineCommand}" Content="{x:Static resources:Resources.ConsentDecline}" />
+        <Button Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" IsDefault="True" Background="MediumSeaGreen" Command="{Binding AcceptCommand}" Content="{x:Static resources:Resources.ConsentAccept}"  />
+    </Grid>
+
+</Window>

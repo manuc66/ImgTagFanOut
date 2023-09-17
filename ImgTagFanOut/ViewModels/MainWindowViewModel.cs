@@ -40,6 +40,7 @@ public class MainWindowViewModel : ViewModelBase
     private bool _showDone;
     private readonly SourceList<CanHaveTag> _images = new();
     private int _selectedIndex;
+    private bool _windowActivated;
     private readonly Settings _settings;
 
     public string? WorkingFolder
@@ -107,6 +108,12 @@ public class MainWindowViewModel : ViewModelBase
         get => _selectedIndex;
         set => this.RaiseAndSetIfChanged(ref _selectedIndex, value);
     }
+    
+    public bool WindowActivated 
+    {
+        get => _windowActivated;
+        set => this.RaiseAndSetIfChanged(ref _windowActivated, value);
+    }
 
     public ReactiveCommand<Window, string> SelectFolderCommand { get; }
     public ReactiveCommand<Window, string?> SelectTargetFolderCommand { get; }
@@ -127,14 +134,33 @@ public class MainWindowViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> LocateCommand { get; }
 
 
-    public Interaction<PublishProgressViewModel, int?> ShowDialog { get; }
+    public Interaction<PublishProgressViewModel, int?> ShowPublishProgressDialog { get; }
+    public Interaction<ConsentViewModel, int?> ShowConsentDialog { get; }
 
     public MainWindowViewModel()
     {
-        ShowDialog = new Interaction<PublishProgressViewModel, int?>();
+        ShowPublishProgressDialog = new Interaction<PublishProgressViewModel, int?>();
+        ShowConsentDialog = new Interaction<ConsentViewModel, int?>();
         _settings = new();
         WorkingFolder = "";
         TagList = new ObservableCollection<Tag>();
+        
+        this.WhenAnyValue(x => x.WindowActivated)
+            .SelectMany(async x =>
+            {
+                if (!x) return x;
+                
+                Settings settings = new();
+                AppSettings readSettings = settings.ReadSettings();
+                if (readSettings.ErrorTrackingAllowed == null)
+                {
+                    ConsentViewModel consentViewModel = new();
+                    await ShowConsentDialog.Handle(consentViewModel);
+                }
+
+                return x;
+            })
+            .Subscribe();
 
         this.WhenAnyValue(x => x.ShowDone)
             .SelectMany(async x =>
@@ -387,6 +413,9 @@ public class MainWindowViewModel : ViewModelBase
                     previous?.Dispose();
                 }
             });
+
+
+
     }
 
     private CancellationTokenSource _currentHashLookup = new();
@@ -621,8 +650,8 @@ public class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        PublishProgressViewModel store = new(WorkingFolder, TargetFolder, cancellationToken);
+        PublishProgressViewModel viewModel = new(WorkingFolder, TargetFolder, cancellationToken);
 
-        await ShowDialog.Handle(store);
+        await ShowPublishProgressDialog.Handle(viewModel);
     }
 }

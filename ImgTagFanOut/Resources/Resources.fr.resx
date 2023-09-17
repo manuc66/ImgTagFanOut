@@ -83,4 +83,16 @@
     <data name="CopiedTo" xml:space="preserve">
         <value>copié vers</value>
     </data>
+    <data name="CollectExp" xml:space="preserve">
+        <value>Nous collectons des données d'erreur pour améliorer votre expérience</value>
+    </data>
+    <data name="ConsentErrorTracking" xml:space="preserve">
+        <value>Je consens au suivi des erreurs.</value>
+    </data>
+    <data name="ConsentAccept" xml:space="preserve">
+        <value>Accepter</value>
+    </data>
+    <data name="ConsentDecline" xml:space="preserve">
+        <value>Decliner</value>
+    </data>
 </root>
