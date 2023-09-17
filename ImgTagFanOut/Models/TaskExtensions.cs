@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace ImgTagFanOut.Dao;
+namespace ImgTagFanOut.Models;
 
 public static class TaskExtensions
 {

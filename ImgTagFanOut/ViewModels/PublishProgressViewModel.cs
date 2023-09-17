@@ -48,7 +48,7 @@ public class PublishProgressViewModel : ViewModelBase
 
     private async Task StartPublish(CancellationToken cancellationToken)
     {
-        await new Publisher().PublishToFolder(cancellationToken, WorkingFolder, TargetFolder, OnBeginTag, OnFileCompleted);
+        await new Publisher().PublishToFolder(WorkingFolder, TargetFolder, OnBeginTag, OnFileCompleted, cancellationToken);
 
         TrailLog += "Done";
         Completed = true;

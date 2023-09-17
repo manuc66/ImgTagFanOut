@@ -1,7 +1,8 @@
 using System.Collections.Generic;
+using ImgTagFanOut.Dao;
 using ImgTagFanOut.ViewModels;
 
-namespace ImgTagFanOut.Dao;
+namespace ImgTagFanOut.Models;
 
 public class TagCache : ITagCache
 {

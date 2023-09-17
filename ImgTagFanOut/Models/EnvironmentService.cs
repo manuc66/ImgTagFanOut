@@ -3,9 +3,9 @@ using System.IO;
 
 namespace ImgTagFanOut.Models;
 
-public class EnvironmentService
+public static class EnvironmentService
 {
-    internal static string GetSettingsFolder()
+    private static string GetSettingsFolder()
     {
         // Retrieve the settings folder using the Avalonia.Application class.
         string appSettingsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), nameof(ImgTagFanOut));

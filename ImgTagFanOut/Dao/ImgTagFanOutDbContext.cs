@@ -1,3 +1,4 @@
+using ImgTagFanOut.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace ImgTagFanOut.Dao;

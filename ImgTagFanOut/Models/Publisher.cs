@@ -11,7 +11,8 @@ namespace ImgTagFanOut.Models;
 
 public class Publisher
 {
-    public async Task PublishToFolder(CancellationToken cancellationToken, string workingFolder, string targetFolder, Action<Tag> beginTag, Action<(string source, string? destination, bool copied)> onFileCompleted)
+    public async Task PublishToFolder(string workingFolder, string targetFolder, Action<Tag> beginTag, Action<(string source, string? destination, bool copied)> onFileCompleted,
+        CancellationToken cancellationToken)
     {
         if (!Directory.Exists(targetFolder))
         {
@@ -34,11 +35,12 @@ public class Publisher
                 continue;
             }
 
-            await PublishTag(cancellationToken, workingFolder, targetFolder, beginTag, onFileCompleted, tag, itemsInDb);
+            await PublishTag(workingFolder, targetFolder, beginTag, onFileCompleted, tag, itemsInDb, cancellationToken);
         }
     }
 
-    private static async Task PublishTag(CancellationToken cancellationToken, string workingFolder, string targetFolder, Action<Tag> beginTag, Action<(string source, string? destination, bool copied)> onFileCompleted, Tag tag, ImmutableList<string> itemsInDb)
+    private static async Task PublishTag(string workingFolder, string targetFolder, Action<Tag> beginTag, Action<(string source, string? destination, bool copied)> onFileCompleted, Tag tag,
+        ImmutableList<string> itemsInDb, CancellationToken cancellationToken)
     {
         beginTag(tag);
 

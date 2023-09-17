@@ -27,9 +27,17 @@ public abstract class FileComparer
 
     protected FileComparer(FileInfo fileInfo01, FileInfo fileInfo02)
     {
-        FileInfo1 = fileInfo01;
-        FileInfo2 = fileInfo02;
-        EnsureFilesExist();
+        FileInfo1 = fileInfo01 ?? throw new ArgumentNullException(nameof(fileInfo01));
+        FileInfo2 = fileInfo02 ?? throw new ArgumentNullException(nameof(fileInfo02));
+        if (FileInfo1.Exists)
+        {
+            throw new FileNotFoundException(fileInfo01.FullName);
+        }
+
+        if (FileInfo2.Exists)
+        {
+            throw new FileNotFoundException(fileInfo02.FullName);
+        }
     }
 
 
@@ -70,21 +78,5 @@ public abstract class FileComparer
     private bool IsDifferentLength()
     {
         return FileInfo1.Length != FileInfo2.Length;
-    }
-
-    /// <summary>
-    /// Makes sure files exist
-    /// </summary>
-    private void EnsureFilesExist()
-    {
-        if (FileInfo1.Exists == false)
-        {
-            throw new ArgumentNullException(nameof(FileInfo1));
-        }
-
-        if (FileInfo2.Exists == false)
-        {
-            throw new ArgumentNullException(nameof(FileInfo2));
-        }
     }
 }

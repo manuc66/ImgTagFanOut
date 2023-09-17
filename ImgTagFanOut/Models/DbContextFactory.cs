@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ImgTagFanOut.Models;
 
-public class DbContextFactory
+public static class DbContextFactory
 {
     private static readonly TagCache TagCache = TagCache = new TagCache();
     
@@ -17,8 +17,9 @@ public class DbContextFactory
     internal static IUnitOfWork GetUnitOfWork(string path)
     {
         ImgTagFanOutDbContext imgTagFanOutDbContext = new(TagCache, path);
-        //imgTagFanOutDbContext.Database.EnsureCreated();
+        
         imgTagFanOutDbContext.Database.Migrate();
+        
         return imgTagFanOutDbContext;
     }
 
