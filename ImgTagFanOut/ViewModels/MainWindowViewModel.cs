@@ -31,14 +31,12 @@ public class MainWindowViewModel : ViewModelBase
     private string? _targetFolder;
     private CanHaveTag? _selectedImage;
     private Bitmap? _imageToDisplay;
-    private Bitmap? _noPreviewToDisplay;
     private ReadOnlyObservableCollection<CanHaveTag> _filteredImages;
     private string? _tagFilterInput;
     private string? _itemFilterInput;
     private readonly ObservableCollection<Tag> _tagList = new();
     private List<SelectableTag> _filteredTagList;
 
-    private bool _hideDone;
     private bool _showDone;
     private readonly SourceList<CanHaveTag> _images = new();
     private int _selectedIndex;
@@ -86,12 +84,6 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _imageToDisplay, value);
     }
 
-    public Bitmap? NoPreviewToDisplay
-    {
-        get => _noPreviewToDisplay;
-        set => this.RaiseAndSetIfChanged(ref _noPreviewToDisplay, value);
-    }
-
     public string? TagFilterInput
     {
         get => _tagFilterInput;
@@ -104,16 +96,10 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _itemFilterInput, value);
     }
 
-    public bool HideDone
-    {
-        get => _hideDone;
-        set => this.RaiseAndSetIfChanged(ref _hideDone, value);
-    }
-
     public bool ShowDone
     {
         get => _showDone;
-        set { this.RaiseAndSetIfChanged(ref _showDone, value); }
+        set => this.RaiseAndSetIfChanged(ref _showDone, value);
     }
 
     public int SelectedIndex
@@ -153,17 +139,16 @@ public class MainWindowViewModel : ViewModelBase
         this.WhenAnyValue(x => x.ShowDone)
             .SelectMany(async x =>
             {
-                await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder))
-                {
-                    unitOfWork.ParameterRepository.Update(ShowDoneSettingKey, x.ToString());
-                    unitOfWork.SaveChanges();
-                }
+                await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder);
+                unitOfWork.ParameterRepository.Update(ShowDoneSettingKey, x.ToString());
+                unitOfWork.SaveChanges();
 
                 return x;
             })
-            .Subscribe(x => { HideDone = !x; });
+            .Subscribe();
 
-        NoPreviewToDisplay = LoadNoPreviewToDisplay();
+        Bitmap noPreviewToDisplay = LoadNoPreviewToDisplay();
+        ImageToDisplay = noPreviewToDisplay;
         this.WhenAnyValue(x => x.ImageToDisplay, x => x.SelectedImage)
             .Throttle(TimeSpan.FromMilliseconds(50))
             .Subscribe(x =>
@@ -171,24 +156,22 @@ public class MainWindowViewModel : ViewModelBase
                 if (x is { Item1: not null, Item2: not null }) return;
                 Bitmap? previous = ImageToDisplay;
 
-                ImageToDisplay = NoPreviewToDisplay;
+                ImageToDisplay = noPreviewToDisplay;
 
-                if (previous != NoPreviewToDisplay)
+                if (previous != noPreviewToDisplay)
                 {
                     previous?.Dispose();
                 }
             });
 
-        ImageToDisplay = NoPreviewToDisplay;
-
         _filteredTagList = new List<SelectableTag>();
-        HideDone = true;
+        ShowDone = false;
         TagFilterInput = string.Empty;
 
 
         _images.Connect()
             .AutoRefresh(x => x.Done)
-            .Filter(this.WhenAnyValue(@this => @this.HideDone)
+            .Filter(this.WhenAnyValue(@this => @this.ShowDone)
                 .Select(CreateFilterForDone))
             .Filter(this.WhenValueChanged(@this => @this.ItemFilterInput)
                 .Select(CreateFilterForItemFilterInput))
@@ -231,7 +214,7 @@ public class MainWindowViewModel : ViewModelBase
 
         PublishCommand = ReactiveCommand.CreateFromObservable(
             (Window _) => Observable
-                .StartAsync(cts => PublishToFolder(cts), RxApp.TaskpoolScheduler)
+                .StartAsync(PublishToFolder, RxApp.TaskpoolScheduler)
                 .TakeUntil(CancelScanCommand), this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)));
 
 
@@ -397,9 +380,9 @@ public class MainWindowViewModel : ViewModelBase
 
                 Bitmap? previous = ImageToDisplay;
 
-                ImageToDisplay = x.Item2 ?? NoPreviewToDisplay;
+                ImageToDisplay = x.Item2 ?? noPreviewToDisplay;
 
-                if (previous != NoPreviewToDisplay)
+                if (previous != noPreviewToDisplay)
                 {
                     previous?.Dispose();
                 }
@@ -610,7 +593,7 @@ public class MainWindowViewModel : ViewModelBase
         return previousFolder ?? string.Empty;
     }
 
-    private Func<CanHaveTag, bool> CreateFilterForDone(bool arg) => arg ? item => !item.Done : _ => true;
+    private Func<CanHaveTag, bool> CreateFilterForDone(bool arg) => arg ? _ => true : item => !item.Done;
 
     private Func<CanHaveTag, bool> CreateFilterForItemFilterInput(string? arg) => !string.IsNullOrWhiteSpace(arg) ? item => item.Item.Contains(arg, StringComparison.OrdinalIgnoreCase) : _ => true;
 
