@@ -8,6 +8,7 @@
         xmlns:vm="using:ImgTagFanOut.ViewModels"
         xmlns:resources="clr-namespace:ImgTagFanOut.Resources"
         Title="Error Tracking Consent" Width="400" Height="100"
+        Icon="/Assets/logo.ico"
         x:DataType="vm:ConsentViewModel"
  >
 

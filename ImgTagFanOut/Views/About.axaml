@@ -9,6 +9,7 @@
         xmlns:resources="clr-namespace:ImgTagFanOut.Resources"
         Title="{x:Static resources:Resources.About}"
         Width="400" Height="500"
+        Icon="/Assets/logo.ico"
         x:DataType="vm:AboutViewModel"
        >
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="5">
