@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
@@ -20,7 +21,7 @@ public class AboutViewModel : ViewModelBase
 
     public AboutViewModel()
     {
-        var assemblyLocation = Assembly.GetEntryAssembly()?.Location;
+        var assemblyLocation = Process.GetCurrentProcess().MainModule?.FileName;
         if (assemblyLocation == null) return;
 
         var fileVersionInfo = System.Diagnostics.FileVersionInfo.GetVersionInfo(assemblyLocation);
