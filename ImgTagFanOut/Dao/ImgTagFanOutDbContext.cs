@@ -14,7 +14,7 @@ public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext, IUnitOfW
     public ITagRepository TagRepository { get; }
     public IParameterRepository ParameterRepository { get; }
 
-    public ImgTagFanOutDbContext() : this(new TagCache(), ".")
+    public ImgTagFanOutDbContext() : this(new(), ".")
     {
     }
 

@@ -72,7 +72,7 @@ public class TagRepository : ITagRepository
         }
         else
         {
-            _dbContext.Items.Add(new ItemDao (tagAssignation.Item ));
+            _dbContext.Items.Add(new(tagAssignation.Item ));
         }
     }
 
@@ -105,7 +105,7 @@ public class TagRepository : ITagRepository
 
         existingTag.Items.Add(existingItem);
         _dbContext.ItemTags.Add(
-            new ItemTagDao
+            new()
             {
                 ItemForeignKey = existingItem.ItemId,
                 TagForeignKey = existingTag.TagId,

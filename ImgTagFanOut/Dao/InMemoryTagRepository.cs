@@ -13,7 +13,7 @@ class InMemoryTagRepository : ITagRepository
     {
         if (!string.IsNullOrWhiteSpace(tagName?.Trim()))
         {
-            newTag = new Tag(tagName.Trim());
+            newTag = new(tagName.Trim());
             bool added = _tags.Add(newTag);
             if (added)
             {

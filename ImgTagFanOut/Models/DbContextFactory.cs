@@ -6,7 +6,7 @@ namespace ImgTagFanOut.Models;
 
 public static class DbContextFactory
 {
-    private static readonly TagCache TagCache = TagCache = new TagCache();
+    private static readonly TagCache TagCache = TagCache = new();
     
     internal static async Task<IUnitOfWork> GetUnitOfWorkAsync(string path)
     {

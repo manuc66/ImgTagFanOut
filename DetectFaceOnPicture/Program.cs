@@ -22,7 +22,7 @@ namespace DetectFaceOnPicture
 
 
 
-            List<FaceFeature> features = new List<FaceFeature>();
+            List<FaceFeature> features = new();
             foreach (string file in enumerateFiles)
             {
                 Mat image = GrabFrame(file);
@@ -61,7 +61,7 @@ namespace DetectFaceOnPicture
 
 
                 //Record the facial faceFeatures in a list
-                faceFeatures.Add(new FaceFeature()
+                faceFeatures.Add(new()
                 {
                     Face = item,
                 });
@@ -77,7 +77,7 @@ namespace DetectFaceOnPicture
 
         private static Mat ConvertGrayScale(Mat image)
         {
-            Mat gray = new Mat();
+            Mat gray = new();
             Cv2.CvtColor(image, gray, ColorConversionCodes.BGR2GRAY);
             return gray;
         }
@@ -93,7 +93,7 @@ namespace DetectFaceOnPicture
         {
             foreach (FaceFeature feature in faceFeatures)
             {
-                Cv2.Rectangle(image, feature.Face, new Scalar(0, 255, 0), thickness: 1);
+                Cv2.Rectangle(image, feature.Face, new(0, 255, 0), thickness: 1);
                 Mat face_region = image[feature.Face];
             }
         }

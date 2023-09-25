@@ -130,9 +130,9 @@ public class WindowsThumbnailProvider
 
     public static Bitmap CreateAlphaBitmap(Bitmap srcBitmap, PixelFormat targetPixelFormat)
     {
-        Bitmap result = new Bitmap(srcBitmap.Width, srcBitmap.Height, targetPixelFormat);
+        Bitmap result = new(srcBitmap.Width, srcBitmap.Height, targetPixelFormat);
 
-        Rectangle bmpBounds = new Rectangle(0, 0, srcBitmap.Width, srcBitmap.Height);
+        Rectangle bmpBounds = new(0, 0, srcBitmap.Width, srcBitmap.Height);
 
         BitmapData srcData = srcBitmap.LockBits(bmpBounds, ImageLockMode.ReadOnly, srcBitmap.PixelFormat);
 
@@ -174,13 +174,13 @@ public class WindowsThumbnailProvider
     private static IntPtr GetHBitmap(string fileName, int width, int height, ThumbnailOptions options)
     {
         IShellItem nativeShellItem;
-        Guid shellItem2Guid = new Guid(IShellItem2Guid);
+        Guid shellItem2Guid = new(IShellItem2Guid);
         int retCode = SHCreateItemFromParsingName(fileName, IntPtr.Zero, ref shellItem2Guid, out nativeShellItem);
 
         if (retCode != 0)
             throw Marshal.GetExceptionForHR(retCode);
 
-        NativeSize nativeSize = new NativeSize();
+        NativeSize nativeSize = new();
         nativeSize.Width = width;
         nativeSize.Height = height;
 

@@ -8,189 +8,166 @@
         x:Class="ImgTagFanOut.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/logo.ico"
-        Title="ImgTagFanOut">
+        Title="{Binding WindowTitle}">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainWindowViewModel />
     </Design.DataContext>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="Auto"></RowDefinition>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition></ColumnDefinition>
-            <ColumnDefinition></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <Grid Grid.Row="0" Grid.Column="0" ColumnSpan="2">
+	<DockPanel>
+		<Menu DockPanel.Dock="Top">
+			<MenuItem Header="_File">
+				<!--<MenuItem Header="_Open..."/>
+				<Separator/>
+				<MenuItem Header="_Publish..."/>
+				<Separator/>-->
+				<MenuItem Header="{x:Static resources:Resources.Exit}" Command="{Binding ExitCommand}"/>
+			</MenuItem>
+			<MenuItem Header="{x:Static resources:Resources.About}" Command="{Binding ShowAboutDialogCommand}">
+			</MenuItem>
+		</Menu>
 
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"></ColumnDefinition>
-                <ColumnDefinition Width="Auto"></ColumnDefinition>
-                <ColumnDefinition Width="Auto"></ColumnDefinition>
-                <ColumnDefinition Width="Auto"></ColumnDefinition>
-            </Grid.ColumnDefinitions>
+		<Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,*" RowDefinitions="Auto,*,Auto">
+            <Grid Grid.Row="0" Grid.Column="0" ColumnSpan="2" ColumnDefinitions="*,Auto,Auto,Auto">
 
-            <TextBox Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch"
-                     Text="{Binding Path=WorkingFolder}" />
-            <Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch"
-                    Content="{x:Static resources:Resources.Browse}" Command="{Binding SelectFolderCommand}"
-                    CommandParameter="{Binding $parent[Window]}" HorizontalAlignment="Right" />
+                <TextBox Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch"
+                         Text="{Binding Path=WorkingFolder}" />
+				<Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch"
+						Content="{x:Static resources:Resources.Browse}" Command="{Binding SelectFolderCommand}"
+						CommandParameter="{Binding $parent[Window]}" HorizontalAlignment="Right" />
 
-            <Button Grid.Row="0" Grid.Column="2" VerticalAlignment="Stretch" Content="{x:Static resources:Resources.Scan}"
-                    Command="{Binding ScanFolderCommand}"
-                    HorizontalAlignment="Right" />
-            <Button Grid.Row="0" Grid.Column="3" VerticalAlignment="Stretch"
-                    Content="{x:Static resources:Resources.Cancel}" Command="{Binding CancelScanCommand}"
-                    HorizontalAlignment="Right" />
-        </Grid>
+				<Button Grid.Row="0" Grid.Column="2" VerticalAlignment="Stretch" Content="{x:Static resources:Resources.Scan}"
+						Command="{Binding ScanFolderCommand}"
+						HorizontalAlignment="Right" />
+				<Button Grid.Row="0" Grid.Column="3" VerticalAlignment="Stretch"
+						Content="{x:Static resources:Resources.Cancel}" Command="{Binding CancelScanCommand}"
+						HorizontalAlignment="Right" />
+			</Grid>
 
-        <Grid Grid.Row="1" Grid.Column="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"></ColumnDefinition>
-                <ColumnDefinition Width="Auto"></ColumnDefinition>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"></RowDefinition>
-                <RowDefinition Height="Auto"></RowDefinition>
-                <RowDefinition Height="*"></RowDefinition>
-                <RowDefinition Height="*"></RowDefinition>
-            </Grid.RowDefinitions>
-            <DockPanel Grid.Row="2" Grid.Column="0" LastChildFill="True">
-                <TextBlock DockPanel.Dock="Top" Text="{x:Static resources:Resources.Images}"></TextBlock>
-                <Grid DockPanel.Dock="Top">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"></ColumnDefinition>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
-                        <ColumnDefinition Width="Auto"></ColumnDefinition>
-                        <ColumnDefinition Width="Auto"></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="{x:Static resources:Resources.Filter}"></TextBlock>
-                    <TextBox Grid.Column="1" Text="{Binding ItemFilterInput}"></TextBox>
-                    <Button Grid.Column="2" Command="{Binding ClearItemFilterInputCommand}"
-                            Content="{x:Static resources:Resources.Clear}">
-                    </Button>
-                </Grid>
-                <ListBox DockPanel.Dock="Bottom" SelectedIndex="{Binding SelectedIndex}"
-                         ItemsSource="{Binding FilteredImages}" SelectedItem="{Binding SelectedImage}">
+			<Grid Grid.Row="1" Grid.Column="0" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,*,*">
+                <DockPanel Grid.Row="2" Grid.Column="0" LastChildFill="True">
+					<TextBlock DockPanel.Dock="Top" Text="{x:Static resources:Resources.Images}"></TextBlock>
+					<Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto,Auto">
+                        <TextBlock Grid.Column="0" Text="{x:Static resources:Resources.Filter}"></TextBlock>
+						<TextBox Grid.Column="1" Text="{Binding ItemFilterInput}"></TextBox>
+						<Button Grid.Column="2" Command="{Binding ClearItemFilterInputCommand}"
+								Content="{x:Static resources:Resources.Clear}">
+						</Button>
+					</Grid>
+					<ListBox DockPanel.Dock="Bottom" SelectedIndex="{Binding SelectedIndex}"
+							 ItemsSource="{Binding FilteredImages}" SelectedItem="{Binding SelectedImage}">
 
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Item}"></TextBlock>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </DockPanel>
+						<ListBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding Item}"></TextBlock>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+					</ListBox>
+				</DockPanel>
 
 
-            <DockPanel Grid.Row="2" Grid.Column="1" LastChildFill="False">
-                <ToggleSwitch DockPanel.Dock="Top" IsChecked="{Binding ShowDone}" Content="{x:Static resources:Resources.ShowDone}"
-                              OnContent="{x:Static resources:Resources.ShowDoneOn}"
-                              OffContent="{x:Static resources:Resources.ShowDoneOff}">
-                </ToggleSwitch>
-                <Button DockPanel.Dock="Top" Command="{Binding AllCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.All}"></Button>
-                <Button DockPanel.Dock="Top" Command="{Binding NoneCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.None}"></Button>
-                <Button DockPanel.Dock="Top" Command="{Binding DoneCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.Done}"></Button>
-                <Button DockPanel.Dock="Bottom" Command="{Binding OpenCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.Open}"></Button>
-                <Button DockPanel.Dock="Bottom" Command="{Binding LocateCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.Locate}"></Button>
-            </DockPanel>
-            <Image HorizontalAlignment="Left" Source="{Binding ImageToDisplay}" Grid.Row="3" Grid.Column="0"
-                   Grid.ColumnSpan="2">
-            </Image>
-        </Grid>
+				<DockPanel Grid.Row="2" Grid.Column="1" LastChildFill="False">
+					<ToggleSwitch DockPanel.Dock="Top" IsChecked="{Binding ShowDone}" Content="{x:Static resources:Resources.ShowDone}"
+								  OnContent="{x:Static resources:Resources.ShowDoneOn}"
+								  OffContent="{x:Static resources:Resources.ShowDoneOff}">
+					</ToggleSwitch>
+					<Button DockPanel.Dock="Top" Command="{Binding AllCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.All}"></Button>
+					<Button DockPanel.Dock="Top" Command="{Binding NoneCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.None}"></Button>
+					<Button DockPanel.Dock="Top" Command="{Binding DoneCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.Done}"></Button>
+					<Button DockPanel.Dock="Bottom" Command="{Binding OpenCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.Open}"></Button>
+					<Button DockPanel.Dock="Bottom" Command="{Binding LocateCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.Locate}"></Button>
+				</DockPanel>
+				<Image HorizontalAlignment="Left" Source="{Binding ImageToDisplay}" Grid.Row="3" Grid.Column="0"
+					   Grid.ColumnSpan="2">
+				</Image>
+			</Grid>
 
-        <DockPanel Grid.Row="1" Grid.Column="1" LastChildFill="True">
-            <TextBlock DockPanel.Dock="Top" Text="{x:Static resources:Resources.Tags}"></TextBlock>
-            <Grid DockPanel.Dock="Bottom">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"></RowDefinition>
-                    <RowDefinition Height="1*"></RowDefinition>
-                    <RowDefinition Height="1*"></RowDefinition>
-                </Grid.RowDefinitions>
-                <Grid Grid.Row="0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"></ColumnDefinition>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
-                        <ColumnDefinition Width="Auto"></ColumnDefinition>
-                        <ColumnDefinition Width="Auto"></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    
-                    <TextBlock Grid.Column="0" Text="{x:Static resources:Resources.Filter}"></TextBlock>
-                    <TextBox Grid.Column="1" Text="{Binding TagFilterInput}"></TextBox>
-                    <Button Grid.Column="2" Command="{Binding ClearTagFilterInputCommand}"
-                            Content="{x:Static resources:Resources.Clear}">
-                    </Button>
-                    <Button Command="{Binding AddToTagListCommand}" Grid.Column="3"
-                            Content="{x:Static resources:Resources.Add}">
-                    </Button>
-                </Grid>
+			<DockPanel Grid.Row="1" Grid.Column="1" LastChildFill="True">
+				<TextBlock DockPanel.Dock="Top" Text="{x:Static resources:Resources.Tags}"></TextBlock>
+				<Grid DockPanel.Dock="Bottom">
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto"></RowDefinition>
+						<RowDefinition Height="1*"></RowDefinition>
+						<RowDefinition Height="1*"></RowDefinition>
+					</Grid.RowDefinitions>
+					<Grid Grid.Row="0">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto"></ColumnDefinition>
+							<ColumnDefinition Width="*"></ColumnDefinition>
+							<ColumnDefinition Width="Auto"></ColumnDefinition>
+							<ColumnDefinition Width="Auto"></ColumnDefinition>
+						</Grid.ColumnDefinitions>
 
-                <ItemsControl Grid.Row="1" Name="AllTagsComponent" ItemsSource="{Binding FilteredTagList}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel></WrapPanel>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <ToggleButton Content="{Binding Tag.Name}"
-                                              IsChecked="{Binding IsSelected}"
-                                              CommandParameter="{Binding Tag}"
-                                              Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).ToggleAssignTagToImageCommand, DataType={x:Type vm:MainWindowViewModel}}">
-                                    <ToggleButton.ContextMenu>
-                                        <ContextMenu>
-                                            <MenuItem Header="{x:Static resources:Resources.Delete}"
-                                                      Command="{Binding ElementName=AllTagsComponent, Path=((vm:MainWindowViewModel)DataContext).DeleteTagCommand, DataType={x:Type vm:MainWindowViewModel}}"
-                                                      CommandParameter="{Binding .}">
-                                            </MenuItem>
-                                        </ContextMenu>
-                                    </ToggleButton.ContextMenu>
-                                </ToggleButton>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+						<TextBlock Grid.Column="0" Text="{x:Static resources:Resources.Filter}"></TextBlock>
+						<TextBox Grid.Column="1" Text="{Binding TagFilterInput}"></TextBox>
+						<Button Grid.Column="2" Command="{Binding ClearTagFilterInputCommand}"
+								Content="{x:Static resources:Resources.Clear}">
+						</Button>
+						<Button Command="{Binding AddToTagListCommand}" Grid.Column="3"
+								Content="{x:Static resources:Resources.Add}">
+						</Button>
+					</Grid>
 
-                <ItemsControl Grid.Row="2" Name="AssignedTagComponent"
-                              ItemsSource="{Binding SelectedImage.Tags}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel></WrapPanel>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <ToggleButton Content="{Binding Path=Name}" IsChecked="True"
-                                              CommandParameter="{Binding .}"
-                                              Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).RemoveTagToImageCommand}">
-                                </ToggleButton>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </Grid>
-        </DockPanel>
-        <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"></ColumnDefinition>
-                <ColumnDefinition Width="Auto"></ColumnDefinition>
-                <ColumnDefinition Width="Auto"></ColumnDefinition>
-            </Grid.ColumnDefinitions>
+					<ItemsControl Grid.Row="1" Name="AllTagsComponent" ItemsSource="{Binding FilteredTagList}">
+						<ItemsControl.ItemsPanel>
+							<ItemsPanelTemplate>
+								<WrapPanel></WrapPanel>
+							</ItemsPanelTemplate>
+						</ItemsControl.ItemsPanel>
+						<ItemsControl.ItemTemplate>
+							<DataTemplate>
+								<StackPanel Orientation="Horizontal">
+									<ToggleButton Content="{Binding Tag.Name}"
+												  IsChecked="{Binding IsSelected}"
+												  CommandParameter="{Binding Tag}"
+												  Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).ToggleAssignTagToImageCommand, DataType={x:Type vm:MainWindowViewModel}}">
+										<ToggleButton.ContextMenu>
+											<ContextMenu>
+												<MenuItem Header="{x:Static resources:Resources.Delete}"
+														  Command="{Binding ElementName=AllTagsComponent, Path=((vm:MainWindowViewModel)DataContext).DeleteTagCommand, DataType={x:Type vm:MainWindowViewModel}}"
+														  CommandParameter="{Binding .}">
+												</MenuItem>
+											</ContextMenu>
+										</ToggleButton.ContextMenu>
+									</ToggleButton>
+								</StackPanel>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
 
-            <TextBox Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch"
-                     Text="{Binding Path=TargetFolder}" />
-            <Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch"
-                    Content="{x:Static resources:Resources.Browse}" Command="{Binding SelectTargetFolderCommand}"
-                    CommandParameter="{Binding $parent[Window]}" HorizontalAlignment="Right" />
+					<ItemsControl Grid.Row="2" Name="AssignedTagComponent"
+								  ItemsSource="{Binding SelectedImage.Tags}">
+						<ItemsControl.ItemsPanel>
+							<ItemsPanelTemplate>
+								<WrapPanel></WrapPanel>
+							</ItemsPanelTemplate>
+						</ItemsControl.ItemsPanel>
+						<ItemsControl.ItemTemplate>
+							<DataTemplate>
+								<StackPanel Orientation="Horizontal">
+									<ToggleButton Content="{Binding Path=Name}" IsChecked="True"
+												  CommandParameter="{Binding .}"
+												  Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).RemoveTagToImageCommand}">
+									</ToggleButton>
+								</StackPanel>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+				</Grid>
+			</DockPanel>
+			<Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" ColumnDefinitions="*,Auto,Auto">
 
-            <Button Grid.Row="0" Grid.Column="2" VerticalAlignment="Stretch"
-                    Content="{x:Static resources:Resources.Publish}" Command="{Binding PublishCommand}"
-                    HorizontalAlignment="Right" />
-        </Grid>
-    </Grid>
+                <TextBox Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch"
+                         Text="{Binding Path=TargetFolder}" />
+				<Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch"
+						Content="{x:Static resources:Resources.Browse}" Command="{Binding SelectTargetFolderCommand}"
+						CommandParameter="{Binding $parent[Window]}" HorizontalAlignment="Right" />
+
+				<Button Grid.Row="0" Grid.Column="2" VerticalAlignment="Stretch"
+						Content="{x:Static resources:Resources.Publish}" Command="{Binding PublishCommand}"
+						HorizontalAlignment="Right" />
+			</Grid>
+		</Grid>
+	</DockPanel>
 </Window>

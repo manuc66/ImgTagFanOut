@@ -14,6 +14,8 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         InitializeComponent();
         this.WhenActivated(d => d(ViewModel!.ShowPublishProgressDialog.RegisterHandler(DoShowPublishProgressDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ShowConsentDialog.RegisterHandler(DoShowConsentDialogAsync)));
+        this.WhenActivated(d => d(ViewModel!.ShowAboutDialog.RegisterHandler(DoShowABoutDialogAsync)));
+        this.WhenActivated(d => d(ViewModel!.ExitCommand.Subscribe(x => Close())));
         Activated += OnWindowActivated;
     }
 
@@ -35,6 +37,16 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     private async Task DoShowConsentDialogAsync(InteractionContext<ConsentViewModel, int?> interaction)
     {
         ConsentWindow dialog = new()
+        {
+            DataContext = interaction.Input
+        };
+
+        int? result = await dialog.ShowDialog<int?>(this);
+        interaction.SetOutput(result);
+    }
+    private async Task DoShowABoutDialogAsync(InteractionContext<AboutViewModel, int?> interaction)
+    {
+        About dialog = new()
         {
             DataContext = interaction.Input
         };

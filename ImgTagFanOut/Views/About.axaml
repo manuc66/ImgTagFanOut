@@ -1,0 +1,43 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="ImgTagFanOut.Views.About"
+        WindowStartupLocation="CenterOwner"
+        xmlns:vm="using:ImgTagFanOut.ViewModels"
+        xmlns:resources="clr-namespace:ImgTagFanOut.Resources"
+        Title="{x:Static resources:Resources.About}"
+        Width="400" Height="500"
+        x:DataType="vm:AboutViewModel"
+       >
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="5">
+            <TextBlock Text="ImgTagFanOut" FontSize="24" FontWeight="Bold"/>
+            <TextBlock Text="{Binding Version}" FontSize="16"/>
+            <TextBlock Text="{Binding Copyright}" FontSize="12"/>
+            <Separator/>
+            <TextBlock Text="MIT License" FontWeight="Bold"/>
+            <TextBlock  TextWrapping="Wrap"  FontFamily="monospace"   >
+                Permission is hereby granted, free of charge, to any person obtaining a copy
+                of this software and associated documentation files (the "Software"), to deal
+                in the Software without restriction, including without limitation the rights
+                to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+                copies of the Software, and to permit persons to whom the Software is
+                furnished to do so, subject to the following conditions:
+            </TextBlock>
+            <TextBlock  TextWrapping="Wrap"  FontFamily="monospace"   >
+                The above copyright notice and this permission notice shall be included in all
+                copies or substantial portions of the Software.
+            </TextBlock>
+            <TextBlock  TextWrapping="Wrap"  FontFamily="monospace"   >
+                THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+                IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+                FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+                AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+                LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+                OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+                SOFTWARE.
+            </TextBlock>
+        </StackPanel>
+
+</Window>

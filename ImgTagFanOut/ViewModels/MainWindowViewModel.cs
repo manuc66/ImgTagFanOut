@@ -42,6 +42,7 @@ public class MainWindowViewModel : ViewModelBase
     private int _selectedIndex;
     private bool _windowActivated;
     private readonly Settings _settings;
+    private string _windowTitle = null!;
 
     public string? WorkingFolder
     {
@@ -108,11 +109,17 @@ public class MainWindowViewModel : ViewModelBase
         get => _selectedIndex;
         set => this.RaiseAndSetIfChanged(ref _selectedIndex, value);
     }
-    
-    public bool WindowActivated 
+
+    public bool WindowActivated
     {
         get => _windowActivated;
         set => this.RaiseAndSetIfChanged(ref _windowActivated, value);
+    }
+
+    public string WindowTitle
+    {
+        get => _windowTitle;
+        set => this.RaiseAndSetIfChanged(ref _windowTitle, value);
     }
 
     public ReactiveCommand<Window, string> SelectFolderCommand { get; }
@@ -132,24 +139,30 @@ public class MainWindowViewModel : ViewModelBase
     public ReactiveCommand<SelectableTag, Unit> DeleteTagCommand { get; }
     public ReactiveCommand<Unit, Unit> OpenCommand { get; }
     public ReactiveCommand<Unit, Unit> LocateCommand { get; }
+    public ReactiveCommand<Unit, Unit> ExitCommand { get; }
+    public ReactiveCommand<Unit, Unit> ShowAboutDialogCommand { get; }
 
 
     public Interaction<PublishProgressViewModel, int?> ShowPublishProgressDialog { get; }
     public Interaction<ConsentViewModel, int?> ShowConsentDialog { get; }
+    public Interaction<AboutViewModel, int?> ShowAboutDialog { get; }
 
     public MainWindowViewModel()
     {
-        ShowPublishProgressDialog = new Interaction<PublishProgressViewModel, int?>();
-        ShowConsentDialog = new Interaction<ConsentViewModel, int?>();
+        ShowPublishProgressDialog = new();
+        ShowConsentDialog = new();
+        ShowAboutDialog = new();
         _settings = new();
         WorkingFolder = "";
-        TagList = new ObservableCollection<Tag>();
-        
+        WindowTitle = nameof(ImgTagFanOut);
+        TagList = new();
+
+
         this.WhenAnyValue(x => x.WindowActivated)
             .SelectMany(async x =>
             {
                 if (!x) return x;
-                
+
                 Settings settings = new();
                 AppSettings readSettings = settings.ReadSettings();
                 if (readSettings.ErrorTrackingAllowed == null)
@@ -190,7 +203,7 @@ public class MainWindowViewModel : ViewModelBase
                 }
             });
 
-        _filteredTagList = new List<SelectableTag>();
+        _filteredTagList = new();
         ShowDone = false;
         TagFilterInput = string.Empty;
 
@@ -231,7 +244,11 @@ public class MainWindowViewModel : ViewModelBase
 
         SelectFolderCommand = ReactiveCommand.CreateFromTask<Window, string>(SelectFolder, ScanFolderCommand.IsExecuting.Select(x => !x));
         SelectFolderCommand.SelectMany(OpenFolder)
-            .Subscribe(x => WorkingFolder = x);
+            .Subscribe(x =>
+            {
+                WorkingFolder = x;
+                WindowTitle = $"{nameof(ImgTagFanOut)} - {WorkingFolder}";
+            });
         CancelScanCommand = ReactiveCommand.Create(
             () => { },
             ScanFolderCommand.IsExecuting);
@@ -414,7 +431,12 @@ public class MainWindowViewModel : ViewModelBase
                 }
             });
 
-
+        ExitCommand = ReactiveCommand.CreateFromTask(_ => Task.CompletedTask);
+        ShowAboutDialogCommand = ReactiveCommand.CreateFromTask(async _ =>
+        {
+            AboutViewModel aboutViewModel = new();
+            await ShowAboutDialog.Handle(aboutViewModel);
+        });
 
     }
 
@@ -423,7 +445,7 @@ public class MainWindowViewModel : ViewModelBase
     private void SearchForTagBasedOnFileHash(string fullFilePath, CanHaveTag canHaveTag)
     {
         _currentHashLookup.Cancel();
-        _currentHashLookup = new CancellationTokenSource();
+        _currentHashLookup = new();
         RxApp.MainThreadScheduler.ScheduleAsync(async (_, ct) =>
         {
             CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(ct, _currentHashLookup.Token);
@@ -553,7 +575,7 @@ public class MainWindowViewModel : ViewModelBase
     private static Bitmap LoadNoPreviewToDisplay()
     {
         string resourceName = "ImgTagFanOut.NoPreview.png";
-        using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName) ?? throw new Exception("Resource not found: " + resourceName);
+        using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName) ?? throw new("Resource not found: " + resourceName);
         Bitmap noPreviewToDisplay = new(stream);
         return noPreviewToDisplay;
     }
@@ -605,7 +627,7 @@ public class MainWindowViewModel : ViewModelBase
     private static async Task<string> SelectAFolder(Window window, string selectAnExportFolder, string? previousFolder)
     {
         FolderPickerOpenOptions folderPickerOptions = new()
-            { AllowMultiple = false, Title = selectAnExportFolder, SuggestedStartLocation = await window.StorageProvider.TryGetFolderFromPathAsync(previousFolder ?? string.Empty) };
+        { AllowMultiple = false, Title = selectAnExportFolder, SuggestedStartLocation = await window.StorageProvider.TryGetFolderFromPathAsync(previousFolder ?? string.Empty) };
         IReadOnlyList<IStorageFolder> folders = await window.StorageProvider.OpenFolderPickerAsync(folderPickerOptions);
 
         if (folders.Count == 0)

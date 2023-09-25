@@ -30,7 +30,7 @@ internal class ParameterRepository : IParameterRepository
 
         if (parameter == null)
         {
-            parameter = new ParameterDao() { Name = name, Value = value };
+            parameter = new() { Name = name, Value = value };
             _dbContext.Parameters.Add(parameter);
         }
 

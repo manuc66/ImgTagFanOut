@@ -11,6 +11,10 @@
         <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
     </PropertyGroup>
 
+	<PropertyGroup>
+		<Copyright>Copyright © $([System.DateTime]::UtcNow.Year) Emmanuel Counasse</Copyright>
+	</PropertyGroup>
+
     <ItemGroup>
         <Folder Include="Migrations\" />
         <AvaloniaResource Include="Assets\**" />
