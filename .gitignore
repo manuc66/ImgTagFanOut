@@ -399,3 +399,6 @@ FodyWeavers.xsd
 
 riderModule.iml
 /_ReSharper.Caches/
+/*.db
+/*.db-shm
+/*.db-wal
