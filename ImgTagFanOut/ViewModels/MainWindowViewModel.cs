@@ -153,7 +153,7 @@ public class MainWindowViewModel : ViewModelBase
         ShowConsentDialog = new();
         ShowAboutDialog = new();
         _settings = new();
-        WorkingFolder = "";
+        WorkingFolder = EnvironmentService.GetMyPictureFolder();
         WindowTitle = nameof(ImgTagFanOut);
         TagList = new();
 

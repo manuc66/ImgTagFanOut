@@ -24,7 +24,12 @@ public static class EnvironmentService
         {
             File.WriteAllText(appSettingFile, "{}");
         }
-        
+
         return appSettingFile;
+    }
+
+    internal static string GetMyPictureFolder()
+    {
+        return Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
     }
 }
