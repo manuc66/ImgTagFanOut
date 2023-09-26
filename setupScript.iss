@@ -25,7 +25,7 @@ DisableProgramGroupPage=yes
 LicenseFile=LICENSE
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
-OutputBaseFilename=ImgTagFanOut-{#MyAppVersion}-installer
+OutputBaseFilename=ImgTagFanOut-installer
 SetupIconFile=ImgTagFanOut\Assets\logo.ico
 Compression=lzma
 SolidCompression=yes
