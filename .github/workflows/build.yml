@@ -24,3 +24,8 @@ jobs:
         with:
           path: setupScript.iss
           options: /O+
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Setup
+          path: InstallerOutput/
