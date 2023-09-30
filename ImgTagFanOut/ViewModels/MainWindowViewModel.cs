@@ -153,7 +153,7 @@ public class MainWindowViewModel : ViewModelBase
         ShowConsentDialog = new();
         ShowAboutDialog = new();
         _settings = new();
-        WorkingFolder = EnvironmentService.GetMyPictureFolder();
+        WorkingFolder = _settings.ReadSettings().LastFolder ?? EnvironmentService.GetMyPictureFolder();
         WindowTitle = nameof(ImgTagFanOut);
         TagList = new();
 
@@ -591,6 +591,10 @@ public class MainWindowViewModel : ViewModelBase
     private async Task<string> SelectFolder(Window window)
     {
         string? lastFolder = _settings.ReadSettings().LastFolder;
+        if (string.IsNullOrEmpty(lastFolder))
+        {
+            lastFolder = EnvironmentService.GetMyPictureFolder();
+        }
 
         string selectedFolder = await SelectAFolder(window, Resources.Resources.SelectWorkingFolder, lastFolder);
 
