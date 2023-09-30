@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using ReactiveUI;
@@ -7,6 +8,7 @@ namespace ImgTagFanOut.ViewModels;
 public class CanHaveTag : ViewModelBase
 {
     private readonly string _item;
+    private HashSet<Tag> _tagSet = new();
     private ObservableCollection<Tag> _tags = new();
     private bool _done;
 
@@ -35,6 +37,7 @@ public class CanHaveTag : ViewModelBase
     {
         if (!Has(tag))
         {
+            _tagSet.Add(tag);
             _tags.Add(tag);
         }
     }
@@ -43,13 +46,14 @@ public class CanHaveTag : ViewModelBase
     {
         if (Has(tag))
         {
+            _tagSet.Remove(tag);
             _tags.Remove(tag);
         }
     }
 
     public bool Has(Tag tag)
     {
-        return _tags.Any(x => x.Equals(tag));
+        return _tagSet.Contains(tag);
     }
 
     public void Toggle(Tag tag)
@@ -57,9 +61,11 @@ public class CanHaveTag : ViewModelBase
         if (Has(tag))
         {
             _tags.Remove(tag);
+            _tagSet.Remove(tag);
         }
         else
         {
+            _tagSet.Add(tag);
             _tags.Add(tag);
         }
     }
