@@ -15,18 +15,21 @@ public class FolderScan
     {
         HashSet<string> allowedExtensions = new() { ".jpeg", ".jpg", ".png", ".gif", ".webp", ".bmp" };
 
-        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(workingFolder);
         IEnumerable<string> enumerateFiles = Directory.EnumerateFiles(workingFolder, "*", SearchOption.AllDirectories)
             .Where(x => allowedExtensions.Contains(Path.GetExtension(x)));
 
+
+        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(workingFolder);
+        List<CanHaveTag> allCanHaveTags = new();
         foreach (string file in enumerateFiles)
         {
             CanHaveTag canHaveTag = new(Path.GetRelativePath(workingFolder, file));
 
-            images.Add(canHaveTag);
+            allCanHaveTags.Add(canHaveTag);
 
             unitOfWork.TagRepository.AddOrUpdateItem(canHaveTag);
         }
+        images.AddRange(allCanHaveTags);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }
