@@ -669,6 +669,10 @@ public class MainWindowViewModel : ViewModelBase
         }
 
         await new FolderScan().ScanFolder(cancellationToken, WorkingFolder, _images);
+
+
+        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder);
+        ReloadTagList(unitOfWork.TagRepository);
     }
 
     private async Task PublishToFolder(CancellationToken cancellationToken)
