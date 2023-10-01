@@ -1,14 +1,4 @@
-using System;
 using System.Diagnostics;
-using System.Reactive;
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-using Avalonia.Controls;
-using ImgTagFanOut.Models;
-using ReactiveUI;
 
 namespace ImgTagFanOut.ViewModels;
 
