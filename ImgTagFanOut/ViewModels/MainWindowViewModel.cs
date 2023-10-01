@@ -249,8 +249,15 @@ public class MainWindowViewModel : ViewModelBase
             .Subscribe(x =>
             {
                 WorkingFolder = x;
+
+            });
+
+        this.WhenAnyValue(x => x.WorkingFolder)
+            .Subscribe(x =>
+            {
                 WindowTitle = $"{nameof(ImgTagFanOut)} - {WorkingFolder}";
             });
+
         CancelScanCommand = ReactiveCommand.Create(
             () => { },
             ScanFolderCommand.IsExecuting);

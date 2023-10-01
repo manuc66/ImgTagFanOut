@@ -8,48 +8,36 @@
         x:Class="ImgTagFanOut.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/logo.ico"
+		Name="window"
         Title="{Binding WindowTitle}">
 
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
+	<Design.DataContext>
+		<!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainWindowViewModel />
-    </Design.DataContext>
+		<vm:MainWindowViewModel />
+	</Design.DataContext>
 	<DockPanel>
 		<Menu DockPanel.Dock="Top">
 			<MenuItem Header="_File">
 				<!--<MenuItem Header="_Open..."/>
 				<Separator/>
-				<MenuItem Header="_Publish..."/>
-				<Separator/>-->
+				<MenuItem Header="_Publish..."/>-->
+				<MenuItem Header="{x:Static resources:Resources.OpenWorkDirectory}" Command="{Binding SelectFolderCommand}"
+                          CommandParameter="{Binding $parent[Window]}" />
+                <MenuItem Header="{x:Static resources:Resources.Scan}" Command="{Binding ScanFolderCommand}" />
+				<Separator/>
 				<MenuItem Header="{x:Static resources:Resources.Exit}" Command="{Binding ExitCommand}"/>
 			</MenuItem>
 			<MenuItem Header="{x:Static resources:Resources.About}" Command="{Binding ShowAboutDialogCommand}">
 			</MenuItem>
 		</Menu>
 
-		<Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,*" RowDefinitions="Auto,*,Auto">
-            <Grid Grid.Row="0" Grid.Column="0" ColumnSpan="2" ColumnDefinitions="*,Auto,Auto,Auto">
-
-                <TextBox Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch"
-                         Text="{Binding Path=WorkingFolder}" />
-				<Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch"
-						Content="{x:Static resources:Resources.Browse}" Command="{Binding SelectFolderCommand}"
-						CommandParameter="{Binding $parent[Window]}" HorizontalAlignment="Right" />
-
-				<Button Grid.Row="0" Grid.Column="2" VerticalAlignment="Stretch" Content="{x:Static resources:Resources.Scan}"
-						Command="{Binding ScanFolderCommand}"
-						HorizontalAlignment="Right" />
-				<Button Grid.Row="0" Grid.Column="3" VerticalAlignment="Stretch"
-						Content="{x:Static resources:Resources.Cancel}" Command="{Binding CancelScanCommand}"
-						HorizontalAlignment="Right" />
-			</Grid>
-
-			<Grid Grid.Row="1" Grid.Column="0" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,*,*">
-                <DockPanel Grid.Row="2" Grid.Column="0" LastChildFill="True">
+		<Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,*" RowDefinitions="*,Auto">
+			<Grid Grid.Row="0" Grid.Column="0" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,*,*">
+				<DockPanel Grid.Row="2" Grid.Column="0" LastChildFill="True">
 					<TextBlock DockPanel.Dock="Top" Text="{x:Static resources:Resources.Images}"></TextBlock>
 					<Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto,Auto">
-                        <TextBlock Grid.Column="0" Text="{x:Static resources:Resources.Filter}"></TextBlock>
+						<TextBlock Grid.Column="0" Text="{x:Static resources:Resources.Filter}"></TextBlock>
 						<TextBox Grid.Column="1" Text="{Binding ItemFilterInput}"></TextBox>
 						<Button Grid.Column="2" Command="{Binding ClearItemFilterInputCommand}"
 								Content="{x:Static resources:Resources.Clear}">
@@ -83,15 +71,10 @@
 				</Image>
 			</Grid>
 
-			<DockPanel Grid.Row="1" Grid.Column="1" LastChildFill="True">
+			<DockPanel Grid.Row="0" Grid.Column="1" LastChildFill="True">
 				<TextBlock DockPanel.Dock="Top" Text="{x:Static resources:Resources.Tags}"></TextBlock>
-				<Grid DockPanel.Dock="Bottom">
-					<Grid.RowDefinitions>
-						<RowDefinition Height="Auto"></RowDefinition>
-						<RowDefinition Height="1*"></RowDefinition>
-						<RowDefinition Height="1*"></RowDefinition>
-					</Grid.RowDefinitions>
-					<Grid Grid.Row="0">
+				<Grid DockPanel.Dock="Bottom" RowDefinitions="Auto,1*,1*">
+                    <Grid Grid.Row="0">
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="Auto"></ColumnDefinition>
 							<ColumnDefinition Width="*"></ColumnDefinition>
@@ -156,9 +139,9 @@
 					</ItemsControl>
 				</Grid>
 			</DockPanel>
-			<Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" ColumnDefinitions="*,Auto,Auto">
+			<Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" ColumnDefinitions="*,Auto,Auto">
 
-                <TextBox Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch"
+				<TextBox Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch"
                          Text="{Binding Path=TargetFolder}" />
 				<Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch"
 						Content="{x:Static resources:Resources.Browse}" Command="{Binding SelectTargetFolderCommand}"

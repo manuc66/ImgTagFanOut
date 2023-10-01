@@ -207,4 +207,7 @@
   <data name="Exit" xml:space="preserve">
     <value>Exit</value>
   </data>
+  <data name="OpenWorkDirectory" xml:space="preserve">
+    <value>Open workspace folder...</value>
+  </data>
 </root>

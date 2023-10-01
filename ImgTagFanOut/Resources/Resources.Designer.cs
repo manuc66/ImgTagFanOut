@@ -259,6 +259,15 @@ namespace ImgTagFanOut.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Open workspace folder....
+        /// </summary>
+        public static string OpenWorkDirectory {
+            get {
+                return ResourceManager.GetString("OpenWorkDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Publish.
         /// </summary>
         public static string Publish {
