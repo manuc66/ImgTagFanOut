@@ -40,13 +40,13 @@ Name: "french"; MessagesFile: "compiler:Languages\French.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "ImgTagFanOut\bin\Release\net7.0\publish\win-x64\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "ImgTagFanOut\bin\Release\net7.0\publish\win-x64\ImgTagFanOut.pdb"; DestDir: "{app}"; Flags: ignoreversion
-Source: "ImgTagFanOut\bin\Release\net7.0\publish\win-x64\av_libglesv2.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "ImgTagFanOut\bin\Release\net7.0\publish\win-x64\blake3_dotnet.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "ImgTagFanOut\bin\Release\net7.0\publish\win-x64\e_sqlite3.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "ImgTagFanOut\bin\Release\net7.0\publish\win-x64\libHarfBuzzSharp.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "ImgTagFanOut\bin\Release\net7.0\publish\win-x64\libSkiaSharp.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "ImgTagFanOut\bin\Release\net8.0\publish\win-x64\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "ImgTagFanOut\bin\Release\net8.0\publish\win-x64\ImgTagFanOut.pdb"; DestDir: "{app}"; Flags: ignoreversion
+Source: "ImgTagFanOut\bin\Release\net8.0\publish\win-x64\av_libglesv2.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "ImgTagFanOut\bin\Release\net8.0\publish\win-x64\blake3_dotnet.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "ImgTagFanOut\bin\Release\net8.0\publish\win-x64\e_sqlite3.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "ImgTagFanOut\bin\Release\net8.0\publish\win-x64\libHarfBuzzSharp.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "ImgTagFanOut\bin\Release\net8.0\publish\win-x64\libSkiaSharp.dll"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
