@@ -20,6 +20,7 @@ using DynamicData.Binding;
 using ImgTagFanOut.Dao;
 using ImgTagFanOut.Models;
 using ReactiveUI;
+using Serilog;
 
 namespace ImgTagFanOut.ViewModels;
 
@@ -413,7 +414,7 @@ public class MainWindowViewModel : ViewModelBase
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(e);
+                        Log.Warning($"Unable to fetch preview for: {fullFilePath}", e);
                         return ((CanHaveTag?)canHaveTag, null);
                     }
                 }

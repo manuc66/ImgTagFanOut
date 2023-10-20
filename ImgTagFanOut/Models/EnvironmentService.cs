@@ -27,6 +27,17 @@ public static class EnvironmentService
 
         return appSettingFile;
     }
+    internal static string GetLogFile()
+    {
+        string appSettingFile = Path.Combine(GetSettingsFolder(), "log.txt");
+
+        if (!File.Exists(appSettingFile))
+        {
+            File.WriteAllText(appSettingFile, "{}");
+        }
+
+        return appSettingFile;
+    }
 
     internal static string GetMyPictureFolder()
     {

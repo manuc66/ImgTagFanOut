@@ -5,6 +5,7 @@ using System.Reactive;
 using ImgTagFanOut.Models;
 using ReactiveUI;
 using Sentry;
+using Serilog;
 
 namespace ImgTagFanOut;
 
@@ -16,8 +17,12 @@ class Program
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
     [STAThread]
-    public static void Main(string[] args) => BuildAvaloniaApp()
-        .StartWithClassicDesktopLifetime(args);
+    public static void Main(string[] args)
+    {
+        BuildAvaloniaApp()
+            .StartWithClassicDesktopLifetime(args);
+        Log.CloseAndFlush();
+    }
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp() =>
@@ -31,12 +36,18 @@ class Program
             {
                 Settings settings = new();
                 AppSettings readSettings = settings.ReadSettings();
+                LoggerConfiguration loggerConfiguration = new LoggerConfiguration();
+                loggerConfiguration.WriteTo.File(EnvironmentService.GetLogFile());
                 if (readSettings.ErrorTrackingAllowed ?? true)
                 {
+                    string sentryDsn = "https://2fd61307fdf9b3a63804db34c9bc51eb@o4505868956860416.ingest.sentry.io/4505869112639488";
+                   loggerConfiguration
+                        .WriteTo.Sentry(o => o.Dsn =sentryDsn);
+                    
                     ErrorTracking = SentrySdk.Init(o =>
                     {
                         // Tells which project in Sentry to send events to:
-                        o.Dsn = "https://2fd61307fdf9b3a63804db34c9bc51eb@o4505868956860416.ingest.sentry.io/4505869112639488";
+                        o.Dsn = sentryDsn;
 
                         // When configuring for the first time, to see what the SDK is doing:
                         //o.Debug = true;
@@ -57,6 +68,8 @@ class Program
                     };
                     RxApp.DefaultExceptionHandler = Observer.Create<Exception>(e => { SentrySdk.CaptureException(e); });
                 }
+                Log.Logger = loggerConfiguration
+                    .CreateLogger();
             })
             .WithInterFont()
             .LogToTrace()
