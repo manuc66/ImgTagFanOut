@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Other", "Other", "{666977CA
 		LICENSE = LICENSE
 		README.md = README.md
 		setupScript.iss = setupScript.iss
+		.github\workflows\build.yml = .github\workflows\build.yml
+		.github\dependabot.yml = .github\dependabot.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WindowsThumbnails", "WindowsThumbnails\WindowsThumbnails.csproj", "{303A65C4-1991-465D-8043-E6A0291C809C}"
