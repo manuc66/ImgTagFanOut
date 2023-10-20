@@ -23,30 +23,30 @@
 
 
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="11.0.4" />
-        <PackageReference Include="Avalonia.Desktop" Version="11.0.4" />
-        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.4" />
-        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.0.4" />
+        <PackageReference Include="Avalonia" Version="11.0.5" />
+        <PackageReference Include="Avalonia.Desktop" Version="11.0.5" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.5" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.0.5" />
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.4" />
-        <PackageReference Include="Avalonia.ReactiveUI" Version="11.0.4" />
+        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.5" />
+        <PackageReference Include="Avalonia.ReactiveUI" Version="11.0.5" />
         <PackageReference Include="Blake3" Version="1.0.0" />
-        <PackageReference Include="DynamicData" Version="8.0.2" />
+        <PackageReference Include="DynamicData" Version="8.1.1" />
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.11" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.11">
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.12" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.12">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.11" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.11">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.12" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.12">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Sentry" Version="3.39.1" />
+        <PackageReference Include="Sentry" Version="3.40.1" />
         <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.6" />
         <PackageReference Include="SQLitePCLRaw.core" Version="2.1.6" />
         <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.6" />
