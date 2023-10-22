@@ -11,6 +11,7 @@ using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
@@ -444,20 +445,34 @@ public class MainWindowViewModel : ViewModelBase
 
     private static async Task<Bitmap?> GetThumbnail(string fullFilePath)
     {
-        Bitmap? bitmap;
         try
         {
             await using FileStream fs = File.OpenRead(fullFilePath);
-            Bitmap result = Bitmap.DecodeToWidth(fs, 400, BitmapInterpolationMode.MediumQuality);
-            bitmap = (Bitmap?)result;
+   
+            var targetWidth = 400;
+            if (!"https://github.com/mono/SkiaSharp/issues/2645".Contains("2645"))
+            {
+                // this should be the expected implemation
+                return Bitmap.DecodeToWidth(fs, targetWidth, BitmapInterpolationMode.MediumQuality);
+            }
+            else
+            {
+                // this implementation is slower but does not crash due to https://github.com/mono/SkiaSharp/issues/2645
+                using Bitmap fullImage = new(fs);
+                var newHeight = fullImage.Size.Width > targetWidth
+                    ? 400d / fullImage.Size.Width * fullImage.Size.Height
+                    : fullImage.Size.Height;
+
+                var thumbnail = fullImage.CreateScaledBitmap(new PixelSize(targetWidth, (int)newHeight));
+
+                return thumbnail;
+            }
         }
         catch (Exception e)
         {
-            Log.Warning(e, $"Unable to fetch preview for: {fullFilePath}");
-            bitmap = null;
+            Log.Warning($"Unable to fetch preview for: {fullFilePath}", e);
+            return null;
         }
-
-        return bitmap;
     }
 
     private CancellationTokenSource _currentHashLookup = new();
