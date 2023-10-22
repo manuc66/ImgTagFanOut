@@ -17,10 +17,6 @@
 
 - **Shareable Collections**: Easily share specific image sets with individuals or groups by sending them the corresponding subdirectory containing images matching their interests or needs.
 
-## Supported Image Formats
-
-ImgTagFanOut supports the following image formats: ".jpeg", ".jpg", ".png", ".gif", ".webp", ".bmp". These formats are supported for image tagging, organization, and sharing.
-
 ## How It Works
 
 1. **Select a Directory**: Choose the directory containing your images that you want to organize.
@@ -32,6 +28,24 @@ ImgTagFanOut supports the following image formats: ".jpeg", ".jpg", ".png", ".gi
 4. **Share with Ease**: Share the subdirectories with friends, family, or colleagues, ensuring they receive the images relevant to them.
 
 ImgTagFanOut simplifies image management, making it a breeze to sort, organize, and distribute your image collection. Try it today and take control of your images like never before!
+
+## Supported Image Formats
+
+ImgTagFanOut supports the following image formats: ".jpeg", ".jpg", ".png", ".gif", ".webp", ".bmp". These formats are supported for image tagging, organization, and sharing.
+
+## Supported language
+
+The application has been translated in the following languages:
+- French
+- English
+
+## Supported Operating system
+
+Thanks to dotnet and [Avalonia](https://www.avaloniaui.net/) this application is running on :
+- Windows (Installer provided as artefact in the build)
+- Linux
+
+MacOs should work as well but has never been tested.
 
 
 ## License
