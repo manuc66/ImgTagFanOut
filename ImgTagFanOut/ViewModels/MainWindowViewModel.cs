@@ -406,17 +406,9 @@ public class MainWindowViewModel : ViewModelBase
                 {
                     SearchForTagBasedOnFileHash(fullFilePath, canHaveTag);
 
-                    try
-                    {
-                        await using FileStream fs = File.OpenRead(fullFilePath);
-                        Bitmap result = Bitmap.DecodeToWidth(fs, 400, BitmapInterpolationMode.MediumQuality);
-                        return ((CanHaveTag?)canHaveTag, (Bitmap?)result);
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Warning(e,$"Unable to fetch preview for: {fullFilePath}");
-                        return ((CanHaveTag?)canHaveTag, null);
-                    }
+                    var thumbnail = await GetThumbnail(fullFilePath);
+                    
+                    return ((CanHaveTag?)canHaveTag, thumbnail);
                 }
                 else
                 {
@@ -448,6 +440,24 @@ public class MainWindowViewModel : ViewModelBase
             await ShowAboutDialog.Handle(aboutViewModel);
         });
 
+    }
+
+    private static async Task<Bitmap?> GetThumbnail(string fullFilePath)
+    {
+        Bitmap? bitmap;
+        try
+        {
+            await using FileStream fs = File.OpenRead(fullFilePath);
+            Bitmap result = Bitmap.DecodeToWidth(fs, 400, BitmapInterpolationMode.MediumQuality);
+            bitmap = (Bitmap?)result;
+        }
+        catch (Exception e)
+        {
+            Log.Warning(e, $"Unable to fetch preview for: {fullFilePath}");
+            bitmap = null;
+        }
+
+        return bitmap;
     }
 
     private CancellationTokenSource _currentHashLookup = new();
