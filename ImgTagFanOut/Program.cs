@@ -19,8 +19,17 @@ class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        BuildAvaloniaApp()
-            .StartWithClassicDesktopLifetime(args);
+        try
+        {
+            BuildAvaloniaApp()
+                .StartWithClassicDesktopLifetime(args);
+        }
+        catch (Exception e)
+        {
+            Log.Error(e,"Critical program halt {0}", e.Message);
+            SentrySdk.CaptureException(e);
+        }
+
         Log.CloseAndFlush();
     }
 
@@ -41,9 +50,9 @@ class Program
                 if (readSettings.ErrorTrackingAllowed ?? true)
                 {
                     string sentryDsn = "https://2fd61307fdf9b3a63804db34c9bc51eb@o4505868956860416.ingest.sentry.io/4505869112639488";
-                   loggerConfiguration
-                        .WriteTo.Sentry(o => o.Dsn =sentryDsn);
-                    
+                    loggerConfiguration
+                        .WriteTo.Sentry(o => o.Dsn = sentryDsn);
+
                     ErrorTracking = SentrySdk.Init(o =>
                     {
                         // Tells which project in Sentry to send events to:
@@ -68,6 +77,7 @@ class Program
                     };
                     RxApp.DefaultExceptionHandler = Observer.Create<Exception>(e => { SentrySdk.CaptureException(e); });
                 }
+
                 Log.Logger = loggerConfiguration
                     .CreateLogger();
             })

@@ -414,7 +414,7 @@ public class MainWindowViewModel : ViewModelBase
                     }
                     catch (Exception e)
                     {
-                        Log.Warning($"Unable to fetch preview for: {fullFilePath}", e);
+                        Log.Warning(e,$"Unable to fetch preview for: {fullFilePath}");
                         return ((CanHaveTag?)canHaveTag, null);
                     }
                 }
