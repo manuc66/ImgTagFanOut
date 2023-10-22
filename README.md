@@ -1,12 +1,15 @@
 
+# ImgTagFanOut
 
-#   ImgTagFanOut
+[![Build Installer](https://github.com/manuc66/ImgTagFanOut/actions/workflows/build.yml/badge.svg)](https://github.com/manuc66/ImgTagFanOut/actions/workflows/build.yml)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fmanuc66%2FImgTagFanOut.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fmanuc66%2FImgTagFanOut?ref=badge_shield&issueType=license)
+[![CodeQL](https://github.com/manuc66/ImgTagFanOut/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/manuc66/ImgTagFanOut/actions/workflows/github-code-scanning/codeql)
 
-<img src="ImgTagFanOut/Assets/logo.ico" width="100" height="100" hspace="20" align="left" > ImgTagFanOut is a versatile image tagging and organization tool designed to simplify the process of categorizing and distributing your image collection. With ImgTagFanOut, you can effortlessly tag your images and automatically organize them into subdirectories based on these tags. This makes it easy to share specific sets of images with individuals or groups, ensuring everyone gets the pictures that matter most to them.
+<img src="ImgTagFanOut/Assets/logo.ico" width="100" height="100" hspace="20" align="left" > ImgTagFanOut is a versatile image tagging and organization tool designed to simplify the process of categorizing and distributing your image collection as file folders. With ImgTagFanOut, you can effortlessly tag your images and automatically organize them into subdirectories based on these tags. This makes it easy to share specific sets of images with individuals or groups, ensuring everyone gets the pictures that matter most to them.
 
 ## Features
 
-- **Effortless Image Tagging**: Simply select a directory containing your images and assign tag labels to them, making it easy to categorize your collection.
+- **Effortless Image Tagging**: Simply select a directory containing your images and assign to each of them tag labels to them, making it easy to categorize your collection.
 
 - **Automatic Tag-Based Organization**: ImgTagFanOut automatically creates subdirectories for each tag, ensuring your images are neatly organized for easy access.
 
