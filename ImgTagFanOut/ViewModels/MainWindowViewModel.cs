@@ -238,38 +238,48 @@ public class MainWindowViewModel : ViewModelBase
 
             SelectedIndex = Math.Min(selectedIndex, FilteredImages.Count - 1);
         }, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
-        OpenCommand = ReactiveCommand.CreateFromTask(OpenFile, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
-        LocateCommand = ReactiveCommand.CreateFromTask(LocateFile, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
+        OpenCommand =
+            ReactiveCommand.CreateFromTask(OpenFile, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
+        LocateCommand =
+            ReactiveCommand.CreateFromTask(LocateFile, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
 
         ScanFolderCommand = ReactiveCommand.CreateFromObservable(
             () => Observable
                 .StartAsync(ScanFolder, RxApp.TaskpoolScheduler)
-                .TakeUntil(CancelScanCommand!), this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)));
+                .TakeUntil(CancelScanCommand!),
+            this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)));
 
-        SelectFolderCommand = ReactiveCommand.CreateFromTask<Window, string>(SelectFolder, ScanFolderCommand.IsExecuting.Select(x => !x));
+        SelectFolderCommand =
+            ReactiveCommand.CreateFromTask<Window, string>(SelectFolder, ScanFolderCommand.IsExecuting.Select(x => !x));
         SelectFolderCommand.SelectMany(OpenFolder)
-            .Subscribe(x =>
-            {
-                WorkingFolder = x;
-
-            });
+            .Subscribe(x => { WorkingFolder = x; });
 
         this.WhenAnyValue(x => x.WorkingFolder)
             .Subscribe(x =>
             {
-                WindowTitle = $"{nameof(ImgTagFanOut)} - {WorkingFolder}";
+                if (string.IsNullOrWhiteSpace(WorkingFolder))
+                {
+                    WindowTitle = $"{nameof(ImgTagFanOut)}";
+                }
+                else
+                {
+                    WindowTitle = $"{nameof(ImgTagFanOut)} - {WorkingFolder}";
+                }
             });
 
         CancelScanCommand = ReactiveCommand.Create(
             () => { },
             ScanFolderCommand.IsExecuting);
 
-        SelectTargetFolderCommand = ReactiveCommand.CreateFromTask<Window, string?>(SelectTargetFolder, ScanFolderCommand.IsExecuting.Select(x => !x));
+        SelectTargetFolderCommand =
+            ReactiveCommand.CreateFromTask<Window, string?>(SelectTargetFolder,
+                ScanFolderCommand.IsExecuting.Select(x => !x));
 
         PublishCommand = ReactiveCommand.CreateFromObservable(
             (Window _) => Observable
                 .StartAsync(PublishToFolder, RxApp.TaskpoolScheduler)
-                .TakeUntil(CancelScanCommand), this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)));
+                .TakeUntil(CancelScanCommand),
+            this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)));
 
 
         AllCommand = ReactiveCommand.CreateFromTask(async () =>
@@ -317,7 +327,8 @@ public class MainWindowViewModel : ViewModelBase
                     .ToObservableChangeSet(x => x)
                     .ToCollection()
                     .Prepend(new ReadOnlyCollection<Tag>(new List<Tag>())),
-                (tagFilterInput, tagList) => !string.IsNullOrWhiteSpace(tagFilterInput) && !tagList.Any(tag => tag.Same(tagFilterInput))));
+                (tagFilterInput, tagList) => !string.IsNullOrWhiteSpace(tagFilterInput) &&
+                                             !tagList.Any(tag => tag.Same(tagFilterInput))));
         ClearTagFilterInputCommand = ReactiveCommand.Create(() => { TagFilterInput = string.Empty; },
             this.WhenAnyValue(x => x.TagFilterInput).Select(x => !string.IsNullOrWhiteSpace(x)));
 
@@ -408,7 +419,7 @@ public class MainWindowViewModel : ViewModelBase
                     SearchForTagBasedOnFileHash(fullFilePath, canHaveTag);
 
                     var thumbnail = await GetThumbnail(fullFilePath);
-                    
+
                     return ((CanHaveTag?)canHaveTag, thumbnail);
                 }
                 else
@@ -440,7 +451,6 @@ public class MainWindowViewModel : ViewModelBase
             AboutViewModel aboutViewModel = new();
             await ShowAboutDialog.Handle(aboutViewModel);
         });
-
     }
 
     private static async Task<Bitmap?> GetThumbnail(string fullFilePath)
@@ -448,7 +458,7 @@ public class MainWindowViewModel : ViewModelBase
         try
         {
             await using FileStream fs = File.OpenRead(fullFilePath);
-   
+
             var targetWidth = 400;
             if (!"https://github.com/mono/SkiaSharp/issues/2645".Contains("2645"))
             {
@@ -490,7 +500,8 @@ public class MainWindowViewModel : ViewModelBase
             }
 
             CanHaveTag computeHashAsync = await ComputeHashAsync(fullFilePath, canHaveTag, cts.Token);
-            if (computeHashAsync != SelectedImage || computeHashAsync.Hash == null || SelectedImage.Done || cts.IsCancellationRequested)
+            if (computeHashAsync != SelectedImage || computeHashAsync.Hash == null || SelectedImage.Done ||
+                cts.IsCancellationRequested)
             {
                 return;
             }
@@ -610,7 +621,8 @@ public class MainWindowViewModel : ViewModelBase
     private static Bitmap LoadNoPreviewToDisplay()
     {
         string resourceName = "ImgTagFanOut.NoPreview.png";
-        using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName) ?? throw new("Resource not found: " + resourceName);
+        using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName) ??
+                              throw new("Resource not found: " + resourceName);
         Bitmap noPreviewToDisplay = new(stream);
         return noPreviewToDisplay;
     }
@@ -666,7 +678,11 @@ public class MainWindowViewModel : ViewModelBase
     private static async Task<string> SelectAFolder(Window window, string selectAnExportFolder, string? previousFolder)
     {
         FolderPickerOpenOptions folderPickerOptions = new()
-        { AllowMultiple = false, Title = selectAnExportFolder, SuggestedStartLocation = await window.StorageProvider.TryGetFolderFromPathAsync(previousFolder ?? string.Empty) };
+        {
+            AllowMultiple = false, Title = selectAnExportFolder,
+            SuggestedStartLocation =
+                await window.StorageProvider.TryGetFolderFromPathAsync(previousFolder ?? string.Empty)
+        };
         IReadOnlyList<IStorageFolder> folders = await window.StorageProvider.OpenFolderPickerAsync(folderPickerOptions);
 
         if (folders.Count == 0)
@@ -685,7 +701,9 @@ public class MainWindowViewModel : ViewModelBase
 
     private Func<CanHaveTag, bool> CreateFilterForDone(bool arg) => arg ? _ => true : item => !item.Done;
 
-    private Func<CanHaveTag, bool> CreateFilterForItemFilterInput(string? arg) => !string.IsNullOrWhiteSpace(arg) ? item => item.Item.Contains(arg, StringComparison.OrdinalIgnoreCase) : _ => true;
+    private Func<CanHaveTag, bool> CreateFilterForItemFilterInput(string? arg) => !string.IsNullOrWhiteSpace(arg)
+        ? item => item.Item.Contains(arg, StringComparison.OrdinalIgnoreCase)
+        : _ => true;
 
     private bool IsSelected(Tag x, CanHaveTag? canHaveTag)
     {
