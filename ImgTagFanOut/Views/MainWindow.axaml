@@ -35,7 +35,7 @@
 
 		<TabControl DockPanel.Dock="Bottom">
 			<TabItem Header="{x:Static resources:Resources.Images}">
-				<views:AssignTags  />
+				<views:AssignTags />
 			</TabItem>
 			<TabItem Header="{x:Static resources:Resources.Tags}">
 				<TextBlock Margin="5">This tab is not ready yet</TextBlock>
