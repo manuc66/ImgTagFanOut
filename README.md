@@ -42,7 +42,7 @@ The application has been translated in the following languages:
 ## Supported Operating system
 
 Thanks to dotnet and [Avalonia](https://www.avaloniaui.net/) this application is running on :
-- Windows (Installer provided as artefact in the build)
+- Windows, the installer available at https://nightly.link/manuc66/ImgTagFanOut/workflows/build/main/artifact.zip
 - Linux
 
 MacOs should work as well but has never been tested.
