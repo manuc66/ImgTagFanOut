@@ -48,10 +48,21 @@ public class PublishProgressViewModel : ViewModelBase
 
     private async Task StartPublish(CancellationToken cancellationToken)
     {
-        await new Publisher().PublishToFolder(WorkingFolder, TargetFolder, OnBeginTag, OnFileCompleted, cancellationToken);
-
-        TrailLog += "Done";
-        Completed = true;
+        try
+        {
+            await new Publisher().PublishToFolder(WorkingFolder, TargetFolder, OnBeginTag, OnFileCompleted,
+                cancellationToken);
+            TrailLog += $"{Environment.NewLine}Done";
+        }
+        catch (Exception e)
+        {
+            TrailLog += $"{Environment.NewLine}Error! -> {e.Message}";
+            throw;
+        }
+        finally
+        {
+            Completed = true;
+        }
     }
 
     private void OnBeginTag(Tag tag)
