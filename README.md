@@ -1,8 +1,7 @@
-
 # ImgTagFanOut
 
 [![Build Installer](https://github.com/manuc66/ImgTagFanOut/actions/workflows/build.yml/badge.svg)](https://github.com/manuc66/ImgTagFanOut/actions/workflows/build.yml)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fmanuc66%2FImgTagFanOut.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fmanuc66%2FImgTagFanOut?ref=badge_shield&issueType=license)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fmanuc66%2FImgTagFanOut.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fmanuc66%2FImgTagFanOut?ref=badge_shield)
 [![CodeQL](https://github.com/manuc66/ImgTagFanOut/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/manuc66/ImgTagFanOut/actions/workflows/github-code-scanning/codeql)
 
 <img src="ImgTagFanOut/Assets/logo.ico" width="100" height="100" hspace="20" align="left" > ImgTagFanOut is a versatile image tagging and organization tool designed to simplify the process of categorizing and distributing your image collection as file folders. With ImgTagFanOut, you can effortlessly tag your images and automatically organize them into subdirectories based on these tags. This makes it easy to share specific sets of images with individuals or groups, ensuring everyone gets the pictures that matter most to them.
@@ -55,3 +54,5 @@ ImgTagFanOut is licensed under the [MIT License](LICENSE), allowing you to use, 
 ---
 
 ImgTagFanOut empowers you to efficiently manage your image collection by tagging, organizing, and sharing with ease. Give it a try and enjoy a hassle-free way to manage your images! If you find this tool useful, consider starring the project to show your support.
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fmanuc66%2FImgTagFanOut.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fmanuc66%2FImgTagFanOut?ref=badge_large)
