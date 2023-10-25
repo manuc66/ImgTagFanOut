@@ -29,12 +29,12 @@ public abstract class FileComparer
     {
         FileInfo1 = fileInfo01 ?? throw new ArgumentNullException(nameof(fileInfo01));
         FileInfo2 = fileInfo02 ?? throw new ArgumentNullException(nameof(fileInfo02));
-        if (FileInfo1.Exists)
+        if (!FileInfo1.Exists)
         {
             throw new FileNotFoundException(fileInfo01.FullName);
         }
 
-        if (FileInfo2.Exists)
+        if (!FileInfo2.Exists)
         {
             throw new FileNotFoundException(fileInfo02.FullName);
         }
