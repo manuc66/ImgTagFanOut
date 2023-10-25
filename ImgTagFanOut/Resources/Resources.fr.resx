@@ -210,4 +210,7 @@
   <data name="OpenWorkDirectory" xml:space="preserve">
     <value>Ouvrir le dossier de travail...</value>
   </data>
+  <data name="File" xml:space="preserve">
+    <value>Fichier</value>
+  </data>
 </root>

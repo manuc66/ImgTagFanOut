@@ -19,7 +19,7 @@
 	</Design.DataContext>
 	<DockPanel>
 		<Menu DockPanel.Dock="Top">
-			<MenuItem Header="_File">
+			<MenuItem Header="{x:Static resources:Resources.File}">
 				<!--<MenuItem Header="_Open..."/>
 				<Separator/>
 				<MenuItem Header="_Publish..."/>-->
