@@ -52,11 +52,11 @@ public class PublishProgressViewModel : ViewModelBase
         {
             await new Publisher().PublishToFolder(WorkingFolder, TargetFolder, OnBeginTag, OnFileCompleted,
                 cancellationToken);
-            TrailLog += $"{Environment.NewLine}Done";
+            TrailLog += $"{Environment.NewLine}{Environment.NewLine}==> Done!";
         }
         catch (Exception e)
         {
-            TrailLog += $"{Environment.NewLine}Error! -> {e.Message}";
+            TrailLog += $"{Environment.NewLine}{Environment.NewLine} ==> Error! -> {e.Message}";
             throw;
         }
         finally
