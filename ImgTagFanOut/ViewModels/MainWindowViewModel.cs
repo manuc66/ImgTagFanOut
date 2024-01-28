@@ -61,7 +61,7 @@ public class MainWindowViewModel : ViewModelBase
     public ReadOnlyObservableCollection<CanHaveTag> FilteredImages
     {
         get => _filteredImages;
-        set => _filteredImages = value;
+        set => this.RaiseAndSetIfChanged(ref _filteredImages, value);
     }
 
     private ObservableCollection<Tag> TagList
@@ -255,17 +255,7 @@ public class MainWindowViewModel : ViewModelBase
             .Subscribe(x => { WorkingFolder = x; });
 
         this.WhenAnyValue(x => x.WorkingFolder)
-            .Subscribe(x =>
-            {
-                if (string.IsNullOrWhiteSpace(WorkingFolder))
-                {
-                    WindowTitle = $"{nameof(ImgTagFanOut)}";
-                }
-                else
-                {
-                    WindowTitle = $"{nameof(ImgTagFanOut)} - {WorkingFolder}";
-                }
-            });
+            .Subscribe(x => { WindowTitle = string.IsNullOrWhiteSpace(WorkingFolder) ? $"{nameof(ImgTagFanOut)}" : $"{nameof(ImgTagFanOut)} - {WorkingFolder}"; });
 
         CancelScanCommand = ReactiveCommand.Create(
             () => { },
@@ -289,7 +279,7 @@ public class MainWindowViewModel : ViewModelBase
                     return;
                 }
 
-                await AssignAllTags(SelectedImage, TagList);
+                await AssignAllTags(SelectedImage, TagList, CancellationToken.None);
             },
             this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
         NoneCommand = ReactiveCommand.CreateFromTask(async () =>
@@ -483,16 +473,18 @@ public class MainWindowViewModel : ViewModelBase
     private void SearchForTagBasedOnFileHash(string fullFilePath, CanHaveTag canHaveTag)
     {
         _currentHashLookup.Cancel();
+        _currentHashLookup.Dispose();
         _currentHashLookup = new();
         RxApp.MainThreadScheduler.ScheduleAsync(async (_, ct) =>
         {
-            CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(ct, _currentHashLookup.Token);
+            using CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(ct, _currentHashLookup.Token);
             if (WorkingFolder == null || cts.IsCancellationRequested)
             {
                 return;
             }
 
-            CanHaveTag computeHashAsync = await ComputeHashAsync(fullFilePath, canHaveTag, cts.Token);
+            CancellationToken cancellationToken = cts.Token;
+            CanHaveTag computeHashAsync = await ComputeHashAsync(fullFilePath, canHaveTag, cancellationToken);
             if (computeHashAsync != SelectedImage || computeHashAsync.Hash == null || SelectedImage.Done ||
                 cts.IsCancellationRequested)
             {
@@ -500,7 +492,7 @@ public class MainWindowViewModel : ViewModelBase
             }
 
             ImmutableList<Tag> allTagForHash;
-            await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder))
+            await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken))
             {
                 allTagForHash = unitOfWork.TagRepository.GetAllTagForHash(computeHashAsync.Hash);
             }
@@ -510,7 +502,7 @@ public class MainWindowViewModel : ViewModelBase
                 return;
             }
 
-            await AssignAllTags(SelectedImage, allTagForHash);
+            await AssignAllTags(SelectedImage, allTagForHash, cancellationToken);
         });
     }
 
@@ -560,21 +552,21 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private async Task AssignAllTags(CanHaveTag selectedImage, IEnumerable<Tag> allTags)
+    private async Task AssignAllTags(CanHaveTag selectedImage, IEnumerable<Tag> allTags, CancellationToken cancellationToken)
     {
         if (WorkingFolder == null)
         {
             return;
         }
 
-        await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder))
+        await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken))
         {
             foreach (Tag selectedImageTag in allTags)
             {
                 unitOfWork.TagRepository.AddTagToItem(selectedImageTag, selectedImage);
             }
 
-            await unitOfWork.SaveChangesAsync();
+            await unitOfWork.SaveChangesAsync(cancellationToken);
         }
 
         RefreshTagIsSelected();
@@ -615,7 +607,7 @@ public class MainWindowViewModel : ViewModelBase
     {
         string resourceName = "ImgTagFanOut.NoPreview.png";
         using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName) ??
-                              throw new("Resource not found: " + resourceName);
+                              throw new Exception("Resource not found: " + resourceName);
         Bitmap noPreviewToDisplay = new(stream);
         return noPreviewToDisplay;
     }

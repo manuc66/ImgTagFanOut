@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using ImgTagFanOut.Dao;
 using Microsoft.EntityFrameworkCore;
@@ -8,10 +9,10 @@ public static class DbContextFactory
 {
     private static readonly TagCache TagCache = TagCache = new();
     
-    internal static async Task<IUnitOfWork> GetUnitOfWorkAsync(string path)
+    internal static async Task<IUnitOfWork> GetUnitOfWorkAsync(string path, CancellationToken cancellationToken = default)
     {
         ImgTagFanOutDbContext imgTagFanOutDbContext = new(TagCache, path);
-        await imgTagFanOutDbContext.Database.MigrateAsync();
+        await imgTagFanOutDbContext.Database.MigrateAsync(cancellationToken);
         return imgTagFanOutDbContext;
     }
     internal static IUnitOfWork GetUnitOfWork(string path)

@@ -27,7 +27,7 @@ public class FolderScan
             .Where(x => allowedExtensions.Contains(Path.GetExtension(x)));
 
 
-        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(workingFolder);
+        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(workingFolder, cancellationToken);
         List<CanHaveTag> allCanHaveTags = new();
         foreach (string file in enumerateFiles)
         {
