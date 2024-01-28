@@ -459,24 +459,17 @@ public class MainWindowViewModel : ViewModelBase
         {
             await using FileStream fs = File.OpenRead(fullFilePath);
 
-            var targetWidth = 400;
-            if (!"https://github.com/mono/SkiaSharp/issues/2645".Contains("2645"))
-            {
-                // this should be the expected implemation
-                return Bitmap.DecodeToWidth(fs, targetWidth, BitmapInterpolationMode.MediumQuality);
-            }
-            else
-            {
-                // this implementation is slower but does not crash due to https://github.com/mono/SkiaSharp/issues/2645
-                using Bitmap fullImage = new(fs);
-                var newHeight = fullImage.Size.Width > targetWidth
-                    ? 400d / fullImage.Size.Width * fullImage.Size.Height
-                    : fullImage.Size.Height;
+            int targetWidth = 400;
 
-                var thumbnail = fullImage.CreateScaledBitmap(new PixelSize(targetWidth, (int)newHeight));
+            // this implementation is slower but does not crash due to https://github.com/mono/SkiaSharp/issues/2645
+            using Bitmap fullImage = new(fs);
+            double newHeight = fullImage.Size.Width > targetWidth
+                ? 400d / fullImage.Size.Width * fullImage.Size.Height
+                : fullImage.Size.Height;
 
-                return thumbnail;
-            }
+            Bitmap thumbnail = fullImage.CreateScaledBitmap(new PixelSize(targetWidth, (int)newHeight));
+
+            return thumbnail;
         }
         catch (Exception e)
         {
