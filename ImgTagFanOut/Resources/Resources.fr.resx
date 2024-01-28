@@ -163,10 +163,10 @@
     <value>Ouvrir</value>
   </data>
   <data name="Images" xml:space="preserve">
-    <value>Images :</value>
+    <value>Images</value>
   </data>
   <data name="Tags" xml:space="preserve">
-    <value>Libellés :</value>
+    <value>Libellés</value>
   </data>
   <data name="Filter" xml:space="preserve">
     <value>Filtre :</value>
