@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "ImgTagFanOut"
-#define DotnetVersion "net7.0"
+#define DotnetVersion "net8.0"
 #define MyAppVersion "1.0.0"
 #define MyAppPublisher "https://github.com/manuc66"
 #define MyAppURL "https://manuc66.github.io/ImgTagFanOut/"
