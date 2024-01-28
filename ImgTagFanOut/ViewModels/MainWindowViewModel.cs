@@ -13,8 +13,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using Blake3;
 using DynamicData;
 using DynamicData.Binding;
@@ -45,6 +47,8 @@ public class MainWindowViewModel : ViewModelBase
     private bool _windowActivated;
     private readonly Settings _settings;
     private string _windowTitle = null!;
+    private Cursor _cursor = Cursor.Default;
+    private bool _isBusy = false;
 
     public string? WorkingFolder
     {
@@ -123,6 +127,19 @@ public class MainWindowViewModel : ViewModelBase
         get => _windowTitle;
         set => this.RaiseAndSetIfChanged(ref _windowTitle, value);
     }
+
+    public Cursor Cursor
+    {
+        get => _cursor;
+        set => this.RaiseAndSetIfChanged(ref _cursor, value);
+    }
+
+    public bool IsBusy
+    {
+        get => _isBusy;
+        set => this.RaiseAndSetIfChanged(ref _isBusy, value);
+    }
+
 
     public ReactiveCommand<Window, string> SelectFolderCommand { get; }
     public ReactiveCommand<Window, string?> SelectTargetFolderCommand { get; }
@@ -243,11 +260,22 @@ public class MainWindowViewModel : ViewModelBase
         LocateCommand =
             ReactiveCommand.CreateFromTask(LocateFile, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
 
-        ScanFolderCommand = ReactiveCommand.CreateFromObservable(
-            () => Observable
-                .StartAsync(ScanFolder, RxApp.TaskpoolScheduler)
-                .TakeUntil(CancelScanCommand!),
-            this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)));
+        ScanFolderCommand = ReactiveCommand.CreateFromTask(async (cts) =>
+            {
+                IsBusy = true;
+                try
+                {
+                    await Task.Run(async () => await ScanFolder(cts));
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            },
+            this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)),
+            RxApp.TaskpoolScheduler);
+
+
 
         SelectFolderCommand =
             ReactiveCommand.CreateFromTask<Window, string>(SelectFolder, ScanFolderCommand.IsExecuting.Select(x => !x));
@@ -707,7 +735,7 @@ public class MainWindowViewModel : ViewModelBase
         await new FolderScan().ScanFolder(cancellationToken, WorkingFolder, _images);
 
 
-        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder);
+        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken);
         ReloadTagList(unitOfWork.TagRepository);
     }
 

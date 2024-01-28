@@ -1,5 +1,8 @@
 using System;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Avalonia.Input;
 using Avalonia.ReactiveUI;
 using Avalonia.Threading;
 using ImgTagFanOut.ViewModels;
@@ -17,6 +20,24 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         this.WhenActivated(d => d(ViewModel!.ShowAboutDialog.RegisterHandler(DoShowABoutDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ExitCommand.Subscribe(x => Close())));
         Activated += OnWindowActivated;
+        this.WhenActivated((CompositeDisposable disposable) =>
+        {
+            this.ViewModel.WhenAnyValue(x => x.IsBusy)
+                .Do(UpdateCursor)
+                .Subscribe()
+                .DisposeWith(disposable);
+        });
+    }
+    private void UpdateCursor(bool isBusy)
+    {
+        if (isBusy)
+        {
+            Cursor = new Cursor(StandardCursorType.Wait);
+        }
+        else
+        {
+            Cursor = Cursor.Default;
+        }
     }
 
     private void OnWindowActivated(object? sender, EventArgs e)
