@@ -13,7 +13,15 @@ public class FolderScan
 {
     internal async Task ScanFolder(CancellationToken cancellationToken, string workingFolder, SourceList<CanHaveTag> images)
     {
-        HashSet<string> allowedExtensions = new() { ".jpeg", ".jpg", ".png", ".gif", ".webp", ".bmp" };
+        HashSet<string> allowedExtensions = [
+            ".jpg", ".jpeg", ".jpe", ".jif", ".jfif", ".jfi", // jpeg
+            ".jp2", ".j2k", ".jpf", ".jpm", ".jpg2", ".j2c", ".jpc", ".jpx", ".mj2", //JPEG 2000
+            ".png", 
+            ".gif", 
+            ".webp", 
+            ".bmp", ".dib", 
+            ".heif", ".heic", ".heics", ".avci", ".avcs", ".hif" //High Efficiency Image File Format
+        ];
 
         IEnumerable<string> enumerateFiles = Directory.EnumerateFiles(workingFolder, "*", SearchOption.AllDirectories)
             .Where(x => allowedExtensions.Contains(Path.GetExtension(x)));
