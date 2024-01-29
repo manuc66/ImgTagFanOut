@@ -265,7 +265,7 @@ public class MainWindowViewModel : ViewModelBase
                 IsBusy = true;
                 try
                 {
-                    await Task.Run(async () => await ScanFolder(cts));
+                    await Task.Run(async () => await ScanFolder(cts), cts);
                 }
                 finally
                 {
@@ -274,7 +274,6 @@ public class MainWindowViewModel : ViewModelBase
             },
             this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)),
             RxApp.TaskpoolScheduler);
-
 
 
         SelectFolderCommand =
@@ -674,18 +673,25 @@ public class MainWindowViewModel : ViewModelBase
             return null;
         }
 
+        IsBusy = true;
+        try
+        {
+            string selectedFolder = await SelectAFolder(window, Resources.Resources.SelectExportFolder, TargetFolder);
 
-        string selectedFolder = await SelectAFolder(window, Resources.Resources.SelectExportFolder, TargetFolder);
+            TargetFolder = selectedFolder;
 
-        TargetFolder = selectedFolder;
+            await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder);
 
-        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder);
+            unitOfWork.ParameterRepository.Update(TargetFolderSettingKey, selectedFolder);
 
-        unitOfWork.ParameterRepository.Update(TargetFolderSettingKey, selectedFolder);
+            await unitOfWork.SaveChangesAsync();
 
-        await unitOfWork.SaveChangesAsync();
-
-        return selectedFolder;
+            return selectedFolder;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private static async Task<string> SelectAFolder(Window window, string selectAnExportFolder, string? previousFolder)

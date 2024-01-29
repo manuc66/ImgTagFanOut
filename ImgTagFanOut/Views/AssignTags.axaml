@@ -13,7 +13,7 @@
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <viewModels:MainWindowViewModel />
     </Design.DataContext>
-    <Grid ColumnDefinitions="*,*" RowDefinitions="*,Auto">
+    <Grid IsEnabled="{Binding !IsBusy}" ColumnDefinitions="*,*" RowDefinitions="*,Auto">
         <Grid Grid.Row="0" Grid.Column="0" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,*,*">
             <DockPanel Grid.Row="2" Grid.Column="0" LastChildFill="True">
                 <TextBlock DockPanel.Dock="Top" Text="{x:Static resources:Resources.Images}"></TextBlock>
