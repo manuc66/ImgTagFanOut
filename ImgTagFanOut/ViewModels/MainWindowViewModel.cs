@@ -16,7 +16,6 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
-using Avalonia.Threading;
 using Blake3;
 using DynamicData;
 using DynamicData.Binding;
