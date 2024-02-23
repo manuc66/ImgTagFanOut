@@ -19,10 +19,12 @@ using Avalonia.Platform.Storage;
 using Blake3;
 using DynamicData;
 using DynamicData.Binding;
+using ImageMagick;
 using ImgTagFanOut.Dao;
 using ImgTagFanOut.Models;
 using ReactiveUI;
 using Serilog;
+using SkiaSharp;
 
 namespace ImgTagFanOut.ViewModels;
 
@@ -434,7 +436,7 @@ public class MainWindowViewModel : ViewModelBase
                 {
                     SearchForTagBasedOnFileHash(fullFilePath, canHaveTag);
 
-                    Bitmap? thumbnail = await GetThumbnail(fullFilePath);
+                    Bitmap? thumbnail = await new Thumbnailer().GetThumbnail(fullFilePath);
 
                     return ((CanHaveTag?)canHaveTag, thumbnail);
                 }
@@ -469,30 +471,7 @@ public class MainWindowViewModel : ViewModelBase
         });
     }
 
-    private static async Task<Bitmap?> GetThumbnail(string fullFilePath)
-    {
-        try
-        {
-            await using FileStream fs = File.OpenRead(fullFilePath);
 
-            int targetWidth = 400;
-
-            // this implementation is slower but does not crash due to https://github.com/mono/SkiaSharp/issues/2645
-            using Bitmap fullImage = new(fs);
-            double newHeight = fullImage.Size.Width > targetWidth
-                ? 400d / fullImage.Size.Width * fullImage.Size.Height
-                : fullImage.Size.Height;
-
-            Bitmap thumbnail = fullImage.CreateScaledBitmap(new PixelSize(targetWidth, (int)newHeight));
-
-            return thumbnail;
-        }
-        catch (Exception e)
-        {
-            Log.Warning($"Unable to fetch preview for: {fullFilePath}", e);
-            return null;
-        }
-    }
 
     private CancellationTokenSource _currentHashLookup = new();
 
