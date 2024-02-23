@@ -436,7 +436,7 @@ public class MainWindowViewModel : ViewModelBase
                 {
                     SearchForTagBasedOnFileHash(fullFilePath, canHaveTag);
 
-                    Bitmap? thumbnail = await new Thumbnailer().GetThumbnail(fullFilePath);
+                    Bitmap? thumbnail = await new ThumbnailProvider().GetThumbnail(fullFilePath);
 
                     return ((CanHaveTag?)canHaveTag, thumbnail);
                 }

@@ -8,7 +8,7 @@ using Serilog;
 
 namespace ImgTagFanOut.Models;
 
-public class Thumbnailer
+public class ThumbnailProvider
 {
     internal async Task<Bitmap?> GetThumbnail(string fullFilePath)
     {
