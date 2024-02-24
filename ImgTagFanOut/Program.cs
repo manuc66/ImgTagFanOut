@@ -1,7 +1,9 @@
 ﻿using Avalonia;
 using Avalonia.ReactiveUI;
 using System;
+using System.Diagnostics;
 using System.Reactive;
+using Avalonia.Threading;
 using ImgTagFanOut.Models;
 using ReactiveUI;
 using Sentry;
@@ -26,7 +28,7 @@ class Program
         }
         catch (Exception e)
         {
-            Log.Error(e,"Critical program halt {0}", e.Message);
+            Log.Error(e, "Critical program halt {0}", e.Message);
             SentrySdk.CaptureException(e);
         }
 
@@ -49,7 +51,8 @@ class Program
                 loggerConfiguration.WriteTo.File(EnvironmentService.GetLogFile());
                 if (readSettings.ErrorTrackingAllowed ?? true)
                 {
-                    string sentryDsn = "https://2fd61307fdf9b3a63804db34c9bc51eb@o4505868956860416.ingest.sentry.io/4505869112639488";
+                    string sentryDsn =
+                        "https://2fd61307fdf9b3a63804db34c9bc51eb@o4505868956860416.ingest.sentry.io/4505869112639488";
                     loggerConfiguration
                         .WriteTo.Sentry(o => o.Dsn = sentryDsn);
 
@@ -72,10 +75,15 @@ class Program
                     {
                         if (e.ExceptionObject is Exception ex)
                         {
+                            if (Debugger.IsAttached) Debugger.Break();
                             SentrySdk.CaptureException(ex);
                         }
                     };
-                    RxApp.DefaultExceptionHandler = Observer.Create<Exception>(e => { SentrySdk.CaptureException(e); });
+                    RxApp.DefaultExceptionHandler = Observer.Create<Exception>(e =>
+                    {
+                        if (Debugger.IsAttached) Debugger.Break();
+                        SentrySdk.CaptureException(e);
+                    });
                 }
 
                 Log.Logger = loggerConfiguration
