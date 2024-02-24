@@ -30,7 +30,16 @@ ImgTagFanOut simplifies image management, making it a breeze to sort, organize, 
 
 ## Supported Image Formats
 
-ImgTagFanOut supports the following image formats: ".jpeg", ".jpg", ".png", ".gif", ".webp", ".bmp". These formats are supported for image tagging, organization, and sharing.
+ImgTagFanOut supports the following image formats: 
+-.jpeg
+-.jpg 
+-.png 
+-.gif
+-.webp
+-.bmp
+-.heic
+
+These formats are supported for preview while tagging.
 
 ## Supported language
 
