@@ -7,6 +7,8 @@ namespace ImgTagFanOut.Views
         public About()
         {
             InitializeComponent();
+            var licenseText = System.IO.File.ReadAllText("LICENSE");
+            LicenseTextBlock.Text = licenseText;
         }
     }
 }
