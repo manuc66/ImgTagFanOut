@@ -11,7 +11,6 @@ using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
@@ -19,12 +18,9 @@ using Avalonia.Platform.Storage;
 using Blake3;
 using DynamicData;
 using DynamicData.Binding;
-using ImageMagick;
 using ImgTagFanOut.Dao;
 using ImgTagFanOut.Models;
 using ReactiveUI;
-using Serilog;
-using SkiaSharp;
 
 namespace ImgTagFanOut.ViewModels;
 
