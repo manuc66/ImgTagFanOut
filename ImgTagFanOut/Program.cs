@@ -3,8 +3,8 @@ using Avalonia.ReactiveUI;
 using System;
 using System.Diagnostics;
 using System.Reactive;
-using Avalonia.Threading;
 using ImgTagFanOut.Models;
+using Microsoft.IO;
 using ReactiveUI;
 using Sentry;
 using Serilog;
@@ -14,6 +14,7 @@ namespace ImgTagFanOut;
 class Program
 {
     internal static IDisposable? ErrorTracking;
+    internal static readonly RecyclableMemoryStreamManager RecyclableMemoryStreamManager = new RecyclableMemoryStreamManager();
 
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized

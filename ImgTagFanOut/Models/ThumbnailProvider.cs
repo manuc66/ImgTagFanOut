@@ -42,7 +42,7 @@ public class ThumbnailProvider
 
     private static async Task<Bitmap?> GetThumbnailWithImageMagick(string fullFilePath, int targetWidth)
     {
-        using MemoryStream ms = new();
+        using MemoryStream ms = Program.RecyclableMemoryStreamManager.GetStream();
 
         MagickReadSettings settings = new()
         {
