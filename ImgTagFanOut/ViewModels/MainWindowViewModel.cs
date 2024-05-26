@@ -235,7 +235,6 @@ public class MainWindowViewModel : ViewModelBase
             .Filter(this.WhenValueChanged(@this => @this.ItemFilterInput)
                 .Select(CreateFilterForItemFilterInput))
             .Sort(SortExpressionComparer<CanHaveTag>.Ascending(t => t.Item))
-            .Throttle(TimeSpan.FromMilliseconds(20))
             .ObserveOn(RxApp.MainThreadScheduler)
             .Bind(out _filteredImages)
             .Subscribe();
