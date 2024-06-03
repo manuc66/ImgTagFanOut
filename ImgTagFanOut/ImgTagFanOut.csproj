@@ -55,7 +55,7 @@
         <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.8" />
         <PackageReference Include="SQLitePCLRaw.provider.e_sqlite3" Version="2.1.8" />
 
-        <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="13.8.0" />
+        <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="13.9.0" />
     </ItemGroup>
 
 
