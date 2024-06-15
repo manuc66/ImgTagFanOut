@@ -247,11 +247,8 @@ public class TagRepository : ITagRepository
             existingItem.Tags.Remove(existingTag);
         }
 
-        foreach (ItemTagDao itemTag in existingTag.ItemTags)
-        {
-            _dbContext.ItemTags.Remove(itemTag);
-        }
-
+        _dbContext.ItemTags.RemoveRange(existingTag.ItemTags);
+        
         _dbContext.Tags.Remove(existingTag);
     }
 
