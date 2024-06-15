@@ -8,6 +8,9 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ImgTagFanOut.Views.AssignTags"
              x:DataType="viewModels:MainWindowViewModel">
+    <UserControl.Resources>
+        <views:BoolToCheckmarkConverter x:Key="BoolToCheckmarkConverter" />
+    </UserControl.Resources>
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
@@ -29,7 +32,19 @@
 
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Item}"></TextBlock>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"></ColumnDefinition>
+                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                    <ColumnDefinition Width="Auto" MinWidth="5"></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding Item}"></TextBlock>
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding Done, Converter={StaticResource BoolToCheckmarkConverter}}"
+                                           VerticalAlignment="Center" FontSize="24">
+                                </TextBlock>
+                                <TextBlock Grid.Column="2" Text="{Binding Tags.Count}" VerticalAlignment="Center"></TextBlock>
+                            </Grid>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
