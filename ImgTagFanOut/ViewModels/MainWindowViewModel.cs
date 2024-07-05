@@ -256,7 +256,7 @@ public class MainWindowViewModel : ViewModelBase
         LocateCommand =
             ReactiveCommand.CreateFromTask(LocateFile, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
 
-        ScanFolderCommand = ReactiveCommand.CreateFromTask(async (cts) =>
+        ScanFolderCommand = ReactiveCommand.CreateFromTask(async cts =>
             {
                 IsBusy = true;
                 try
@@ -275,10 +275,15 @@ public class MainWindowViewModel : ViewModelBase
         SelectFolderCommand =
             ReactiveCommand.CreateFromTask<Window, string>(SelectFolder, ScanFolderCommand.IsExecuting.Select(x => !x));
         SelectFolderCommand.SelectMany(OpenFolder)
-            .Subscribe(x => { WorkingFolder = x; });
+            .Subscribe();
 
         this.WhenAnyValue(x => x.WorkingFolder)
-            .Subscribe(x => { WindowTitle = string.IsNullOrWhiteSpace(WorkingFolder) ? $"{nameof(ImgTagFanOut)}" : $"{nameof(ImgTagFanOut)} - {WorkingFolder}"; });
+            .Subscribe(x =>
+            {
+                WindowTitle = string.IsNullOrWhiteSpace(WorkingFolder)
+                    ? $"{nameof(ImgTagFanOut)}"
+                    : $"{nameof(ImgTagFanOut)} - {WorkingFolder}";
+            });
 
         CancelScanCommand = ReactiveCommand.Create(
             () => { },
@@ -477,7 +482,8 @@ public class MainWindowViewModel : ViewModelBase
         _currentHashLookup = new();
         RxApp.MainThreadScheduler.ScheduleAsync(async (_, ct) =>
         {
-            using CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(ct, _currentHashLookup.Token);
+            using CancellationTokenSource cts =
+                CancellationTokenSource.CreateLinkedTokenSource(ct, _currentHashLookup.Token);
             if (WorkingFolder == null || cts.IsCancellationRequested)
             {
                 return;
@@ -492,7 +498,8 @@ public class MainWindowViewModel : ViewModelBase
             }
 
             ImmutableList<Tag> allTagForHash;
-            await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken))
+            await using (IUnitOfWork unitOfWork =
+                         await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken))
             {
                 allTagForHash = unitOfWork.TagRepository.GetAllTagForHash(computeHashAsync.Hash);
             }
@@ -629,11 +636,15 @@ public class MainWindowViewModel : ViewModelBase
 
         string selectedFolder = await SelectAFolder(window, Resources.Resources.SelectWorkingFolder, lastFolder);
 
-        AppSettings appSettings = _settings.ReadSettings();
-        appSettings.LastFolder = selectedFolder;
-        _settings.Save(appSettings);
+        if (WorkingFolder != selectedFolder)
+        {
+            WorkingFolder = null;
+            AppSettings appSettings = _settings.ReadSettings();
+            appSettings.LastFolder = selectedFolder;
+            _settings.Save(appSettings);
 
-        WorkingFolder = selectedFolder;
+            WorkingFolder = selectedFolder;
+        }
 
 
         return selectedFolder;
@@ -714,7 +725,8 @@ public class MainWindowViewModel : ViewModelBase
         await new FolderScan().ScanFolder(cancellationToken, WorkingFolder, _images);
 
 
-        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken);
+        await using IUnitOfWork unitOfWork =
+            await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken);
         ReloadTagList(unitOfWork.TagRepository);
     }
 
