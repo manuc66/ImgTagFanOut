@@ -51,9 +51,9 @@
         <PackageReference Include="Sentry.Serilog" Version="4.9.0" />
         <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
         <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.8" />
-        <PackageReference Include="SQLitePCLRaw.core" Version="2.1.8" />
+        <PackageReference Include="SQLitePCLRaw.core" Version="2.1.9" />
         <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.8" />
-        <PackageReference Include="SQLitePCLRaw.provider.e_sqlite3" Version="2.1.8" />
+        <PackageReference Include="SQLitePCLRaw.provider.e_sqlite3" Version="2.1.9" />
 
         <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="13.10.0" />
     </ItemGroup>
