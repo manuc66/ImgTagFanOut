@@ -12,7 +12,7 @@ public class ThumbnailProvider
 {
     internal async Task<Bitmap?> GetThumbnail(string fullFilePath)
     {
-        int targetWidth = 400;
+        uint targetWidth = 400;
         try
         {
             return await GetThumbnailWithAvaloniaBitmap(fullFilePath, targetWidth);
@@ -32,15 +32,15 @@ public class ThumbnailProvider
         }
     }
 
-    private static async Task<Bitmap?> GetThumbnailWithAvaloniaBitmap(string fullFilePath, int targetWidth)
+    private static async Task<Bitmap?> GetThumbnailWithAvaloniaBitmap(string fullFilePath, uint targetWidth)
     {
         await using FileStream fs = File.OpenRead(fullFilePath);
 
         // this should be the expected implemation
-        return Bitmap.DecodeToWidth(fs, targetWidth, BitmapInterpolationMode.MediumQuality);
+        return Bitmap.DecodeToWidth(fs, (int)targetWidth, BitmapInterpolationMode.MediumQuality);
     }
 
-    private static async Task<Bitmap?> GetThumbnailWithImageMagick(string fullFilePath, int targetWidth)
+    private static async Task<Bitmap?> GetThumbnailWithImageMagick(string fullFilePath, uint targetWidth)
     {
         using MemoryStream ms = Program.RecyclableMemoryStreamManager.GetStream();
 
