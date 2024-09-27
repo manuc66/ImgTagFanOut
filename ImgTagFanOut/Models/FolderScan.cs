@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -25,7 +26,7 @@ public class FolderScan
         ];
 
         IEnumerable<string> enumerateFiles = Directory.EnumerateFiles(workingFolder, "*", SearchOption.AllDirectories)
-            .Where(x => !cancellationToken.IsCancellationRequested && allowedExtensions.Contains(Path.GetExtension(x)));
+            .Where(x => !cancellationToken.IsCancellationRequested && allowedExtensions.Contains(Path.GetExtension(x), StringComparer.OrdinalIgnoreCase));
 
         await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(workingFolder, cancellationToken);
         List<CanHaveTag> allCanHaveTags = new();
