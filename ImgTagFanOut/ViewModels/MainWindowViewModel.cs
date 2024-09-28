@@ -20,6 +20,7 @@ using DynamicData;
 using DynamicData.Binding;
 using ImgTagFanOut.Dao;
 using ImgTagFanOut.Models;
+using ImgTagFanOut.Views;
 using ReactiveUI;
 
 namespace ImgTagFanOut.ViewModels;
@@ -161,12 +162,14 @@ public class MainWindowViewModel : ViewModelBase
 
     public Interaction<PublishProgressViewModel, int?> ShowPublishProgressDialog { get; }
     public Interaction<ConsentViewModel, int?> ShowConsentDialog { get; }
+    public Interaction<PublishDropOrMergeViewModel, int?> PublishDropOrMergeDialog { get; }
     public Interaction<AboutViewModel, int?> ShowAboutDialog { get; }
 
     public MainWindowViewModel()
     {
         ShowPublishProgressDialog = new();
         ShowConsentDialog = new();
+        PublishDropOrMergeDialog = new();
         ShowAboutDialog = new();
         _settings = new();
         WorkingFolder = "";
@@ -718,6 +721,7 @@ public class MainWindowViewModel : ViewModelBase
         {
             return;
         }
+        
 
         await new FolderScan().ScanFolder(cancellationToken, WorkingFolder, _images);
 
@@ -735,7 +739,20 @@ public class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        PublishProgressViewModel viewModel = new(WorkingFolder, TargetFolder, cancellationToken);
+        bool dropEverythingFirst;
+        if (Directory.Exists(TargetFolder) && Directory.GetDirectories(TargetFolder).Length > 0)
+        {
+            PublishDropOrMergeViewModel consentViewModel = new();
+            await PublishDropOrMergeDialog.Handle(consentViewModel);
+
+            dropEverythingFirst = !consentViewModel.Merge;
+        }
+        else
+        {
+            dropEverythingFirst = false;
+        }
+
+        PublishProgressViewModel viewModel = new(WorkingFolder, TargetFolder, dropEverythingFirst, cancellationToken);
 
         await ShowPublishProgressDialog.Handle(viewModel);
     }

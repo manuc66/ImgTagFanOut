@@ -15,6 +15,8 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     public MainWindow()
     {
         InitializeComponent();
+        
+        this.WhenActivated(d => d(ViewModel!.PublishDropOrMergeDialog.RegisterHandler(DoShowPublishDropOrMergeDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ShowPublishProgressDialog.RegisterHandler(DoShowPublishProgressDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ShowConsentDialog.RegisterHandler(DoShowConsentDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ShowAboutDialog.RegisterHandler(DoShowABoutDialogAsync)));
@@ -45,6 +47,16 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         Dispatcher.UIThread.Post(() => ViewModel!.WindowActivated = true);
     }
 
+    private async Task DoShowPublishDropOrMergeDialogAsync(InteractionContext<PublishDropOrMergeViewModel, int?> interaction)
+    {
+        PublishDropOrMergeWindow dialog = new()
+        {
+            DataContext = interaction.Input
+        };
+
+        int? result = await dialog.ShowDialog<int?>(this);
+        interaction.SetOutput(result);
+    }
     private async Task DoShowPublishProgressDialogAsync(InteractionContext<PublishProgressViewModel, int?> interaction)
     {
         PublishProgressWindow dialog = new()

@@ -11,6 +11,7 @@ namespace ImgTagFanOut.ViewModels;
 
 public class PublishProgressViewModel : ViewModelBase
 {
+    private readonly bool _dropEverythingFirst;
     private string _trailLog;
     private bool _completed;
     public string WorkingFolder { get; }
@@ -30,16 +31,20 @@ public class PublishProgressViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _trailLog, value);
     }
 
-    public PublishProgressViewModel(string workingFolder, string targetFolder, CancellationToken cancellationToken)
+    public PublishProgressViewModel(string workingFolder, string targetFolder, bool dropEverythingFirst,
+        CancellationToken cancellationToken)
     {
+        _dropEverythingFirst = dropEverythingFirst;
         WorkingFolder = workingFolder;
         TargetFolder = targetFolder;
         _trailLog = string.Empty;
-        CloseCommand = ReactiveCommand.CreateFromTask((Window _) => Task.CompletedTask, this.WhenAnyValue(x => x.Completed));
+        CloseCommand =
+            ReactiveCommand.CreateFromTask((Window _) => Task.CompletedTask, this.WhenAnyValue(x => x.Completed));
 
         RxApp.MainThreadScheduler.ScheduleAsync((_, ct) =>
         {
-            CancellationTokenSource cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct);
+            CancellationTokenSource cancellationTokenSource =
+                CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct);
             return StartPublish(cancellationTokenSource.Token);
         });
     }
@@ -48,7 +53,10 @@ public class PublishProgressViewModel : ViewModelBase
     {
         try
         {
-            await new Publisher().PublishToFolder(WorkingFolder, TargetFolder, OnBeginTag, OnFileCompleted,
+            await new Publisher().PublishToFolder(WorkingFolder, TargetFolder, _dropEverythingFirst, OnBeginTag,
+                OnFileCompleted,
+                OnFileDeleted,
+                OnDirectoryDeleted,
                 cancellationToken);
             TrailLog += $"{Environment.NewLine}{Environment.NewLine}==> Done!";
         }
@@ -69,6 +77,30 @@ public class PublishProgressViewModel : ViewModelBase
         string separator = new('=', 20);
         toAdd += $"{separator} {tag.Name} {separator}";
         TrailLog += toAdd;
+    }
+
+    private void OnFileDeleted((string path, bool success, string? error) a)
+    {
+        if (a.success)
+        {
+            TrailLog += $"{Environment.NewLine} File deleted: {a.path}";
+        }
+        else
+        {
+            TrailLog += $"{Environment.NewLine} File NOT DELETED:{a.path} ERROR: {a.error}";
+        }
+    }
+
+    private void OnDirectoryDeleted((string path, bool success, string? error) a)
+    {
+        if (a.success)
+        {
+            TrailLog += $"{Environment.NewLine} Directory deleted: {a.path}";
+        }
+        else
+        {
+            TrailLog += $"{Environment.NewLine} Directory NOT DELETED:{a.path} ERROR: {a.error}";
+        }
     }
 
     private void OnFileCompleted((string source, string? destination, bool copied) a)

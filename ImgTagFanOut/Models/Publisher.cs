@@ -11,16 +11,26 @@ namespace ImgTagFanOut.Models;
 
 public class Publisher
 {
-    public async Task PublishToFolder(string workingFolder, string targetFolder, Action<Tag> beginTag, Action<(string source, string? destination, bool copied)> onFileCompleted,
+    public async Task PublishToFolder(string workingFolder, string targetFolder, bool dropEverythingFirst,
+        Action<Tag> beginTag, Action<(string source, string? destination, bool copied)> onFileCompleted,
+        Action<(string path, bool sucess, string? error)> onFileDeleted,
+        Action<(string path, bool sucess, string? error)> onDirectoryDeleted,
         CancellationToken cancellationToken)
     {
         if (!Directory.Exists(targetFolder))
         {
             Directory.CreateDirectory(targetFolder);
         }
+        else
+        {
+            if (dropEverythingFirst)
+            {
+                DeleteDirectoryRecursively(targetFolder, onFileDeleted, onDirectoryDeleted, cancellationToken);
+            }
+        }
 
         await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(workingFolder);
-        
+
         foreach (Tag tag in unitOfWork.TagRepository.GetAllTag())
         {
             if (cancellationToken.IsCancellationRequested)
@@ -39,7 +49,8 @@ public class Publisher
         }
     }
 
-    private static async Task PublishTag(string workingFolder, string targetFolder, Action<Tag> beginTag, Action<(string source, string? destination, bool copied)> onFileCompleted, Tag tag,
+    private static async Task PublishTag(string workingFolder, string targetFolder, Action<Tag> beginTag,
+        Action<(string source, string? destination, bool copied)> onFileCompleted, Tag tag,
         ImmutableList<string> itemsInDb, CancellationToken cancellationToken)
     {
         beginTag(tag);
@@ -52,12 +63,14 @@ public class Publisher
 
         foreach (string itemInDb in itemsInDb)
         {
-            (string source, string? destination, bool copied) result = await PublishFile(cancellationToken, workingFolder, itemInDb, targetDirectoryForTag);
+            (string source, string? destination, bool copied) result =
+                await PublishFile(cancellationToken, workingFolder, itemInDb, targetDirectoryForTag);
             onFileCompleted(result);
         }
     }
 
-    private static async Task<(string source, string? destination, bool copied)> PublishFile(CancellationToken cancellationToken, string workingFolder, string itemInDb, string targetDirectoryForTag)
+    private static async Task<(string source, string? destination, bool copied)> PublishFile(
+        CancellationToken cancellationToken, string workingFolder, string itemInDb, string targetDirectoryForTag)
     {
         string itemFullPath = Path.Combine(workingFolder, itemInDb);
 
@@ -86,7 +99,8 @@ public class Publisher
             do
             {
                 num++;
-                destFileName = Path.Combine(targetDirectoryForTag, nameWithoutExtension + " (" + num + ")" + fileExtension);
+                destFileName = Path.Combine(targetDirectoryForTag,
+                    nameWithoutExtension + " (" + num + ")" + fileExtension);
                 destFileNameFi = new(destFileName);
                 if (destFileNameFi.Exists && FileExt.FilesAreEqual(itemFullPathFi, destFileNameFi))
                 {
@@ -100,13 +114,59 @@ public class Publisher
         return (itemFullPath, destFileName, true);
     }
 
-    private static async Task CopyFileAsync(string sourceFile, string destinationFile, CancellationToken cancellationToken)
+    private static async Task CopyFileAsync(string sourceFile, string destinationFile,
+        CancellationToken cancellationToken)
     {
         int bufferSize = 4096;
-        await using (FileStream sourceStream = new(sourceFile, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan))
-        await using (FileStream destinationStream = new(destinationFile, FileMode.CreateNew, FileAccess.Write, FileShare.None, bufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan))
+        await using (FileStream sourceStream = new(sourceFile, FileMode.Open, FileAccess.Read, FileShare.Read,
+                         bufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan))
+        await using (FileStream destinationStream = new(destinationFile, FileMode.CreateNew, FileAccess.Write,
+                         FileShare.None, bufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan))
             await sourceStream.CopyToAsync(destinationStream, cancellationToken);
 
         File.SetLastWriteTime(destinationFile, File.GetLastWriteTime(sourceFile));
+    }
+
+    static void DeleteDirectoryRecursively(string targetDir, Action<(string path, bool sucess, string? error)> onFileDeleted,
+        Action<(string path, bool sucess, string? error)> onDirectoryDeleted,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            // Delete all files in the directory
+            foreach (string file in Directory.GetFiles(targetDir))
+            {
+                if (cancellationToken.IsCancellationRequested) break;
+                
+                try
+                {
+                    File.Delete(file);
+                    onFileDeleted((file, true, null));
+                }
+                catch (Exception ex)
+                {
+                    onFileDeleted((file, false, ex.Message));
+                }
+            }
+            
+            if (cancellationToken.IsCancellationRequested) return;
+
+            // Delete all subdirectories in the directory
+            foreach (string subDir in Directory.GetDirectories(targetDir))
+            {
+                if (cancellationToken.IsCancellationRequested) break;
+                DeleteDirectoryRecursively(subDir, onFileDeleted, onDirectoryDeleted, cancellationToken);
+            }
+            
+            if (cancellationToken.IsCancellationRequested) return;
+
+            // Delete the directory itself
+            Directory.Delete(targetDir, false);
+            onDirectoryDeleted((targetDir, true, null));
+        }
+        catch (Exception ex)
+        {
+            onDirectoryDeleted((targetDir, false, ex.Message));
+        }
     }
 }
