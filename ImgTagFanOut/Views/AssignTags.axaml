@@ -5,11 +5,12 @@
              xmlns:resources="clr-namespace:ImgTagFanOut.Resources"
              xmlns:viewModels="clr-namespace:ImgTagFanOut.ViewModels"
              xmlns:views="clr-namespace:ImgTagFanOut.Views"
+             xmlns:converters="clr-namespace:ImgTagFanOut.Converters"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ImgTagFanOut.Views.AssignTags"
              x:DataType="viewModels:MainWindowViewModel">
     <UserControl.Resources>
-        <views:BoolToCheckmarkConverter x:Key="BoolToCheckmarkConverter" />
+        <converters:BoolToCheckmarkConverter x:Key="BoolToCheckmarkConverter" />
     </UserControl.Resources>
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,

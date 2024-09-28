@@ -51,26 +51,34 @@ public class FileManagerHandler
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
             // On linux, try to use dbus, see https://stackoverflow.com/questions/73409227/open-file-in-containing-folder-for-linux/73409251
-            using Process dbusShowItemsProcess = new()
+            Process? dbusShowItemsProcess = null;
+            try
             {
-                StartInfo = new()
+                dbusShowItemsProcess = new()
                 {
-                    FileName = "dbus-send",
-                    Arguments =
-                        $@"--print-reply --dest=org.freedesktop.FileManager1 --type=method_call /org/freedesktop/FileManager1 org.freedesktop.FileManager1.ShowItems array:string:""file://{path}"" string:""""",
-                    UseShellExecute = true
-                }
-            };
-            dbusShowItemsProcess.Start();
-            await dbusShowItemsProcess.WaitForExitAsync();
+                    StartInfo = new()
+                    {
+                        FileName = "dbus-send",
+                        Arguments =
+                            $@"--print-reply --dest=org.freedesktop.FileManager1 --type=method_call /org/freedesktop/FileManager1 org.freedesktop.FileManager1.ShowItems array:string:""file://{path}"" string:""""",
+                        UseShellExecute = true
+                    }
+                };
+                dbusShowItemsProcess.Start();
+                await dbusShowItemsProcess.WaitForExitAsync();
 
-            if (dbusShowItemsProcess.ExitCode == 0)
+                if (dbusShowItemsProcess.ExitCode == 0)
+                {
+                    // The dbus invocation can fail for a variety of reasons:
+                    // - dbus is not available
+                    // - no programs implement the service,
+                    // - ...
+                    return;
+                }
+            }
+            finally
             {
-                // The dbus invocation can fail for a variety of reasons:
-                // - dbus is not available
-                // - no programs implement the service,
-                // - ...
-                return;
+                dbusShowItemsProcess?.Dispose();
             }
         }
 

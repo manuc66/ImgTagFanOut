@@ -62,7 +62,7 @@ public class ThumbnailProvider
         return new Bitmap(ms);
     }
 
-    private static Bitmap? ReduceSize(Bitmap fullImage, int targetWidth)
+    private static Bitmap ReduceSize(Bitmap fullImage, int targetWidth)
     {
         double newHeight = fullImage.Size.Width > targetWidth
             ? 400d / fullImage.Size.Width * fullImage.Size.Height

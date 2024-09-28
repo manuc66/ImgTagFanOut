@@ -20,7 +20,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         this.WhenActivated(d => d(ViewModel!.ShowAboutDialog.RegisterHandler(DoShowABoutDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ExitCommand.Subscribe(x => Close())));
         Activated += OnWindowActivated;
-        this.WhenActivated((CompositeDisposable disposable) =>
+        this.WhenActivated(disposable =>
         {
             this.ViewModel.WhenAnyValue(x => x.IsBusy)
                 .Do(UpdateCursor)

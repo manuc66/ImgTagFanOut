@@ -11,7 +11,6 @@ namespace ImgTagFanOut.ViewModels;
 
 public class PublishProgressViewModel : ViewModelBase
 {
-    private readonly CancellationToken _cancellationToken;
     private string _trailLog;
     private bool _completed;
     public string WorkingFolder { get; }
@@ -33,7 +32,6 @@ public class PublishProgressViewModel : ViewModelBase
 
     public PublishProgressViewModel(string workingFolder, string targetFolder, CancellationToken cancellationToken)
     {
-        _cancellationToken = cancellationToken;
         WorkingFolder = workingFolder;
         TargetFolder = targetFolder;
         _trailLog = string.Empty;

@@ -72,7 +72,7 @@ class Program
                         // We recommend adjusting this value in production.
                         o.TracesSampleRate = 1.0;
                     });
-                    AppDomain.CurrentDomain.UnhandledException += (object sender, UnhandledExceptionEventArgs e) =>
+                    AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
                     {
                         if (e.ExceptionObject is Exception ex)
                         {

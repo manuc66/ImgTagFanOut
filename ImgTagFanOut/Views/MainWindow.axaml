@@ -38,9 +38,9 @@
 			<TabItem Header="{x:Static resources:Resources.Images}">
 				<views:AssignTags />
 			</TabItem>
-			<TabItem Header="{x:Static resources:Resources.Tags}">
-				<TextBlock Margin="5">This tab is not ready yet</TextBlock>
-			</TabItem>
+			<!-- <TabItem Header="{x:Static resources:Resources.Tags}"> -->
+			<!-- 	<TextBlock Margin="5">This tab is not ready yet</TextBlock> -->
+			<!-- </TabItem> -->
 		</TabControl>
 	</DockPanel>
 </Window>

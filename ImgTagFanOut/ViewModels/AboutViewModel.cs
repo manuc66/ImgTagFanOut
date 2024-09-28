@@ -14,7 +14,7 @@ public class AboutViewModel : ViewModelBase
         var assemblyLocation = Process.GetCurrentProcess().MainModule?.FileName;
         if (assemblyLocation == null) return;
 
-        var fileVersionInfo = System.Diagnostics.FileVersionInfo.GetVersionInfo(assemblyLocation);
+        var fileVersionInfo = FileVersionInfo.GetVersionInfo(assemblyLocation);
         Version = fileVersionInfo.ProductVersion;
         Copyright = fileVersionInfo.LegalCopyright;
         //Console.WriteLine(fileVersionInfo.CompanyName); // Company

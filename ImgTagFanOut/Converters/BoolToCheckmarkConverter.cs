@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using Avalonia.Data.Converters;
 
-namespace ImgTagFanOut.Views;
+namespace ImgTagFanOut.Converters;
 
 public class BoolToCheckmarkConverter : IValueConverter
 {
