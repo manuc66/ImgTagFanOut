@@ -58,7 +58,7 @@ MacOs should work as well but has never been tested.
 
 ## License
 
-ImgTagFanOut is licensed under the [MIT License](LICENSE), allowing you to use, modify, and distribute the software freely.
+ImgTagFanOut is licensed under the [LGPL-3.0 license](LICENSE), allowing you to use, modify, and distribute the software freely.
 
 ---
 
