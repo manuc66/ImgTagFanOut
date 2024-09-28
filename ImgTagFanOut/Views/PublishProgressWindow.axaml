@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d"  d:DesignWidth="800" d:DesignHeight="200"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="200"
         x:Class="ImgTagFanOut.Views.PublishProgressWindow"
         WindowStartupLocation="CenterOwner"
         Width="800"
@@ -13,21 +13,26 @@
         x:DataType="vm:PublishProgressViewModel"
         Icon="/Assets/logo.ico"
         Title="PublishProgressWindow">
-
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:PublishProgressViewModel />
     </Design.DataContext>
-    <Grid >
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
-        <TextBox Grid.Row="0" AcceptsReturn="True" IsReadOnly="True" TextWrapping="NoWrap" Name="SearchLog"
-                 FontFamily="monospace" Text="{Binding TrailLog}">
-        </TextBox>
-        <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Grid.Row="1" Command="{Binding CloseCommand}" Content="{x:Static resources:Resources.Close}"></Button>
+        <ScrollViewer  VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+            <TextBox Grid.Row="0" AcceptsReturn="True" IsReadOnly="True" TextWrapping="NoWrap" Name="SearchLog"
+
+                     FontFamily="monospace" Text="{Binding TrailLog}">
+            </TextBox>
+
+        </ScrollViewer>
+        <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Grid.Row="1"
+                Command="{Binding CloseCommand}" Content="{x:Static resources:Resources.Close}">
+        </Button>
     </Grid>
 
 </Window>
