@@ -45,15 +45,15 @@ public class MainWindowViewModel : ViewModelBase
     private readonly Settings _settings;
     private string _windowTitle = null!;
     private Cursor _cursor = Cursor.Default;
-    private bool _isBusy = false;
+    private bool _isBusy;
 
     public string? WorkingFolder
     {
         get => _workingFolder;
         set => this.RaiseAndSetIfChanged(ref _workingFolder, value);
     }
-
-    public string? TargetFolder
+    
+  public string? TargetFolder
     {
         get => _targetFolder;
         set => this.RaiseAndSetIfChanged(ref _targetFolder, value);
@@ -268,9 +268,7 @@ public class MainWindowViewModel : ViewModelBase
                     IsBusy = false;
                 }
             },
-            this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)),
-            RxApp.TaskpoolScheduler);
-
+            this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x)));
 
         SelectFolderCommand =
             ReactiveCommand.CreateFromTask<Window, string>(SelectFolder, ScanFolderCommand.IsExecuting.Select(x => !x));
@@ -280,9 +278,9 @@ public class MainWindowViewModel : ViewModelBase
         this.WhenAnyValue(x => x.WorkingFolder)
             .Subscribe(x =>
             {
-                WindowTitle = string.IsNullOrWhiteSpace(WorkingFolder)
+                WindowTitle = string.IsNullOrWhiteSpace(x)
                     ? $"{nameof(ImgTagFanOut)}"
-                    : $"{nameof(ImgTagFanOut)} - {WorkingFolder}";
+                    : $"{nameof(ImgTagFanOut)} - {x}";
             });
 
         CancelScanCommand = ReactiveCommand.Create(
@@ -646,7 +644,6 @@ public class MainWindowViewModel : ViewModelBase
             WorkingFolder = selectedFolder;
         }
 
-
         return selectedFolder;
     }
 
@@ -728,6 +725,7 @@ public class MainWindowViewModel : ViewModelBase
         await using IUnitOfWork unitOfWork =
             await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken);
         ReloadTagList(unitOfWork.TagRepository);
+
     }
 
     private async Task PublishToFolder(CancellationToken cancellationToken)
