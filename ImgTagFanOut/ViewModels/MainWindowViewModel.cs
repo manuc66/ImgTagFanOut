@@ -420,6 +420,7 @@ public class MainWindowViewModel : ViewModelBase
                 FilteredTagList = list
                     .Where(tag => string.IsNullOrWhiteSpace(tagFilterInput) || tag.MatchFilter(tagFilterInput))
                     .Select(tag => new SelectableTag(tag) { IsSelected = IsSelected(tag, selectedImage) })
+                    .OrderBy(tag => tag.Tag.Name)
                     .ToList();
             });
 
