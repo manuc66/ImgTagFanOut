@@ -257,6 +257,11 @@ public class MainWindowViewModel : ViewModelBase
                 unitOfWork.SaveChanges();
             }
 
+            if (ShowDone)
+            {
+                selectedIndex++;
+            }
+
             SelectedIndex = Math.Min(selectedIndex, FilteredImages.Count - 1);
         }, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
         OpenCommand =
