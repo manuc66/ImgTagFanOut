@@ -23,6 +23,7 @@
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
             <Button Name="ReplaceButton" Content="Replace Everything" Margin="5" Command="{Binding ReplaceCommand}" />
             <Button Name="AddNewButton" Content="Add New" Margin="5" Command="{Binding MergeCommand}" />
+            <Button Name="CancelButton" Content="Cancel" Margin="5" Command="{Binding CancelCommand}" />
         </StackPanel>
     </StackPanel>
 </Window>

@@ -11,9 +11,14 @@ public class PublishDropOrMergeViewModel : ViewModelBase
     private bool? _merge;
     public ReactiveCommand<Unit, Unit> MergeCommand { get; set; }
     public ReactiveCommand<Unit, Unit> ReplaceCommand { get; set;  }
+
+    public ReactiveCommand<Unit, Unit> CancelCommand { get; }
     public PublishDropOrMergeViewModel()
     {
-
+        CancelCommand = ReactiveCommand.Create(() =>
+        {
+            Merge = null;
+        });
         MergeCommand = ReactiveCommand.Create(() =>
         {
             Merge = true;

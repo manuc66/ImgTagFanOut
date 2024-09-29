@@ -13,6 +13,10 @@ public partial class PublishDropOrMergeWindow  : ReactiveWindow<PublishDropOrMer
     {
         InitializeComponent();
         
+        this.WhenActivated(d => d(ViewModel!.CancelCommand.Subscribe(x =>
+        {
+            Close();
+        }))); 
         this.WhenActivated(d => d(ViewModel!.MergeCommand.Subscribe(x =>
         {
             Close();

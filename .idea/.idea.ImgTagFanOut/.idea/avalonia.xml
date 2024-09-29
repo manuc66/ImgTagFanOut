@@ -10,6 +10,7 @@
         <entry key="ImgTagFanOut/Views/ConsentWindow.axaml" value="ImgTagFanOut/ImgTagFanOut.csproj" />
         <entry key="ImgTagFanOut/Views/MainWindow.axaml" value="ImgTagFanOut/ImgTagFanOut.csproj" />
         <entry key="ImgTagFanOut/Views/PublishDropOrMerge.axaml" value="ImgTagFanOut/ImgTagFanOut.csproj" />
+        <entry key="ImgTagFanOut/Views/PublishDropOrMergeWindow.axaml" value="ImgTagFanOut/ImgTagFanOut.csproj" />
         <entry key="ImgTagFanOut/Views/PublishProgressWindow.axaml" value="ImgTagFanOut/ImgTagFanOut.csproj" />
       </map>
     </option>
