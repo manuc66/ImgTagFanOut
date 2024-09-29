@@ -5,7 +5,7 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="200"
         x:Class="ImgTagFanOut.Views.PublishDropOrMergeWindow"
         WindowStartupLocation="CenterOwner"
-        Width="300"
+        Width="500"
         Height="150"
         xmlns:vm="using:ImgTagFanOut.ViewModels"
         xmlns:resources="clr-namespace:ImgTagFanOut.Resources"
@@ -18,7 +18,7 @@
         <vm:PublishDropOrMergeViewModel />
     </Design.DataContext>
     <StackPanel Margin="20">
-        <TextBlock Text="The destination directory is not empty. What would you like to do?" Margin="0,0,0,10" />
+        <TextBlock HorizontalAlignment="Center" Text="The destination directory is not empty. What would you like to do?" Margin="0,0,0,10" />
         <CheckBox IsChecked="{Binding ReplaceIsConfirmed}" >Check this to confirm if you want to replace</CheckBox>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
             <Button Name="ReplaceButton" Content="Replace Everything" Margin="5" Command="{Binding ReplaceCommand}" />
