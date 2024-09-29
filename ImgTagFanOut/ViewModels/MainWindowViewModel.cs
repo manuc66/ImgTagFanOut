@@ -197,6 +197,11 @@ public class MainWindowViewModel : ViewModelBase
         this.WhenAnyValue(x => x.ShowDone)
             .SelectMany(async x =>
             {
+                if (string.IsNullOrEmpty(WorkingFolder) || !Directory.Exists(WorkingFolder))
+                {
+                    return x;
+                }
+                
                 await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder);
                 unitOfWork.ParameterRepository.Update(ShowDoneSettingKey, x.ToString());
                 unitOfWork.SaveChanges();
