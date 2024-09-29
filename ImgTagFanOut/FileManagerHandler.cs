@@ -10,7 +10,12 @@ public class FileManagerHandler
     public async Task OpenParentFolder(string path)
     {
         string? parentFolder = Path.GetDirectoryName(path);
-        if (parentFolder is null) return;
+
+        if (parentFolder is null)
+        {
+            return;
+        }
+
         await OpenFolder(parentFolder);
     }
 
@@ -19,8 +24,11 @@ public class FileManagerHandler
         using Process folderOpener = new();
         folderOpener.StartInfo.FileName = parentFolder;
         folderOpener.StartInfo.UseShellExecute = true;
-        folderOpener.Start();
-        await folderOpener.WaitForExitAsync();
+
+        if (folderOpener.Start())
+        {
+            await folderOpener.WaitForExitAsync();
+        }
     }
 
     public async Task OpenFile(string path)
@@ -29,9 +37,13 @@ public class FileManagerHandler
         using Process folderOpener = new();
         folderOpener.StartInfo.FileName = path;
         folderOpener.StartInfo.UseShellExecute = true;
-        folderOpener.Start();
-        await folderOpener.WaitForExitAsync();
+
+        if (folderOpener.Start())
+        {
+            await folderOpener.WaitForExitAsync();
+        }
     }
+
     public async Task RevealFileInFolder(string path)
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -39,8 +51,12 @@ public class FileManagerHandler
             using Process fileOpener = new();
             fileOpener.StartInfo.FileName = "explorer";
             fileOpener.StartInfo.Arguments = "/select," + path + "\"";
-            fileOpener.Start();
-            await fileOpener.WaitForExitAsync();
+
+            if (fileOpener.Start())
+            {
+                await fileOpener.WaitForExitAsync();
+            }
+
             return;
         }
 
@@ -50,7 +66,12 @@ public class FileManagerHandler
             fileOpener.StartInfo.FileName = "explorer";
             fileOpener.StartInfo.Arguments = "-R " + path;
             fileOpener.Start();
-            await fileOpener.WaitForExitAsync();
+
+            if (fileOpener.Start())
+            {
+                await fileOpener.WaitForExitAsync();
+            }
+
             return;
         }
 
