@@ -355,6 +355,8 @@ public class MainWindowViewModel : ViewModelBase
             }
 
             unitOfWork.SaveChanges();
+            
+            TagFilterInput = string.Empty;
         }, this.WhenAnyValue(x => x.TagFilterInput)
             .CombineLatest(TagList
                     .ToObservableChangeSet(x => x)
