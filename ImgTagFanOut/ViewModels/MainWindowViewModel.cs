@@ -158,6 +158,7 @@ public class MainWindowViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> LocateCommand { get; }
     public ReactiveCommand<Unit, Unit> ExitCommand { get; }
     public ReactiveCommand<Unit, Unit> ShowAboutDialogCommand { get; }
+    public ReactiveCommand<Unit, Unit>  OpenTargetFolderCommand { get; }
 
 
     public Interaction<PublishProgressViewModel, int?> ShowPublishProgressDialog { get; }
@@ -268,7 +269,10 @@ public class MainWindowViewModel : ViewModelBase
             ReactiveCommand.CreateFromTask(OpenFile, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
         LocateCommand =
             ReactiveCommand.CreateFromTask(LocateFile, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
+        OpenTargetFolderCommand =  ReactiveCommand.CreateFromTask(OpenTargetFolder, 
+            this.WhenAnyValue(x => x.TargetFolder).Select(x => !string.IsNullOrWhiteSpace(x)));
 
+        
         ScanFolderCommand = ReactiveCommand.CreateFromTask(async cts =>
             {
                 IsBusy = true;
@@ -604,6 +608,18 @@ public class MainWindowViewModel : ViewModelBase
         if (File.Exists(path))
         {
             await new FileManagerHandler().OpenFile(path);
+        }
+    }
+    private async Task OpenTargetFolder()
+    {
+        if (string.IsNullOrEmpty(TargetFolder))
+        {
+            return;
+        }
+
+        if (Directory.Exists(TargetFolder))
+        {
+            await new FileManagerHandler().OpenFolder(TargetFolder);
         }
     }
 

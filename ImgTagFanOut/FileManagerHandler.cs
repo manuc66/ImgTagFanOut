@@ -9,9 +9,15 @@ public class FileManagerHandler
 {
     public async Task OpenParentFolder(string path)
     {
-        // Just open the directory instead
+        string? parentFolder = Path.GetDirectoryName(path);
+        if (parentFolder is null) return;
+        await OpenFolder(parentFolder);
+    }
+
+    public async Task OpenFolder(string parentFolder)
+    {
         using Process folderOpener = new();
-        folderOpener.StartInfo.FileName = Path.GetDirectoryName(path);
+        folderOpener.StartInfo.FileName = parentFolder;
         folderOpener.StartInfo.UseShellExecute = true;
         folderOpener.Start();
         await folderOpener.WaitForExitAsync();

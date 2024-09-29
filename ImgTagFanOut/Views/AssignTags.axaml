@@ -81,15 +81,18 @@
 
         <views:BrowseTags Grid.Row="0" Grid.Column="1" />
 
-        <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" ColumnDefinitions="*,Auto,Auto">
+        <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" ColumnDefinitions="*,Auto,Auto,Auto">
 
             <TextBox Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch"
                      Text="{Binding Path=TargetFolder}" />
             <Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch"
                     Content="{x:Static resources:Resources.Browse}" Command="{Binding SelectTargetFolderCommand}"
                     CommandParameter="{Binding $parent[Window]}" HorizontalAlignment="Right" />
-
             <Button Grid.Row="0" Grid.Column="2" VerticalAlignment="Stretch"
+                    Content="{x:Static resources:Resources.Open}" Command="{Binding OpenTargetFolderCommand}"
+                    HorizontalAlignment="Right" />
+
+            <Button Grid.Row="0" Grid.Column="3" VerticalAlignment="Stretch"
                     Content="{x:Static resources:Resources.Publish}" Command="{Binding PublishCommand}"
                     HorizontalAlignment="Right" />
         </Grid>

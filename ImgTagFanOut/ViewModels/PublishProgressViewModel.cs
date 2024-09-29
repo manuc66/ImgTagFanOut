@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Threading;
@@ -24,12 +25,15 @@ public class PublishProgressViewModel : ViewModelBase
     }
 
     public ReactiveCommand<Window, Unit> CloseCommand { get; }
+    
+    public ReactiveCommand<Unit, Unit> OpenTargetFolderCommand { get; }
 
     public string TrailLog
     {
         get => _trailLog;
         set => this.RaiseAndSetIfChanged(ref _trailLog, value);
     }
+
 
     public PublishProgressViewModel(string workingFolder, string targetFolder, bool dropEverythingFirst,
         CancellationToken cancellationToken)
@@ -41,12 +45,28 @@ public class PublishProgressViewModel : ViewModelBase
         CloseCommand =
             ReactiveCommand.CreateFromTask((Window _) => Task.CompletedTask, this.WhenAnyValue(x => x.Completed));
 
+        
+    OpenTargetFolderCommand =ReactiveCommand.CreateFromTask(OpenTargetFolder);
+
+
         RxApp.MainThreadScheduler.ScheduleAsync((_, ct) =>
         {
             CancellationTokenSource cancellationTokenSource =
                 CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct);
             return StartPublish(cancellationTokenSource.Token);
         });
+    }
+    private async Task OpenTargetFolder()
+    {
+        if (string.IsNullOrEmpty(TargetFolder))
+        {
+            return;
+        }
+
+        if (Directory.Exists(TargetFolder))
+        {
+            await new FileManagerHandler().OpenFolder(TargetFolder);
+        }
     }
 
     private async Task StartPublish(CancellationToken cancellationToken)
