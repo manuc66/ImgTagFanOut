@@ -48,6 +48,8 @@ Source: "ImgTagFanOut\bin\Release\{#DotnetVersion}\publish\win-x64\blake3_dotnet
 Source: "ImgTagFanOut\bin\Release\{#DotnetVersion}\publish\win-x64\e_sqlite3.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "ImgTagFanOut\bin\Release\{#DotnetVersion}\publish\win-x64\libHarfBuzzSharp.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "ImgTagFanOut\bin\Release\{#DotnetVersion}\publish\win-x64\libSkiaSharp.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "ImgTagFanOut\bin\Release\{#DotnetVersion}\publish\win-x64\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
+Source: "ImgTagFanOut\bin\Release\{#DotnetVersion}\publish\win-x64\Magick.Native-Q8-x64.dll"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
