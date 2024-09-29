@@ -53,8 +53,8 @@ public class MainWindowViewModel : ViewModelBase
         get => _workingFolder;
         set => this.RaiseAndSetIfChanged(ref _workingFolder, value);
     }
-    
-  public string? TargetFolder
+
+    public string? TargetFolder
     {
         get => _targetFolder;
         set => this.RaiseAndSetIfChanged(ref _targetFolder, value);
@@ -473,7 +473,6 @@ public class MainWindowViewModel : ViewModelBase
     }
 
 
-
     private CancellationTokenSource _currentHashLookup = new();
 
     private void SearchForTagBasedOnFileHash(string fullFilePath, CanHaveTag canHaveTag)
@@ -560,14 +559,16 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private async Task AssignAllTags(CanHaveTag selectedImage, IEnumerable<Tag> allTags, CancellationToken cancellationToken)
+    private async Task AssignAllTags(CanHaveTag selectedImage, IEnumerable<Tag> allTags,
+        CancellationToken cancellationToken)
     {
         if (WorkingFolder == null)
         {
             return;
         }
 
-        await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken))
+        await using (IUnitOfWork unitOfWork =
+                     await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken))
         {
             foreach (Tag selectedImageTag in allTags)
             {
@@ -721,7 +722,7 @@ public class MainWindowViewModel : ViewModelBase
         {
             return;
         }
-        
+
 
         await new FolderScan().ScanFolder(cancellationToken, WorkingFolder, _images);
 
@@ -729,7 +730,6 @@ public class MainWindowViewModel : ViewModelBase
         await using IUnitOfWork unitOfWork =
             await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken);
         ReloadTagList(unitOfWork.TagRepository);
-
     }
 
     private async Task PublishToFolder(CancellationToken cancellationToken)
@@ -739,20 +739,32 @@ public class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        bool dropEverythingFirst;
+        bool? dropEverythingFirst;
         if (Directory.Exists(TargetFolder) && Directory.GetDirectories(TargetFolder).Length > 0)
         {
-            PublishDropOrMergeViewModel consentViewModel = new();
-            await PublishDropOrMergeDialog.Handle(consentViewModel);
+            PublishDropOrMergeViewModel publishDropOrMergeViewModel = new();
+            await PublishDropOrMergeDialog.Handle(publishDropOrMergeViewModel);
 
-            dropEverythingFirst = !consentViewModel.Merge;
+            if (!publishDropOrMergeViewModel.Merge.HasValue)
+            {
+                dropEverythingFirst = null;
+            }
+            else
+            {
+                dropEverythingFirst = !publishDropOrMergeViewModel.Merge;
+            }
         }
         else
         {
             dropEverythingFirst = false;
         }
 
-        PublishProgressViewModel viewModel = new(WorkingFolder, TargetFolder, dropEverythingFirst, cancellationToken);
+        if (!dropEverythingFirst.HasValue)
+        {
+            return;
+        }
+
+        PublishProgressViewModel viewModel = new(WorkingFolder, TargetFolder, dropEverythingFirst.Value, cancellationToken);
 
         await ShowPublishProgressDialog.Handle(viewModel);
     }

@@ -8,7 +8,7 @@ namespace ImgTagFanOut.ViewModels;
 public class PublishDropOrMergeViewModel : ViewModelBase
 {
     private bool _replaceIsConfirmed = false;
-    private bool _merge;
+    private bool? _merge;
     public ReactiveCommand<Unit, Unit> MergeCommand { get; set; }
     public ReactiveCommand<Unit, Unit> ReplaceCommand { get; set;  }
     public PublishDropOrMergeViewModel()
@@ -27,7 +27,7 @@ public class PublishDropOrMergeViewModel : ViewModelBase
         }, this.WhenAnyValue(x => x.ReplaceIsConfirmed));
     }
 
-    public bool Merge  {
+    public bool? Merge  {
         get => _merge;
         set => this.RaiseAndSetIfChanged(ref _merge, value);
     }
