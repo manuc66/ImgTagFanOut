@@ -17,84 +17,93 @@
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <viewModels:MainWindowViewModel />
     </Design.DataContext>
-    <Grid IsEnabled="{Binding !IsBusy}" ColumnDefinitions="*,*" RowDefinitions="*,Auto">
-        <Grid Grid.Row="0" Grid.Column="0" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,*,*">
-            <DockPanel Grid.Row="2" Grid.Column="0" LastChildFill="True">
-                <TextBlock DockPanel.Dock="Top" Text="{x:Static resources:Resources.Images}"></TextBlock>
-                <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto,Auto">
-                    <TextBlock Grid.Column="0" Text="{x:Static resources:Resources.Filter}"></TextBlock>
-                    <TextBox Grid.Column="1" Text="{Binding ItemFilterInput}" ></TextBox>
-                    <Button Grid.Column="2" Command="{Binding ClearItemFilterInputCommand}"
-                            Content="{x:Static resources:Resources.Clear}">
+    <Grid>
+        <Grid IsEnabled="{Binding !IsBusy}" ColumnDefinitions="*,*" RowDefinitions="*,Auto">
+            <Grid Grid.Row="0" Grid.Column="0" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,*,*">
+                <DockPanel Grid.Row="2" Grid.Column="0" LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Top" Text="{x:Static resources:Resources.Images}"></TextBlock>
+                    <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto,Auto">
+                        <TextBlock Grid.Column="0" Text="{x:Static resources:Resources.Filter}"></TextBlock>
+                        <TextBox Grid.Column="1" Text="{Binding ItemFilterInput}"></TextBox>
+                        <Button Grid.Column="2" Command="{Binding ClearItemFilterInputCommand}"
+                                Content="{x:Static resources:Resources.Clear}">
+                        </Button>
+                    </Grid>
+                    <ListBox DockPanel.Dock="Bottom" SelectedIndex="{Binding SelectedIndex}"
+                             ItemsSource="{Binding FilteredImages}" SelectedItem="{Binding SelectedImage}">
+
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"></ColumnDefinition>
+                                        <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                        <ColumnDefinition Width="Auto" MinWidth="5"></ColumnDefinition>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding Item}"></TextBlock>
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding Done, Converter={StaticResource BoolToCheckmarkConverter}}"
+                                               VerticalAlignment="Center" FontSize="24">
+                                    </TextBlock>
+                                    <TextBlock Grid.Column="2" Text="{Binding Tags.Count}" VerticalAlignment="Center"></TextBlock>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+
+
+                <DockPanel Grid.Row="2" Grid.Column="1" LastChildFill="False">
+                    <ToggleSwitch DockPanel.Dock="Top" IsChecked="{Binding ShowDone}"
+                                  Content="{x:Static resources:Resources.ShowDone}"
+                                  OnContent="{x:Static resources:Resources.ShowDoneOn}"
+                                  OffContent="{x:Static resources:Resources.ShowDoneOff}">
+                    </ToggleSwitch>
+                    <Button DockPanel.Dock="Top" Command="{Binding AllCommand}" HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.All}">
                     </Button>
-                </Grid>
-                <ListBox DockPanel.Dock="Bottom" SelectedIndex="{Binding SelectedIndex}"
-                         ItemsSource="{Binding FilteredImages}" SelectedItem="{Binding SelectedImage}">
+                    <Button DockPanel.Dock="Top" Command="{Binding NoneCommand}" HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.None}">
+                    </Button>
+                    <Button DockPanel.Dock="Top" Command="{Binding DoneCommand}" HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.Done}">
+                    </Button>
+                    <Button DockPanel.Dock="Bottom" Command="{Binding OpenCommand}" HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.Open}">
+                    </Button>
+                    <Button DockPanel.Dock="Bottom" Command="{Binding LocateCommand}" HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.Locate}">
+                    </Button>
+                </DockPanel>
+                <Image HorizontalAlignment="Left" Source="{Binding ImageToDisplay}" Grid.Row="3" Grid.Column="0"
+                       Grid.ColumnSpan="2">
+                </Image>
+            </Grid>
 
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"></ColumnDefinition>
-                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
-                                    <ColumnDefinition Width="Auto" MinWidth="5"></ColumnDefinition>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="{Binding Item}"></TextBlock>
-                                <TextBlock Grid.Column="1"
-                                           Text="{Binding Done, Converter={StaticResource BoolToCheckmarkConverter}}"
-                                           VerticalAlignment="Center" FontSize="24">
-                                </TextBlock>
-                                <TextBlock Grid.Column="2" Text="{Binding Tags.Count}" VerticalAlignment="Center"></TextBlock>
-                            </Grid>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </DockPanel>
+            <views:BrowseTags Grid.Row="0" Grid.Column="1" />
 
+            <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" ColumnDefinitions="*,Auto,Auto,Auto">
 
-            <DockPanel Grid.Row="2" Grid.Column="1" LastChildFill="False">
-                <ToggleSwitch DockPanel.Dock="Top" IsChecked="{Binding ShowDone}"
-                              Content="{x:Static resources:Resources.ShowDone}"
-                              OnContent="{x:Static resources:Resources.ShowDoneOn}"
-                              OffContent="{x:Static resources:Resources.ShowDoneOff}">
-                </ToggleSwitch>
-                <Button DockPanel.Dock="Top" Command="{Binding AllCommand}" HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.All}">
-                </Button>
-                <Button DockPanel.Dock="Top" Command="{Binding NoneCommand}" HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.None}">
-                </Button>
-                <Button DockPanel.Dock="Top" Command="{Binding DoneCommand}" HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.Done}">
-                </Button>
-                <Button DockPanel.Dock="Bottom" Command="{Binding OpenCommand}" HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.Open}">
-                </Button>
-                <Button DockPanel.Dock="Bottom" Command="{Binding LocateCommand}" HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.Locate}">
-                </Button>
-            </DockPanel>
-            <Image HorizontalAlignment="Left" Source="{Binding ImageToDisplay}" Grid.Row="3" Grid.Column="0"
-                   Grid.ColumnSpan="2">
-            </Image>
+                <TextBox Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch"
+                         Text="{Binding Path=TargetFolder}" />
+                <Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch"
+                        Content="{x:Static resources:Resources.Browse}" Command="{Binding SelectTargetFolderCommand}"
+                        CommandParameter="{Binding $parent[Window]}" HorizontalAlignment="Right" />
+                <Button Grid.Row="0" Grid.Column="2" VerticalAlignment="Stretch"
+                        Content="{x:Static resources:Resources.Open}" Command="{Binding OpenTargetFolderCommand}"
+                        HorizontalAlignment="Right" />
+
+                <Button Grid.Row="0" Grid.Column="3" VerticalAlignment="Stretch"
+                        Content="{x:Static resources:Resources.Publish}" Command="{Binding PublishCommand}"
+                        HorizontalAlignment="Right" />
+            </Grid>
         </Grid>
-
-        <views:BrowseTags Grid.Row="0" Grid.Column="1" />
-
-        <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" ColumnDefinitions="*,Auto,Auto,Auto">
-
-            <TextBox Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch"
-                     Text="{Binding Path=TargetFolder}" />
-            <Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch"
-                    Content="{x:Static resources:Resources.Browse}" Command="{Binding SelectTargetFolderCommand}"
-                    CommandParameter="{Binding $parent[Window]}" HorizontalAlignment="Right" />
-            <Button Grid.Row="0" Grid.Column="2" VerticalAlignment="Stretch"
-                    Content="{x:Static resources:Resources.Open}" Command="{Binding OpenTargetFolderCommand}"
-                    HorizontalAlignment="Right" />
-
-            <Button Grid.Row="0" Grid.Column="3" VerticalAlignment="Stretch"
-                    Content="{x:Static resources:Resources.Publish}" Command="{Binding PublishCommand}"
-                    HorizontalAlignment="Right" />
-        </Grid>
+        <!-- Waiting overlay -->
+        <Border Background="#C0000000" IsVisible="{Binding IsBusy}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ProgressBar IsIndeterminate="True" Width="100" Height="20"/>
+                <TextBlock Text="Please wait..." Foreground="White" Margin="10"/>
+            </StackPanel>
+        </Border>
     </Grid>
 </UserControl>

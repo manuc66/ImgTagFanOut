@@ -158,7 +158,7 @@ public class MainWindowViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> LocateCommand { get; }
     public ReactiveCommand<Unit, Unit> ExitCommand { get; }
     public ReactiveCommand<Unit, Unit> ShowAboutDialogCommand { get; }
-    public ReactiveCommand<Unit, Unit>  OpenTargetFolderCommand { get; }
+    public ReactiveCommand<Unit, Unit> OpenTargetFolderCommand { get; }
 
 
     public Interaction<PublishProgressViewModel, int?> ShowPublishProgressDialog { get; }
@@ -202,7 +202,7 @@ public class MainWindowViewModel : ViewModelBase
                 {
                     return x;
                 }
-                
+
                 await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder);
                 unitOfWork.ParameterRepository.Update(ShowDoneSettingKey, x.ToString());
                 unitOfWork.SaveChanges();
@@ -269,10 +269,10 @@ public class MainWindowViewModel : ViewModelBase
             ReactiveCommand.CreateFromTask(OpenFile, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
         LocateCommand =
             ReactiveCommand.CreateFromTask(LocateFile, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
-        OpenTargetFolderCommand =  ReactiveCommand.CreateFromTask(OpenTargetFolder, 
+        OpenTargetFolderCommand = ReactiveCommand.CreateFromTask(OpenTargetFolder,
             this.WhenAnyValue(x => x.TargetFolder).Select(x => !string.IsNullOrWhiteSpace(x)));
 
-        
+
         ScanFolderCommand = ReactiveCommand.CreateFromTask(async cts =>
             {
                 IsBusy = true;
@@ -290,7 +290,7 @@ public class MainWindowViewModel : ViewModelBase
         SelectFolderCommand =
             ReactiveCommand.CreateFromTask<Window, string>(SelectFolder, ScanFolderCommand.IsExecuting.Select(x => !x));
         SelectFolderCommand.SelectMany(OpenFolder)
-            .Subscribe();
+            .Subscribe(x => ScanFolderCommand.Execute().Subscribe());
 
         this.WhenAnyValue(x => x.WorkingFolder)
             .Subscribe(x =>
@@ -355,7 +355,7 @@ public class MainWindowViewModel : ViewModelBase
             }
 
             unitOfWork.SaveChanges();
-            
+
             TagFilterInput = string.Empty;
         }, this.WhenAnyValue(x => x.TagFilterInput)
             .CombineLatest(TagList
@@ -612,6 +612,7 @@ public class MainWindowViewModel : ViewModelBase
             await new FileManagerHandler().OpenFile(path);
         }
     }
+
     private async Task OpenTargetFolder()
     {
         if (string.IsNullOrEmpty(TargetFolder))
@@ -712,7 +713,8 @@ public class MainWindowViewModel : ViewModelBase
     {
         FolderPickerOpenOptions folderPickerOptions = new()
         {
-            AllowMultiple = false, Title = selectAnExportFolder,
+            AllowMultiple = false,
+            Title = selectAnExportFolder,
             SuggestedStartLocation =
                 await window.StorageProvider.TryGetFolderFromPathAsync(previousFolder ?? string.Empty)
         };
@@ -793,7 +795,8 @@ public class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        PublishProgressViewModel viewModel = new(WorkingFolder, TargetFolder, dropEverythingFirst.Value, cancellationToken);
+        PublishProgressViewModel viewModel = new(WorkingFolder, TargetFolder, dropEverythingFirst.Value,
+            cancellationToken);
 
         await ShowPublishProgressDialog.Handle(viewModel);
     }
