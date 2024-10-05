@@ -68,6 +68,10 @@ class InMemoryTagRepository : ITagRepository
     {
         tagAssignation.Done = true;
     }
+    public void MarkUnDone(CanHaveTag tagAssignation)
+    {
+        tagAssignation.Done = false;
+    }
 
     public void DeleteTag(Tag tag)
     {

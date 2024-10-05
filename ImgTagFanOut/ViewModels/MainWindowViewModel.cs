@@ -253,7 +253,15 @@ public class MainWindowViewModel : ViewModelBase
             int selectedIndex = SelectedIndex;
             await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder))
             {
-                unitOfWork.TagRepository.MarkDone(SelectedImage);
+                if (!SelectedImage.Done)
+                {
+                    unitOfWork.TagRepository.MarkDone(SelectedImage);
+                }
+                else
+                {
+                    unitOfWork.TagRepository.MarkUnDone(SelectedImage);
+                }
+
                 unitOfWork.SaveChanges();
             }
 

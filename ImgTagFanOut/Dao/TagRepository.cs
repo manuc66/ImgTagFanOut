@@ -230,6 +230,26 @@ public class TagRepository : ITagRepository
         tagAssignation.Done = true;
     }
 
+    public void MarkUnDone(CanHaveTag tagAssignation)
+    {
+        ItemDao? existingItem = _dbContext.Items
+            .FirstOrDefault(t => t.Name == tagAssignation.Item);
+
+        if (existingItem == null)
+        {
+            return;
+        }
+
+        if (tagAssignation.Hash != null)
+        {
+            existingItem.Hash = tagAssignation.Hash;
+        }
+
+        existingItem.Done = false;
+
+        tagAssignation.Done = false;
+    }
+
     public void DeleteTag(Tag tag)
     {
         TagDao? existingTag = _dbContext.Tags

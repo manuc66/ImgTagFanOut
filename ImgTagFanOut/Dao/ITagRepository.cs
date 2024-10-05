@@ -14,6 +14,7 @@ public interface ITagRepository
     void ToggleToItem(string tagName, CanHaveTag tagAssignation);
     void ToggleToItem(Tag tag, CanHaveTag tagAssignation);
     void MarkDone(CanHaveTag tagAssignation);
+    void MarkUnDone(CanHaveTag tagAssignation);
     void DeleteTag(Tag tag);
     ImmutableList<string> GetItemsWithTag(Tag tag);
     ImmutableList<Tag> GetAllTagForHash(string hash);
