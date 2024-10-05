@@ -32,7 +32,7 @@ public class FolderScan
             .Where(x => !cancellationToken.IsCancellationRequested && allowedExtensions.Contains(Path.GetExtension(x)));
 
         await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(workingFolder, cancellationToken);
-        List<CanHaveTag> allCanHaveTags = new();
+        List<CanHaveTag> allCanHaveTags = [];
         foreach (string file in enumerateFiles)
         {
             CanHaveTag canHaveTag = new(Path.GetRelativePath(workingFolder, file));

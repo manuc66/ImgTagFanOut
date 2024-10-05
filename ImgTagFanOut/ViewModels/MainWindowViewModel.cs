@@ -20,7 +20,6 @@ using DynamicData;
 using DynamicData.Binding;
 using ImgTagFanOut.Dao;
 using ImgTagFanOut.Models;
-using ImgTagFanOut.Views;
 using ReactiveUI;
 
 namespace ImgTagFanOut.ViewModels;
@@ -290,7 +289,7 @@ public class MainWindowViewModel : ViewModelBase
         SelectFolderCommand =
             ReactiveCommand.CreateFromTask<Window, string>(SelectFolder, ScanFolderCommand.IsExecuting.Select(x => !x));
         SelectFolderCommand.SelectMany(OpenFolder)
-            .Subscribe(x => ScanFolderCommand.Execute().Subscribe());
+            .Subscribe(_ => ScanFolderCommand.Execute().Subscribe());
 
         this.WhenAnyValue(x => x.WorkingFolder)
             .Subscribe(x =>

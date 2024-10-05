@@ -65,9 +65,10 @@
                     <Button DockPanel.Dock="Top" Command="{Binding NoneCommand}" HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.None}">
                     </Button>
-                    <Button DockPanel.Dock="Top" Command="{Binding DoneCommand}" HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.Done}">
-                    </Button>
+                    <ToggleButton DockPanel.Dock="Top" Command="{Binding DoneCommand}" HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.Done}"
+                            IsChecked="{Binding SelectedImage.Done, FallbackValue=False}">
+                    </ToggleButton>
                     <Button DockPanel.Dock="Bottom" Command="{Binding OpenCommand}" HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.Open}">
                     </Button>
