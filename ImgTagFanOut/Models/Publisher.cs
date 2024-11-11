@@ -29,7 +29,7 @@ public class Publisher
             }
         }
 
-        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(workingFolder);
+        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(workingFolder, cancellationToken);
 
         foreach (Tag tag in unitOfWork.TagRepository.GetAllTag())
         {
