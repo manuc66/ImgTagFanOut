@@ -31,7 +31,11 @@
                     </Grid>
                     <ListBox DockPanel.Dock="Bottom" SelectedIndex="{Binding SelectedIndex}"
                              ItemsSource="{Binding FilteredImages}" SelectedItem="{Binding SelectedImage}">
-
+                      <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                          <VirtualizingStackPanel/>
+                        </ItemsPanelTemplate>
+                      </ListBox.ItemsPanel>
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <Grid>
