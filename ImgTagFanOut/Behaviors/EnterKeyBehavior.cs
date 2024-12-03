@@ -8,8 +8,7 @@ namespace ImgTagFanOut.Behaviors;
 
 public class EnterKeyBehavior : Behavior<TextBox>
 {
-    public static readonly StyledProperty<ICommand> CommandProperty =
-        AvaloniaProperty.Register<EnterKeyBehavior, ICommand>(nameof(Command));
+    public static readonly StyledProperty<ICommand> CommandProperty = AvaloniaProperty.Register<EnterKeyBehavior, ICommand>(nameof(Command));
 
     public ICommand Command
     {
@@ -20,13 +19,15 @@ public class EnterKeyBehavior : Behavior<TextBox>
     protected override void OnAttached()
     {
         base.OnAttached();
-        if (AssociatedObject != null) AssociatedObject.KeyDown += OnKeyDown;
+        if (AssociatedObject != null)
+            AssociatedObject.KeyDown += OnKeyDown;
     }
 
     protected override void OnDetaching()
     {
         base.OnDetaching();
-        if (AssociatedObject != null) AssociatedObject.KeyDown -= OnKeyDown;
+        if (AssociatedObject != null)
+            AssociatedObject.KeyDown -= OnKeyDown;
     }
 
     private void OnKeyDown(object? sender, KeyEventArgs e)

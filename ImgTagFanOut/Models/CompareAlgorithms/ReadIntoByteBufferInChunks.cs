@@ -6,14 +6,14 @@ public abstract class ReadIntoByteBufferInChunks : FileComparer
 {
     protected readonly int ChunkSize;
 
-    protected ReadIntoByteBufferInChunks(string filePath01, string filePath02, int chunkSize = 0) : base(filePath01,
-        filePath02)
+    protected ReadIntoByteBufferInChunks(string filePath01, string filePath02, int chunkSize = 0)
+        : base(filePath01, filePath02)
     {
         ChunkSize = chunkSize > 0 ? chunkSize : 4096 * 32;
     }
 
-    protected ReadIntoByteBufferInChunks(FileInfo fileInfo01, FileInfo fileInfo02, int chunkSize = 0) : base(fileInfo01,
-        fileInfo02)
+    protected ReadIntoByteBufferInChunks(FileInfo fileInfo01, FileInfo fileInfo02, int chunkSize = 0)
+        : base(fileInfo01, fileInfo02)
     {
         ChunkSize = chunkSize > 0 ? chunkSize : 4096 * 32;
     }

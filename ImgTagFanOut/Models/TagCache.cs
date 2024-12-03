@@ -7,7 +7,7 @@ namespace ImgTagFanOut.Models;
 public class TagCache : ITagCache
 {
     private readonly HashSet<Tag> _tags = new(Tag.Comparer);
-    
+
     public Tag GetOrCreate(TagDao tagDao)
     {
         Tag probingTag = new(tagDao.Name);

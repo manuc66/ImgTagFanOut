@@ -25,7 +25,7 @@ public class PublishProgressViewModel : ViewModelBase
     }
 
     public ReactiveCommand<Window, Unit> CloseCommand { get; }
-    
+
     public ReactiveCommand<Unit, Unit> OpenTargetFolderCommand { get; }
 
     public string TrailLog
@@ -34,28 +34,25 @@ public class PublishProgressViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _trailLog, value);
     }
 
-
-    public PublishProgressViewModel(string workingFolder, string targetFolder, bool dropEverythingFirst,
-        CancellationToken cancellationToken)
+    public PublishProgressViewModel(string workingFolder, string targetFolder, bool dropEverythingFirst, CancellationToken cancellationToken)
     {
         _dropEverythingFirst = dropEverythingFirst;
         WorkingFolder = workingFolder;
         TargetFolder = targetFolder;
         _trailLog = string.Empty;
-        CloseCommand =
-            ReactiveCommand.CreateFromTask((Window _) => Task.CompletedTask, this.WhenAnyValue(x => x.Completed));
+        CloseCommand = ReactiveCommand.CreateFromTask((Window _) => Task.CompletedTask, this.WhenAnyValue(x => x.Completed));
 
-        
-    OpenTargetFolderCommand =ReactiveCommand.CreateFromTask(OpenTargetFolder);
+        OpenTargetFolderCommand = ReactiveCommand.CreateFromTask(OpenTargetFolder);
 
-
-        RxApp.MainThreadScheduler.ScheduleAsync((_, ct) =>
-        {
-            CancellationTokenSource cancellationTokenSource =
-                CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct);
-            return StartPublish(cancellationTokenSource.Token);
-        });
+        RxApp.MainThreadScheduler.ScheduleAsync(
+            (_, ct) =>
+            {
+                CancellationTokenSource cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct);
+                return StartPublish(cancellationTokenSource.Token);
+            }
+        );
     }
+
     private async Task OpenTargetFolder()
     {
         if (string.IsNullOrEmpty(TargetFolder))
@@ -73,11 +70,16 @@ public class PublishProgressViewModel : ViewModelBase
     {
         try
         {
-            await new Publisher().PublishToFolder(WorkingFolder, TargetFolder, _dropEverythingFirst, OnBeginTag,
+            await new Publisher().PublishToFolder(
+                WorkingFolder,
+                TargetFolder,
+                _dropEverythingFirst,
+                OnBeginTag,
                 OnFileCompleted,
                 OnFileDeleted,
                 OnDirectoryDeleted,
-                cancellationToken);
+                cancellationToken
+            );
             TrailLog += $"{Environment.NewLine}{Environment.NewLine}==> Done!";
         }
         catch (Exception e)

@@ -1,8 +1,8 @@
-﻿using Avalonia;
-using Avalonia.ReactiveUI;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Reactive;
+using Avalonia;
+using Avalonia.ReactiveUI;
 using ImgTagFanOut.Models;
 using Microsoft.IO;
 using ReactiveUI;
@@ -24,8 +24,7 @@ class Program
     {
         try
         {
-            BuildAvaloniaApp()
-                .StartWithClassicDesktopLifetime(args);
+            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }
         catch (Exception e)
         {
@@ -38,12 +37,15 @@ class Program
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp() =>
-        AppBuilder.Configure<App>()
+        AppBuilder
+            .Configure<App>()
             .UsePlatformDetect()
-            .With(new X11PlatformOptions
-            {
-                UseDBusFilePicker = false // to disable FreeDesktop file picker
-            })
+            .With(
+                new X11PlatformOptions
+                {
+                    UseDBusFilePicker = false, // to disable FreeDesktop file picker
+                }
+            )
             .AfterSetup(_ =>
             {
                 Settings settings = new();
@@ -52,10 +54,8 @@ class Program
                 loggerConfiguration.WriteTo.File(EnvironmentService.GetLogFile());
                 if (readSettings.ErrorTrackingAllowed ?? true)
                 {
-                    string sentryDsn =
-                        "https://2fd61307fdf9b3a63804db34c9bc51eb@o4505868956860416.ingest.sentry.io/4505869112639488";
-                    loggerConfiguration
-                        .WriteTo.Sentry(o => o.Dsn = sentryDsn);
+                    string sentryDsn = "https://2fd61307fdf9b3a63804db34c9bc51eb@o4505868956860416.ingest.sentry.io/4505869112639488";
+                    loggerConfiguration.WriteTo.Sentry(o => o.Dsn = sentryDsn);
 
                     ErrorTracking = SentrySdk.Init(o =>
                     {
@@ -76,19 +76,20 @@ class Program
                     {
                         if (e.ExceptionObject is Exception ex)
                         {
-                            if (Debugger.IsAttached) Debugger.Break();
+                            if (Debugger.IsAttached)
+                                Debugger.Break();
                             SentrySdk.CaptureException(ex);
                         }
                     };
                     RxApp.DefaultExceptionHandler = Observer.Create<Exception>(e =>
                     {
-                        if (Debugger.IsAttached) Debugger.Break();
+                        if (Debugger.IsAttached)
+                            Debugger.Break();
                         SentrySdk.CaptureException(e);
                     });
                 }
 
-                Log.Logger = loggerConfiguration
-                    .CreateLogger();
+                Log.Logger = loggerConfiguration.CreateLogger();
             })
             .WithInterFont()
             .LogToTrace()

@@ -30,10 +30,7 @@ class InMemoryTagRepository : ITagRepository
         return _tags.ToImmutableList();
     }
 
-    public void AddOrUpdateItem(CanHaveTag tagAssignation)
-    {
-
-    }
+    public void AddOrUpdateItem(CanHaveTag tagAssignation) { }
 
     public void AddTagToItem(Tag tag, CanHaveTag tagAssignation)
     {
@@ -68,6 +65,7 @@ class InMemoryTagRepository : ITagRepository
     {
         tagAssignation.Done = true;
     }
+
     public void MarkUnDone(CanHaveTag tagAssignation)
     {
         tagAssignation.Done = false;

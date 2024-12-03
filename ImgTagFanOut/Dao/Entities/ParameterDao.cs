@@ -6,7 +6,8 @@ namespace ImgTagFanOut.Dao;
 [DebuggerDisplay("{Name}-{Value}-{ParameterId}")]
 public class ParameterDao
 {
-    [Key] public int ParameterId { get; set; }
+    [Key]
+    public int ParameterId { get; set; }
 
     public string Name { get; set; } = null!;
     public string? Value { get; set; }

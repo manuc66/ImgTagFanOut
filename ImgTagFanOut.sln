@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Other", "Other", "{666977CA
 		.github\workflows\build.yml = .github\workflows\build.yml
 		.github\dependabot.yml = .github\dependabot.yml
 		_config.yml = _config.yml
+		global.json = global.json
+		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
 Global

@@ -88,8 +88,8 @@ public class FileManagerHandler
                         FileName = "dbus-send",
                         Arguments =
                             $@"--print-reply --dest=org.freedesktop.FileManager1 --type=method_call /org/freedesktop/FileManager1 org.freedesktop.FileManager1.ShowItems array:string:""file://{path}"" string:""""",
-                        UseShellExecute = true
-                    }
+                        UseShellExecute = true,
+                    },
                 };
                 dbusShowItemsProcess.Start();
                 await dbusShowItemsProcess.WaitForExitAsync();

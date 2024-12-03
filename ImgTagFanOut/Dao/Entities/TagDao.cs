@@ -10,7 +10,7 @@ public class TagDao
     [Key]
     public int TagId { get; set; }
     public string Name { get; set; }
-    
+
     public TagDao(string name)
     {
         Name = name;

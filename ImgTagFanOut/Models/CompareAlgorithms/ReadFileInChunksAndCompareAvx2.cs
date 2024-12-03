@@ -7,14 +7,10 @@ namespace ImgTagFanOut.Models.CompareAlgorithms;
 public class ReadFileInChunksAndCompareAvx2 : ReadIntoByteBufferInChunks
 {
     public ReadFileInChunksAndCompareAvx2(string filePath01, string filePath02, int chunkSize = 0)
-        : base(filePath01, filePath02, chunkSize)
-    {
-    }
+        : base(filePath01, filePath02, chunkSize) { }
 
     public ReadFileInChunksAndCompareAvx2(FileInfo fileInfo01, FileInfo fileInfo02, int chunkSize = 0)
-        : base(fileInfo01, fileInfo02, chunkSize)
-    {
-    }
+        : base(fileInfo01, fileInfo02, chunkSize) { }
 
     protected override bool OnCompare()
     {

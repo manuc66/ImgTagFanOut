@@ -50,7 +50,7 @@ public class ThumbnailProvider
             Width = targetWidth,
             // Use 0 for height to maintain the aspect ratio
             Height = 0,
-            SyncImageWithExifProfile = false
+            SyncImageWithExifProfile = false,
         };
         using (MagickImage magickImage = new(fullFilePath, settings))
         {
@@ -64,9 +64,7 @@ public class ThumbnailProvider
 
     private static Bitmap ReduceSize(Bitmap fullImage, int targetWidth)
     {
-        double newHeight = fullImage.Size.Width > targetWidth
-            ? 400d / fullImage.Size.Width * fullImage.Size.Height
-            : fullImage.Size.Height;
+        double newHeight = fullImage.Size.Width > targetWidth ? 400d / fullImage.Size.Width * fullImage.Size.Height : fullImage.Size.Height;
 
         Bitmap thumbnail = fullImage.CreateScaledBitmap(new PixelSize(targetWidth, (int)newHeight));
 

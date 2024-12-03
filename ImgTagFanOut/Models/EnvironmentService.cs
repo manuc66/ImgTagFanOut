@@ -27,6 +27,7 @@ public static class EnvironmentService
 
         return appSettingFile;
     }
+
     internal static string GetLogFile()
     {
         string logFile = Path.Combine(GetSettingsFolder(), "log.txt");

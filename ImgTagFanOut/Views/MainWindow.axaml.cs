@@ -23,10 +23,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         Activated += OnWindowActivated;
         this.WhenActivated(disposable =>
         {
-            this.ViewModel.WhenAnyValue(x => x.IsBusy)
-                .Do(UpdateCursor)
-                .Subscribe()
-                .DisposeWith(disposable);
+            this.ViewModel.WhenAnyValue(x => x.IsBusy).Do(UpdateCursor).Subscribe().DisposeWith(disposable);
         });
     }
 
@@ -49,10 +46,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
     private async Task DoShowPublishDropOrMergeDialogAsync(IInteractionContext<PublishDropOrMergeViewModel, int?> interaction)
     {
-        PublishDropOrMergeWindow dialog = new()
-        {
-            DataContext = interaction.Input
-        };
+        PublishDropOrMergeWindow dialog = new() { DataContext = interaction.Input };
 
         int? result = await dialog.ShowDialog<int?>(this);
         interaction.SetOutput(result);
@@ -60,10 +54,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
     private async Task DoShowPublishProgressDialogAsync(IInteractionContext<PublishProgressViewModel, int?> interaction)
     {
-        PublishProgressWindow dialog = new()
-        {
-            DataContext = interaction.Input
-        };
+        PublishProgressWindow dialog = new() { DataContext = interaction.Input };
 
         int? result = await dialog.ShowDialog<int?>(this);
         interaction.SetOutput(result);
@@ -71,10 +62,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
     private async Task DoShowConsentDialogAsync(IInteractionContext<ConsentViewModel, int?> interaction)
     {
-        ConsentWindow dialog = new()
-        {
-            DataContext = interaction.Input
-        };
+        ConsentWindow dialog = new() { DataContext = interaction.Input };
 
         int? result = await dialog.ShowDialog<int?>(this);
         interaction.SetOutput(result);
@@ -82,10 +70,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
     private async Task DoShowABoutDialogAsync(IInteractionContext<AboutViewModel, int?> interaction)
     {
-        About dialog = new()
-        {
-            DataContext = interaction.Input
-        };
+        About dialog = new() { DataContext = interaction.Input };
 
         int? result = await dialog.ShowDialog<int?>(this);
         interaction.SetOutput(result);

@@ -20,10 +20,8 @@ public abstract class FileComparer
     /// </summary>
     /// <param name="filePath01">Absolute path to source file</param>
     /// <param name="filePath02">Absolute path to target file</param>
-    protected FileComparer(string filePath01, string filePath02) : this(new(filePath01),
-        new FileInfo(filePath02))
-    {
-    }
+    protected FileComparer(string filePath01, string filePath02)
+        : this(new(filePath01), new FileInfo(filePath02)) { }
 
     protected FileComparer(FileInfo fileInfo01, FileInfo fileInfo02)
     {
@@ -39,7 +37,6 @@ public abstract class FileComparer
             throw new FileNotFoundException(fileInfo02.FullName);
         }
     }
-
 
     /// <summary>
     /// Compares the two given files and returns true if the files are the same

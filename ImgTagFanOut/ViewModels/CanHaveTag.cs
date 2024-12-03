@@ -18,7 +18,7 @@ public class CanHaveTag : ViewModelBase
         get => _tags;
         set => this.RaiseAndSetIfChanged(ref _tags, value);
     }
-    
+
     public bool Done
     {
         get => _done;

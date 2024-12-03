@@ -9,7 +9,7 @@ public class ItemDao
 {
     [Key]
     public int ItemId { get; set; }
-    
+
     public string Name { get; set; }
     public string? Hash { get; set; }
     public bool Done { get; set; }
