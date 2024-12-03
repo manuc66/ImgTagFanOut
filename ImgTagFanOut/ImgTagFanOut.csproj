@@ -26,11 +26,11 @@
     <ItemGroup>
         <PackageReference Include="Avalonia" Version="11.2.2" />
         <PackageReference Include="Avalonia.Desktop" Version="11.2.2" />
-        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.0" />
-        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.1" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.2" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.2" />
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
 <!--        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.10" />-->
-        <PackageReference Include="Avalonia.ReactiveUI" Version="11.2.0" />
+        <PackageReference Include="Avalonia.ReactiveUI" Version="11.2.2" />
         <PackageReference Include="Avalonia.Xaml.Behaviors" Version="11.2.0.1" />
         <PackageReference Include="Blake3" Version="1.1.0" />
         <PackageReference Include="DynamicData" Version="9.0.4" />
@@ -39,12 +39,12 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.10">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
