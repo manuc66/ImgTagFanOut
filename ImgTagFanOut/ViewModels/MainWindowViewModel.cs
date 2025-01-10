@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
@@ -15,7 +14,6 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
-using Blake3;
 using DynamicData;
 using DynamicData.Binding;
 using ImgTagFanOut.Dao;
@@ -464,11 +462,10 @@ public class MainWindowViewModel : ViewModelBase
                     return (null, null);
                 }
 
-                string fullFilePath = Path.Combine(WorkingFolder, canHaveTag.Item);
-
+                string fullFilePath = canHaveTag.GetFullFilePath(WorkingFolder);
                 if (File.Exists(fullFilePath))
                 {
-                    SearchForTagBasedOnFileHash(fullFilePath, canHaveTag);
+                    SearchForTagBasedOnFileHash(canHaveTag);
 
                     Bitmap? thumbnail = await new ThumbnailProvider().GetThumbnail(fullFilePath);
 
@@ -503,11 +500,15 @@ public class MainWindowViewModel : ViewModelBase
             AboutViewModel aboutViewModel = new();
             await ShowAboutDialog.Handle(aboutViewModel);
         });
+        _hashEvaluator = new HashEvaluator();
     }
 
-    private CancellationTokenSource _currentHashLookup = new();
 
-    private void SearchForTagBasedOnFileHash(string fullFilePath, CanHaveTag canHaveTag)
+    private CancellationTokenSource _currentHashLookup = new();
+    private readonly HashEvaluator _hashEvaluator;
+
+
+    private void SearchForTagBasedOnFileHash(CanHaveTag canHaveTag)
     {
         _currentHashLookup.Cancel();
         _currentHashLookup.Dispose();
@@ -522,7 +523,7 @@ public class MainWindowViewModel : ViewModelBase
                 }
 
                 CancellationToken cancellationToken = cts.Token;
-                canHaveTag.Hash = await ComputeHashAsync(fullFilePath, cancellationToken);
+                canHaveTag.Hash = await _hashEvaluator.ComputeHashAsync(canHaveTag.GetFullFilePath(WorkingFolder), cancellationToken);
                 if (canHaveTag != SelectedImage || canHaveTag.Hash == null || SelectedImage.Done || cts.IsCancellationRequested)
                 {
                     return;
@@ -544,30 +545,6 @@ public class MainWindowViewModel : ViewModelBase
         );
     }
 
-    async Task<string> ComputeHashAsync(string filePath, CancellationToken ctsToken)
-    {
-        string hash;
-        using Hasher hasher = Hasher.New();
-        await using FileStream fs = File.OpenRead(filePath);
-        ArrayPool<byte> sharedArrayPool = ArrayPool<byte>.Shared;
-        byte[] buffer = sharedArrayPool.Rent(131072);
-        Array.Fill<byte>(buffer, 0);
-        try
-        {
-            for (int read; (read = await fs.ReadAsync(buffer, ctsToken)) != 0; )
-            {
-                hasher.Update(buffer.AsSpan(start: 0, read));
-            }
-
-            hash = hasher.Finalize().ToString();
-        }
-        finally
-        {
-            sharedArrayPool.Return(buffer);
-        }
-
-        return hash;
-    }
 
     private async Task<string> OpenFolder(string path)
     {

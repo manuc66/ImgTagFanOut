@@ -12,6 +12,8 @@ namespace ImgTagFanOut.Models;
 
 public class FolderScan
 {
+    private readonly HashEvaluator _hashEvaluator = new();
+
     internal async Task ScanFolder(CancellationToken cancellationToken, string workingFolder, SourceList<CanHaveTag> images)
     {
         HashSet<string> allowedExtensions = new(StringComparer.OrdinalIgnoreCase)
@@ -59,7 +61,7 @@ public class FolderScan
 
             allCanHaveTags.Add(canHaveTag);
 
-            unitOfWork.TagRepository.AddOrUpdateItem(canHaveTag);
+            await unitOfWork.TagRepository.AddOrUpdateItem(canHaveTag, tag => _hashEvaluator.ComputeHashAsync(tag.GetFullFilePath(workingFolder), cancellationToken));
         }
 
         images.AddRange(allCanHaveTags);

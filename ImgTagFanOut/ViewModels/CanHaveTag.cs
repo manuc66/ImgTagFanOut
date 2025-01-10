@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using ReactiveUI;
 
 namespace ImgTagFanOut.ViewModels;
@@ -67,5 +68,11 @@ public class CanHaveTag : ViewModelBase
             _tagSet.Add(tag);
             _tags.Add(tag);
         }
+    }
+
+
+    public string GetFullFilePath(string workingFolder)
+    {
+        return Path.Combine(workingFolder, Item);
     }
 }

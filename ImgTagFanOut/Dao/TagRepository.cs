@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading.Tasks;
 using ImgTagFanOut.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
@@ -51,21 +53,34 @@ public class TagRepository : ITagRepository
         return tags;
     }
 
-    public void AddOrUpdateItem(CanHaveTag tagAssignation)
+    public async Task AddOrUpdateItem(CanHaveTag tagAssignation, Func<CanHaveTag, Task<string>> getHash)
     {
-        ItemDao? existingItem = _dbContext.Items.Include(i => i.ItemTags).ThenInclude(x => x.Tag).FirstOrDefault(t => t.Name == tagAssignation.Item);
+        ItemDao? existingItem = await _dbContext.Items
+            .Include(i => i.ItemTags)
+            .ThenInclude(x => x.Tag)
+            .FirstOrDefaultAsync(t => t.Name == tagAssignation.Item);
         if (existingItem != null)
         {
-            foreach (ItemTagDao itemTagDao in existingItem.ItemTags.OrderBy(x => x.OrderIndex))
+            if (!string.IsNullOrEmpty(existingItem.Hash))
             {
-                tagAssignation.AddTag(_tagCache.GetOrCreate(itemTagDao.Tag));
+                string hash = await getHash(tagAssignation);
+                if (existingItem.Hash == hash)
+                {
+                    foreach (ItemTagDao itemTagDao in existingItem.ItemTags.OrderBy(x => x.OrderIndex))
+                    {
+                        tagAssignation.AddTag(_tagCache.GetOrCreate(itemTagDao.Tag));
+                    }
+                    tagAssignation.Done = existingItem.Done;
+                }
+                else
+                {
+                    // the file is not the same, so remove the existing assignations
+                    _dbContext.ItemTags.RemoveRange(existingItem.ItemTags);
+                    existingItem.ItemTags.Clear();
+                    existingItem.Tags.Clear();
+                    existingItem.Done = false;
+                }
             }
-
-            if (existingItem.Hash != null)
-            {
-                tagAssignation.Hash = existingItem.Hash;
-            }
-            tagAssignation.Done = existingItem.Done;
         }
         else
         {

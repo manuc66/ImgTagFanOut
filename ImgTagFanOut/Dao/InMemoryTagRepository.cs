@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using ImgTagFanOut.ViewModels;
 
 namespace ImgTagFanOut.Dao;
@@ -30,7 +32,10 @@ class InMemoryTagRepository : ITagRepository
         return _tags.ToImmutableList();
     }
 
-    public void AddOrUpdateItem(CanHaveTag tagAssignation) { }
+    public Task AddOrUpdateItem(CanHaveTag tagAssignation, Func<CanHaveTag, Task<string>> getHash)
+    {
+        return Task.CompletedTask;
+    }
 
     public void AddTagToItem(Tag tag, CanHaveTag tagAssignation)
     {
