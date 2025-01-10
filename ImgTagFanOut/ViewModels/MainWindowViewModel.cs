@@ -522,8 +522,8 @@ public class MainWindowViewModel : ViewModelBase
                 }
 
                 CancellationToken cancellationToken = cts.Token;
-                CanHaveTag computeHashAsync = await ComputeHashAsync(fullFilePath, canHaveTag, cancellationToken);
-                if (computeHashAsync != SelectedImage || computeHashAsync.Hash == null || SelectedImage.Done || cts.IsCancellationRequested)
+                canHaveTag.Hash = await ComputeHashAsync(fullFilePath, cancellationToken);
+                if (canHaveTag != SelectedImage || canHaveTag.Hash == null || SelectedImage.Done || cts.IsCancellationRequested)
                 {
                     return;
                 }
@@ -531,10 +531,10 @@ public class MainWindowViewModel : ViewModelBase
                 ImmutableList<Tag> allTagForHash;
                 await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken))
                 {
-                    allTagForHash = unitOfWork.TagRepository.GetAllTagForHash(computeHashAsync.Hash);
+                    allTagForHash = unitOfWork.TagRepository.GetAllTagForHash(canHaveTag.Hash);
                 }
 
-                if (computeHashAsync != SelectedImage || cts.IsCancellationRequested)
+                if (canHaveTag != SelectedImage || cts.IsCancellationRequested)
                 {
                     return;
                 }
@@ -544,8 +544,9 @@ public class MainWindowViewModel : ViewModelBase
         );
     }
 
-    async Task<CanHaveTag> ComputeHashAsync(string filePath, CanHaveTag toUpdate, CancellationToken ctsToken)
+    async Task<string> ComputeHashAsync(string filePath, CancellationToken ctsToken)
     {
+        string hash;
         using Hasher hasher = Hasher.New();
         await using FileStream fs = File.OpenRead(filePath);
         ArrayPool<byte> sharedArrayPool = ArrayPool<byte>.Shared;
@@ -558,16 +559,14 @@ public class MainWindowViewModel : ViewModelBase
                 hasher.Update(buffer.AsSpan(start: 0, read));
             }
 
-            Hash hash = hasher.Finalize();
-
-            toUpdate.Hash = hash.ToString();
+            hash = hasher.Finalize().ToString();
         }
         finally
         {
             sharedArrayPool.Return(buffer);
         }
 
-        return toUpdate;
+        return hash;
     }
 
     private async Task<string> OpenFolder(string path)
