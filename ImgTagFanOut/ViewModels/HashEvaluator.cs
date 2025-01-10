@@ -20,7 +20,7 @@ public class HashEvaluator
         Array.Fill<byte>(buffer, 0);
         try
         {
-            for (int read; (read = await fs.ReadAsync(buffer, ctsToken)) != 0; )
+            for (int read; (read = await fs.ReadAsync(buffer, ctsToken)) != 0;)
             {
                 hasher.Update(buffer.AsSpan(start: 0, read));
             }
