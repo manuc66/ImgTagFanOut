@@ -9,7 +9,7 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
-        <LangVersion>13</LangVersion>
+        <LangVersion>12</LangVersion>
     </PropertyGroup>
 
 	<PropertyGroup>
