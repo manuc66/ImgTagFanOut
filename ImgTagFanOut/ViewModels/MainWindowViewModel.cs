@@ -161,6 +161,7 @@ public class MainWindowViewModel : ViewModelBase
     public Interaction<PublishDropOrMergeViewModel, int?> PublishDropOrMergeDialog { get; }
     public Interaction<AboutViewModel, int?> ShowAboutDialog { get; }
 
+
     public MainWindowViewModel()
     {
         ShowPublishProgressDialog = new();
@@ -173,56 +174,16 @@ public class MainWindowViewModel : ViewModelBase
         TagList = new();
 
         this.WhenAnyValue(x => x.WindowActivated)
-            .SelectMany(async x =>
-            {
-                if (!x)
-                    return x;
-
-                Settings settings = new();
-                AppSettings readSettings = settings.ReadSettings();
-                if (readSettings.ErrorTrackingAllowed == null)
-                {
-                    ConsentViewModel consentViewModel = new();
-                    await ShowConsentDialog.Handle(consentViewModel);
-                }
-
-                return x;
-            })
+            .DistinctUntilChanged()
+            .SelectMany(HandleWindowActivatedAsync)
             .Subscribe();
 
         this.WhenAnyValue(x => x.ShowDone)
-            .SelectMany(async x =>
-            {
-                if (string.IsNullOrEmpty(WorkingFolder) || !Directory.Exists(WorkingFolder))
-                {
-                    return x;
-                }
-
-                await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder);
-                unitOfWork.ParameterRepository.Update(ShowDoneSettingKey, x.ToString());
-                unitOfWork.SaveChanges();
-
-                return x;
-            })
+            .SelectMany(SaveShowDownState)
             .Subscribe();
 
-        Bitmap noPreviewToDisplay = LoadNoPreviewToDisplay();
-        ImageToDisplay = noPreviewToDisplay;
-        this.WhenAnyValue(x => x.ImageToDisplay, x => x.SelectedImage)
-            .Throttle(TimeSpan.FromMilliseconds(50))
-            .Subscribe(x =>
-            {
-                if (x is { Item1: not null, Item2: not null })
-                    return;
-                Bitmap? previous = ImageToDisplay;
-
-                ImageToDisplay = noPreviewToDisplay;
-
-                if (previous != noPreviewToDisplay)
-                {
-                    previous?.Dispose();
-                }
-            });
+        _noPreviewToDisplay = LoadNoPreviewToDisplay();
+        ImageToDisplay = _noPreviewToDisplay;
 
         _filteredTagList = new();
         ShowDone = false;
@@ -239,65 +200,24 @@ public class MainWindowViewModel : ViewModelBase
             .Subscribe();
 
         DoneCommand = ReactiveCommand.CreateFromTask(
-            async () =>
-            {
-                if (SelectedImage == null)
-                {
-                    return;
-                }
-
-                int selectedIndex = SelectedIndex;
-                await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder))
-                {
-                    if (!SelectedImage.Done)
-                    {
-                        unitOfWork.TagRepository.MarkDone(SelectedImage);
-                    }
-                    else
-                    {
-                        unitOfWork.TagRepository.MarkUnDone(SelectedImage);
-                    }
-
-                    unitOfWork.SaveChanges();
-                }
-
-                if (ShowDone)
-                {
-                    selectedIndex++;
-                }
-
-                SelectedIndex = Math.Min(selectedIndex, FilteredImages.Count - 1);
-            },
+            ToggleDoneCurrentElement,
             this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null)
         );
-        OpenCommand = ReactiveCommand.CreateFromTask(OpenFile, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
-        LocateCommand = ReactiveCommand.CreateFromTask(LocateFile, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
-        OpenTargetFolderCommand = ReactiveCommand.CreateFromTask(OpenTargetFolder, this.WhenAnyValue(x => x.TargetFolder).Select(x => !string.IsNullOrWhiteSpace(x)));
+        OpenCommand = ReactiveCommand.CreateFromTask(ExecuteOpenFileComandAsync, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
+        LocateCommand = ReactiveCommand.CreateFromTask(ExecuteLocateFileCommandAsync, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
+        OpenTargetFolderCommand =
+            ReactiveCommand.CreateFromTask(ExecuteOpenTargetFolderCommandAsync, this.WhenAnyValue(x => x.TargetFolder).Select(x => !string.IsNullOrWhiteSpace(x)));
 
         ScanFolderCommand = ReactiveCommand.CreateFromTask(
-            async cts =>
-            {
-                IsBusy = true;
-                try
-                {
-                    await Task.Run(async () => await ScanFolder(cts), cts);
-                }
-                finally
-                {
-                    IsBusy = false;
-                }
-            },
+            ExecuteScanFolderCommandAsync,
             this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x))
         );
 
-        SelectFolderCommand = ReactiveCommand.CreateFromTask<Window, string>(SelectFolder, ScanFolderCommand.IsExecuting.Select(x => !x));
+        SelectFolderCommand = ReactiveCommand.CreateFromTask<Window, string>(ExecuteSelectFolderCommandAsync, ScanFolderCommand.IsExecuting.Select(x => !x));
         SelectFolderCommand.SelectMany(OpenFolder).Subscribe(_ => ScanFolderCommand.Execute().Subscribe());
 
         this.WhenAnyValue(x => x.WorkingFolder)
-            .Subscribe(x =>
-            {
-                WindowTitle = string.IsNullOrWhiteSpace(x) ? $"{nameof(ImgTagFanOut)}" : $"{nameof(ImgTagFanOut)} - {x}";
-            });
+            .Subscribe(UpdateWindowTitle);
 
         CancelScanCommand = ReactiveCommand.Create(() => { }, ScanFolderCommand.IsExecuting);
 
@@ -309,53 +229,16 @@ public class MainWindowViewModel : ViewModelBase
         );
 
         AllCommand = ReactiveCommand.CreateFromTask(
-            async () =>
-            {
-                if (SelectedImage == null)
-                {
-                    return;
-                }
-
-                await AssignAllTags(SelectedImage, TagList, CancellationToken.None);
-            },
+            ExecuteAssignAllTagsCommandAsync,
             this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null)
         );
         NoneCommand = ReactiveCommand.CreateFromTask(
-            async () =>
-            {
-                if (SelectedImage == null)
-                {
-                    return;
-                }
-
-                await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder))
-                {
-                    foreach (Tag selectedImageTag in SelectedImage.Tags.ToImmutableList())
-                    {
-                        unitOfWork.TagRepository.RemoveTagToItem(selectedImageTag, SelectedImage);
-                    }
-
-                    unitOfWork.SaveChanges();
-                }
-
-                RefreshTagIsSelected();
-            },
+            ExecuteRemoveAllTagsCommandAsync,
             this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null)
         );
 
         AddToTagListCommand = ReactiveCommand.CreateFromTask(
-            async () =>
-            {
-                await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder);
-                if (unitOfWork.TagRepository.TryCreateTag(TagFilterInput, out Tag? newTag))
-                {
-                    TagList.Add(newTag);
-                }
-
-                unitOfWork.SaveChanges();
-
-                TagFilterInput = string.Empty;
-            },
+            ExecuteAddNewTagCommandAsync,
             this.WhenAnyValue(x => x.TagFilterInput)
                 .CombineLatest(
                     TagList.ToObservableChangeSet(x => x).ToCollection().Prepend(new ReadOnlyCollection<Tag>(new List<Tag>())),
@@ -363,136 +246,48 @@ public class MainWindowViewModel : ViewModelBase
                 )
         );
         ClearTagFilterInputCommand = ReactiveCommand.Create(
-            () =>
-            {
-                TagFilterInput = string.Empty;
-            },
+            () => { TagFilterInput = string.Empty; },
             this.WhenAnyValue(x => x.TagFilterInput).Select(x => !string.IsNullOrWhiteSpace(x))
         );
 
         ClearItemFilterInputCommand = ReactiveCommand.Create(
-            () =>
-            {
-                ItemFilterInput = string.Empty;
-            },
+            () => { ItemFilterInput = string.Empty; },
             this.WhenAnyValue(x => x.ItemFilterInput).Select(x => !string.IsNullOrWhiteSpace(x))
         );
 
-        ToggleAssignTagToImageCommand = ReactiveCommand.CreateFromTask(
-            async (Tag s) =>
-            {
-                await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder))
-                {
-                    if (SelectedImage != null)
-                    {
-                        unitOfWork.TagRepository.ToggleToItem(s, SelectedImage);
-                    }
-
-                    unitOfWork.SaveChanges();
-                }
-
-                RefreshTagIsSelected();
-            },
+        ToggleAssignTagToImageCommand = ReactiveCommand.CreateFromTask((Func<Tag, CancellationToken, Task>)ExecuteToggleAssignTagToImageCommandAsync,
             this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null)
         );
 
         RemoveTagToImageCommand = ReactiveCommand.CreateFromTask(
-            async (Tag tag) =>
-            {
-                if (SelectedImage == null)
-                {
-                    return;
-                }
-
-                await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder))
-                {
-                    unitOfWork.TagRepository.RemoveTagToItem(tag, SelectedImage);
-
-                    unitOfWork.SaveChanges();
-                }
-
-                RefreshTagIsSelected();
-            }
+            (Func<Tag, CancellationToken, Task>)ExecuteRemoveTagToImageCommandAsync
         );
 
         DeleteTagCommand = ReactiveCommand.CreateFromTask(
-            async (SelectableTag s) =>
-            {
-                await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder))
-                {
-                    unitOfWork.TagRepository.DeleteTag(s.Tag);
-
-                    TagList.Remove(s.Tag);
-
-                    unitOfWork.SaveChanges();
-                }
-
-                foreach (CanHaveTag item in _images.Items)
-                {
-                    item.RemoveTag(s.Tag);
-                }
-            },
+            (Func<SelectableTag, CancellationToken, Task>)ExecuteDeleteTagCommandAsync,
             ScanFolderCommand.IsExecuting.Select(x => !x)
         );
 
         this.WhenAnyValue(x => x.TagFilterInput, x => x.SelectedImage)
             .CombineLatest(TagList.ToObservableChangeSet(x => x).ToCollection())
-            .Subscribe(
-                (watched) =>
-                {
-                    (string? tagFilterInput, CanHaveTag? selectedImage) = watched.First;
-                    IReadOnlyCollection<Tag> list = watched.Second;
-                    FilteredTagList = list.Where(tag => string.IsNullOrWhiteSpace(tagFilterInput) || tag.MatchFilter(tagFilterInput))
-                        .Select(tag => new SelectableTag(tag) { IsSelected = IsSelected(tag, selectedImage) })
-                        .OrderBy(tag => tag.Tag.Name)
-                        .ToList();
-                }
-            );
-
+            .Subscribe(watched =>
+            {
+                var (tagFilterInput, selectedImage) = watched.First;
+                var tagList = watched.Second;
+                CreateFilteredTagList(tagList, tagFilterInput, selectedImage);
+            });
+        
+        this.WhenAnyValue(x => x.ImageToDisplay, x => x.SelectedImage)
+            .Throttle(TimeSpan.FromMilliseconds(50))
+            .Subscribe(DisplayNoPreview);
+        
         this.WhenAnyValue(x => x.SelectedImage)
             .Where(x => !string.IsNullOrWhiteSpace(x?.Item))
             .Buffer(TimeSpan.FromMilliseconds(30))
             .Where(x => x.Count > 0)
             .ObserveOn(RxApp.MainThreadScheduler)
-            .SelectMany(async x =>
-            {
-                CanHaveTag? canHaveTag = x.LastOrDefault();
-                if (WorkingFolder == null || canHaveTag == null)
-                {
-                    return (null, null);
-                }
-
-                string fullFilePath = canHaveTag.GetFullFilePath(WorkingFolder);
-                if (File.Exists(fullFilePath))
-                {
-                    SearchForTagBasedOnFileHash(canHaveTag);
-
-                    Bitmap? thumbnail = await new ThumbnailProvider().GetThumbnail(fullFilePath);
-
-                    return ((CanHaveTag?)canHaveTag, thumbnail);
-                }
-                else
-                {
-                    return ((CanHaveTag?)canHaveTag, null);
-                }
-            })
-            .Subscribe(x =>
-            {
-                if (SelectedImage != x.Item1)
-                {
-                    x.Item2?.Dispose();
-                    return;
-                }
-
-                Bitmap? previous = ImageToDisplay;
-
-                ImageToDisplay = x.Item2 ?? noPreviewToDisplay;
-
-                if (previous != noPreviewToDisplay)
-                {
-                    previous?.Dispose();
-                }
-            });
+            .SelectMany(FetchThumbnail)
+            .Subscribe(UpdateImageDisplay);
 
         ExitCommand = ReactiveCommand.CreateFromTask(_ => Task.CompletedTask);
         ShowAboutDialogCommand = ReactiveCommand.CreateFromTask(async _ =>
@@ -504,8 +299,284 @@ public class MainWindowViewModel : ViewModelBase
     }
 
 
+    private void CreateFilteredTagList(IReadOnlyCollection<Tag> list, string? tagFilterInput, CanHaveTag? selectedImage)
+    {
+        FilteredTagList = list.Where(tag => string.IsNullOrWhiteSpace(tagFilterInput) || tag.MatchFilter(tagFilterInput))
+            .Select(tag => new SelectableTag(tag) { IsSelected = IsSelected(tag, selectedImage) })
+            .OrderBy(tag => tag.Tag.Name)
+            .ToList();
+    }
+
+
+    private async Task ExecuteDeleteTagCommandAsync(SelectableTag s, CancellationToken ct)
+    {
+        if (WorkingFolder == null)
+        {
+            return;
+        }
+
+        await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, ct))
+        {
+            unitOfWork.TagRepository.DeleteTag(s.Tag);
+
+            TagList.Remove(s.Tag);
+
+            await unitOfWork.SaveChangesAsync(ct);
+        }
+
+        foreach (CanHaveTag item in _images.Items)
+        {
+            item.RemoveTag(s.Tag);
+        }
+    }
+
+
+    private async Task ExecuteRemoveTagToImageCommandAsync(Tag tag, CancellationToken ct)
+    {
+        if (WorkingFolder == null)
+        {
+            return;
+        }
+
+        if (SelectedImage == null)
+        {
+            return;
+        }
+
+        await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, ct))
+        {
+            unitOfWork.TagRepository.RemoveTagToItem(tag, SelectedImage);
+
+            await unitOfWork.SaveChangesAsync(ct);
+        }
+
+        RefreshTagIsSelected();
+    }
+
+
+    private async Task ExecuteToggleAssignTagToImageCommandAsync(Tag s, CancellationToken ct)
+    {
+        if (WorkingFolder == null)
+        {
+            return;
+        }
+
+        await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, ct))
+        {
+            if (SelectedImage != null)
+            {
+                unitOfWork.TagRepository.ToggleToItem(s, SelectedImage);
+            }
+
+            await unitOfWork.SaveChangesAsync(ct);
+        }
+
+        RefreshTagIsSelected();
+    }
+
+
+    private async Task ExecuteAddNewTagCommandAsync(CancellationToken ct)
+    {
+        if (WorkingFolder == null)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(TagFilterInput))
+        {
+            return;
+        }
+
+        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, ct);
+        if (unitOfWork.TagRepository.TryCreateTag(TagFilterInput, out Tag? newTag))
+        {
+            TagList.Add(newTag);
+        }
+
+        await unitOfWork.SaveChangesAsync(ct);
+
+        TagFilterInput = string.Empty;
+    }
+
+
+    private async Task ExecuteRemoveAllTagsCommandAsync(CancellationToken ct)
+    {
+        if (WorkingFolder == null)
+        {
+            return;
+        }
+
+        if (SelectedImage == null)
+        {
+            return;
+        }
+
+        await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, ct))
+        {
+            foreach (Tag selectedImageTag in SelectedImage.Tags.ToImmutableList())
+            {
+                unitOfWork.TagRepository.RemoveTagToItem(selectedImageTag, SelectedImage);
+            }
+
+            await unitOfWork.SaveChangesAsync(ct);
+        }
+
+        RefreshTagIsSelected();
+    }
+
+
+    private async Task ExecuteAssignAllTagsCommandAsync(CancellationToken ct)
+    {
+        if (SelectedImage == null)
+        {
+            return;
+        }
+
+        await AssignAllTags(SelectedImage, TagList, ct);
+    }
+
+
+    private void UpdateWindowTitle(string? x)
+    {
+        WindowTitle = string.IsNullOrWhiteSpace(x) ? $"{nameof(ImgTagFanOut)}" : $"{nameof(ImgTagFanOut)} - {x}";
+    }
+
+
+    private async Task ExecuteScanFolderCommandAsync(CancellationToken cts)
+    {
+        IsBusy = true;
+        try
+        {
+            await Task.Run(async () => await ScanFolder(cts), cts);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+
+    private async Task ToggleDoneCurrentElement(CancellationToken ct)
+    {
+        if (SelectedImage == null || WorkingFolder == null)
+        {
+            return;
+        }
+
+        int selectedIndex = SelectedIndex;
+        await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, ct))
+        {
+            if (!SelectedImage.Done)
+            {
+                unitOfWork.TagRepository.MarkDone(SelectedImage);
+            }
+            else
+            {
+                unitOfWork.TagRepository.MarkUnDone(SelectedImage);
+            }
+
+            await unitOfWork.SaveChangesAsync(ct);
+        }
+
+        if (ShowDone)
+        {
+            selectedIndex++;
+        }
+
+        SelectedIndex = Math.Min(selectedIndex, FilteredImages.Count - 1);
+    }
+
+
+    private async Task<bool> SaveShowDownState(bool x)
+    {
+        if (string.IsNullOrEmpty(WorkingFolder) || !Directory.Exists(WorkingFolder))
+        {
+            return x;
+        }
+
+        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder);
+        unitOfWork.ParameterRepository.Update(ShowDoneSettingKey, x.ToString());
+        await unitOfWork.SaveChangesAsync();
+
+        return x;
+    }
+
+
+    private async Task<bool> HandleWindowActivatedAsync(bool x)
+    {
+        if (!x) return x;
+
+        Settings settings = new();
+        AppSettings readSettings = settings.ReadSettings();
+        if (readSettings.ErrorTrackingAllowed == null)
+        {
+            ConsentViewModel consentViewModel = new();
+            await ShowConsentDialog.Handle(consentViewModel);
+        }
+
+        return x;
+    }
+
+
+
+    private void UpdateImageDisplay((CanHaveTag?, Bitmap? thumbnail) x)
+    {
+        if (SelectedImage != x.Item1)
+        {
+            x.Item2?.Dispose();
+            return;
+        }
+
+        Bitmap? previous = ImageToDisplay;
+
+        ImageToDisplay = x.Item2 ?? _noPreviewToDisplay;
+
+        if (previous != _noPreviewToDisplay)
+        {
+            previous?.Dispose();
+        }
+    }
+    private void DisplayNoPreview((Bitmap? thumbnail, CanHaveTag?) x)
+    {
+        if (x is { Item1: not null, Item2: not null }) return;
+        Bitmap? previous = ImageToDisplay;
+
+        ImageToDisplay = _noPreviewToDisplay;
+
+        if (previous != _noPreviewToDisplay)
+        {
+            previous?.Dispose();
+        }
+    }
+
+
+    private async Task<(CanHaveTag?, Bitmap? thumbnail)> FetchThumbnail(IList<CanHaveTag?> x)
+    {
+        CanHaveTag? canHaveTag = x.LastOrDefault();
+        if (WorkingFolder == null || canHaveTag == null)
+        {
+            return (null, null);
+        }
+
+        string fullFilePath = canHaveTag.GetFullFilePath(WorkingFolder);
+        if (File.Exists(fullFilePath))
+        {
+            SearchForTagBasedOnFileHash(canHaveTag);
+
+            Bitmap? thumbnail = await new ThumbnailProvider().GetThumbnail(fullFilePath);
+
+            return ((CanHaveTag?)canHaveTag, thumbnail);
+        }
+        else
+        {
+            return ((CanHaveTag?)canHaveTag, null);
+        }
+    }
+
+
     private CancellationTokenSource _currentHashLookup = new();
     private readonly HashEvaluator _hashEvaluator;
+    private readonly Bitmap _noPreviewToDisplay;
 
 
     private void SearchForTagBasedOnFileHash(CanHaveTag canHaveTag)
@@ -566,6 +637,7 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
+
     private void RefreshTagIsSelected()
     {
         foreach (SelectableTag selectableTag in FilteredTagList)
@@ -573,6 +645,7 @@ public class MainWindowViewModel : ViewModelBase
             selectableTag.IsSelected = IsSelected(selectableTag.Tag, SelectedImage);
         }
     }
+
 
     private async Task AssignAllTags(CanHaveTag selectedImage, IEnumerable<Tag> allTags, CancellationToken cancellationToken)
     {
@@ -594,7 +667,8 @@ public class MainWindowViewModel : ViewModelBase
         RefreshTagIsSelected();
     }
 
-    private async Task OpenFile()
+
+    private async Task ExecuteOpenFileComandAsync()
     {
         if (SelectedImage == null || WorkingFolder == null)
         {
@@ -609,7 +683,8 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private async Task OpenTargetFolder()
+
+    private async Task ExecuteOpenTargetFolderCommandAsync()
     {
         if (string.IsNullOrEmpty(TargetFolder))
         {
@@ -622,7 +697,8 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private async Task LocateFile()
+
+    private async Task ExecuteLocateFileCommandAsync()
     {
         if (SelectedImage == null || WorkingFolder == null)
         {
@@ -637,6 +713,7 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
+
     private static Bitmap LoadNoPreviewToDisplay()
     {
         string resourceName = "ImgTagFanOut.NoPreview.png";
@@ -645,6 +722,7 @@ public class MainWindowViewModel : ViewModelBase
         return noPreviewToDisplay;
     }
 
+
     private void ReloadTagList(ITagRepository tagRepository)
     {
         DbContextFactory.ClearTagCache();
@@ -652,7 +730,8 @@ public class MainWindowViewModel : ViewModelBase
         TagList.AddRange(tagRepository.GetAllTag());
     }
 
-    private async Task<string> SelectFolder(Window window)
+
+    private async Task<string> ExecuteSelectFolderCommandAsync(Window window)
     {
         string? lastFolder = _settings.ReadSettings().LastFolder;
         if (string.IsNullOrEmpty(lastFolder))
@@ -674,6 +753,7 @@ public class MainWindowViewModel : ViewModelBase
 
         return selectedFolder;
     }
+
 
     private async Task<string?> SelectTargetFolder(Window window)
     {
@@ -703,6 +783,7 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
+
     private static async Task<string> SelectAFolder(Window window, string selectAnExportFolder, string? previousFolder)
     {
         FolderPickerOpenOptions folderPickerOptions = new()
@@ -727,15 +808,19 @@ public class MainWindowViewModel : ViewModelBase
         return previousFolder ?? string.Empty;
     }
 
-    private Func<CanHaveTag, bool> CreateFilterForDone(bool arg) => arg ? _ => true : item => !item.Done;
 
-    private Func<CanHaveTag, bool> CreateFilterForItemFilterInput(string? arg) =>
+    private static Func<CanHaveTag, bool> CreateFilterForDone(bool arg) => arg ? _ => true : item => !item.Done;
+
+
+    private static Func<CanHaveTag, bool> CreateFilterForItemFilterInput(string? arg) =>
         !string.IsNullOrWhiteSpace(arg) ? item => item.Item.Contains(arg, StringComparison.OrdinalIgnoreCase) : _ => true;
 
-    private bool IsSelected(Tag x, CanHaveTag? canHaveTag)
+
+    private static bool IsSelected(Tag x, CanHaveTag? canHaveTag)
     {
         return canHaveTag?.Has(x) ?? false;
     }
+
 
     private async Task ScanFolder(CancellationToken cancellationToken)
     {
@@ -751,6 +836,7 @@ public class MainWindowViewModel : ViewModelBase
         await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken);
         ReloadTagList(unitOfWork.TagRepository);
     }
+
 
     private async Task PublishToFolder(CancellationToken cancellationToken)
     {
