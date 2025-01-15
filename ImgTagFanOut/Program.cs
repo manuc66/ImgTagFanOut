@@ -11,9 +11,10 @@ using Serilog;
 
 namespace ImgTagFanOut;
 
-class Program
+internal static class Program
 {
-    internal static IDisposable? ErrorTracking;
+    private static IDisposable? _errorTracking;
+    internal static IDisposable? ErrorTracking => _errorTracking;
     internal static readonly RecyclableMemoryStreamManager RecyclableMemoryStreamManager = new RecyclableMemoryStreamManager();
 
     // Initialization code. Don't use any Avalonia, third-party APIs or any
@@ -22,18 +23,48 @@ class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        AppDomain.CurrentDomain.ProcessExit += (_, _) => CleanupResources();
+        AppDomain.CurrentDomain.UnhandledException += (_, _) => CleanupResources();
+        
         try
         {
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }
         catch (Exception e)
         {
-            Log.Error(e, "Critical program halt {0}", e.Message);
+            HandleException(e, "Critical application error during startup.");
+        }
+        finally
+        {
+            CleanupResources();
+        }
+    }
+
+
+    private static void HandleException(Exception e, string context)
+    {
+        if (Debugger.IsAttached)
+            Debugger.Break();
+        
+        try
+        {
+            Log.Error(e, context);
             SentrySdk.CaptureException(e);
         }
+        catch
+        {
+            // Fallback error handling
+            Console.WriteLine($@"Critical error: {context}{Environment.NewLine}{e}");
+        }
+    }
 
+
+    private static void CleanupResources()
+    {
+        ErrorTracking?.Dispose();
         Log.CloseAndFlush();
     }
+
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp() =>
@@ -46,52 +77,83 @@ class Program
                     UseDBusFilePicker = false, // to disable FreeDesktop file picker
                 }
             )
-            .AfterSetup(_ =>
-            {
-                Settings settings = new();
-                AppSettings readSettings = settings.ReadSettings();
-                LoggerConfiguration loggerConfiguration = new LoggerConfiguration();
-                loggerConfiguration.WriteTo.File(EnvironmentService.GetLogFile());
-                if (readSettings.ErrorTrackingAllowed ?? true)
-                {
-                    string sentryDsn = "https://2fd61307fdf9b3a63804db34c9bc51eb@o4505868956860416.ingest.sentry.io/4505869112639488";
-                    loggerConfiguration.WriteTo.Sentry(o => o.Dsn = sentryDsn);
-
-                    ErrorTracking = SentrySdk.Init(o =>
-                    {
-                        // Tells which project in Sentry to send events to:
-                        o.Dsn = sentryDsn;
-
-                        // When configuring for the first time, to see what the SDK is doing:
-                        //o.Debug = true;
-
-                        // This option is recommended. It enables Sentry's "Release Health" feature.
-                        o.AutoSessionTracking = true;
-
-                        // Set TracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
-                        // We recommend adjusting this value in production.
-                        o.TracesSampleRate = 1.0;
-                    });
-                    AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
-                    {
-                        if (e.ExceptionObject is Exception ex)
-                        {
-                            if (Debugger.IsAttached)
-                                Debugger.Break();
-                            SentrySdk.CaptureException(ex);
-                        }
-                    };
-                    RxApp.DefaultExceptionHandler = Observer.Create<Exception>(e =>
-                    {
-                        if (Debugger.IsAttached)
-                            Debugger.Break();
-                        SentrySdk.CaptureException(e);
-                    });
-                }
-
-                Log.Logger = loggerConfiguration.CreateLogger();
-            })
+            .AfterSetup(SetupApplication)
             .WithInterFont()
             .LogToTrace()
             .UseReactiveUI();
+
+
+    private static void SetupApplication(AppBuilder _)
+    {
+        ConfigureSentryAndLogging();
+
+        RegisterGlobalExceptionHandlers();
+    }
+
+
+    private static void ConfigureSentryAndLogging()
+    {
+        Settings settings = new();
+        AppSettings readSettings = settings.ReadSettings();
+        LoggerConfiguration loggerConfiguration = new LoggerConfiguration();
+        loggerConfiguration
+            .Enrich.WithProperty("ApplicationName", "ImgTagFanOut")
+            .Enrich.WithThreadId()
+            .Enrich.WithThreadName()
+            .Enrich.WithMachineName()
+            .Enrich.WithProperty("ApplicationVersion", GetApplicationVersion())
+            .Enrich.WithProperty("OS", Environment.OSVersion.ToString())
+            .Enrich.WithProperty("DOTNET_ENVIRONMENT", Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production");
+        
+        loggerConfiguration.WriteTo.File(EnvironmentService.GetLogFile());
+
+        if (readSettings.ErrorTrackingAllowed ?? true)
+        {
+            InitializeSentry(loggerConfiguration);
+        }
+
+        Log.Logger = loggerConfiguration.CreateLogger();
+    }
+    private static string GetApplicationVersion()
+    {
+        return typeof(Program).Assembly.GetName().Version?.ToString() ?? "Unknown";
+    }
+
+    private static void RegisterGlobalExceptionHandlers()
+    {
+        AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+        {
+            if (e.ExceptionObject is Exception ex)
+            {
+                HandleException(ex, $"Unhandled exception in domain: {AppDomain.CurrentDomain.FriendlyName}");
+            }
+        };
+        RxApp.DefaultExceptionHandler = Observer.Create<Exception>(e =>
+        {
+            HandleException(e, "Unhandled exception");
+        });
+    }
+
+
+    private static void InitializeSentry(LoggerConfiguration loggerConfiguration)
+    {
+        string sentryDsn = "https://2fd61307fdf9b3a63804db34c9bc51eb@o4505868956860416.ingest.sentry.io/4505869112639488";
+        loggerConfiguration.WriteTo.Sentry(o => o.Dsn = sentryDsn);
+
+        _errorTracking = SentrySdk.Init(o =>
+        {
+            // Tells which project in Sentry to send events to:
+            o.Dsn = sentryDsn;
+
+            // When configuring for the first time, to see what the SDK is doing:
+            //o.Debug = true;
+
+            // This option is recommended. It enables Sentry's "Release Health" feature.
+            o.AutoSessionTracking = true;
+
+            // Set TracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
+            // We recommend adjusting this value in production.
+            o.TracesSampleRate = 1.0;
+        });
+    }
 }
