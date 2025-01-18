@@ -172,6 +172,13 @@ public class MainWindowViewModel : ViewModelBase
         WorkingFolder = "";
         WindowTitle = nameof(ImgTagFanOut);
         TagList = new();
+        _hashEvaluator = new HashEvaluator();
+        ImageToDisplay = _noPreviewToDisplay;
+        _filteredTagList = new();
+        ShowDone = false;
+        TagFilterInput = string.Empty;
+
+        _noPreviewToDisplay = LoadNoPreviewToDisplay();
 
         this.WhenAnyValue(x => x.WindowActivated)
             .DistinctUntilChanged()
@@ -182,13 +189,6 @@ public class MainWindowViewModel : ViewModelBase
             .SelectMany(SaveShowDownState)
             .Subscribe();
 
-        _noPreviewToDisplay = LoadNoPreviewToDisplay();
-        ImageToDisplay = _noPreviewToDisplay;
-
-        _filteredTagList = new();
-        ShowDone = false;
-        TagFilterInput = string.Empty;
-
         _images
             .Connect()
             .AutoRefresh(x => x.Done)
@@ -198,6 +198,30 @@ public class MainWindowViewModel : ViewModelBase
             .ObserveOn(RxApp.MainThreadScheduler)
             .Bind(out _filteredImages)
             .Subscribe();
+        
+        this.WhenAnyValue(x => x.WorkingFolder)
+            .Subscribe(UpdateWindowTitle);
+
+        this.WhenAnyValue(x => x.TagFilterInput, x => x.SelectedImage)
+            .CombineLatest(TagList.ToObservableChangeSet(x => x).ToCollection())
+            .Subscribe(watched =>
+            {
+                var (tagFilterInput, selectedImage) = watched.First;
+                var tagList = watched.Second;
+                CreateFilteredTagList(tagList, tagFilterInput, selectedImage);
+            });
+        
+        this.WhenAnyValue(x => x.ImageToDisplay, x => x.SelectedImage)
+            .Throttle(TimeSpan.FromMilliseconds(50))
+            .Subscribe(DisplayNoPreview);
+        
+        this.WhenAnyValue(x => x.SelectedImage)
+            .Where(x => !string.IsNullOrWhiteSpace(x?.Item))
+            .Buffer(TimeSpan.FromMilliseconds(30))
+            .Where(x => x.Count > 0)
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .SelectMany(FetchThumbnail)
+            .Subscribe(UpdateImageDisplay);
 
         DoneCommand = ReactiveCommand.CreateFromTask(
             ToggleDoneCurrentElement,
@@ -215,9 +239,6 @@ public class MainWindowViewModel : ViewModelBase
 
         SelectFolderCommand = ReactiveCommand.CreateFromTask<Window, string>(ExecuteSelectFolderCommandAsync, ScanFolderCommand.IsExecuting.Select(x => !x));
         SelectFolderCommand.SelectMany(OpenFolder).Subscribe(_ => ScanFolderCommand.Execute().Subscribe());
-
-        this.WhenAnyValue(x => x.WorkingFolder)
-            .Subscribe(UpdateWindowTitle);
 
         CancelScanCommand = ReactiveCommand.Create(() => { }, ScanFolderCommand.IsExecuting);
 
@@ -268,34 +289,12 @@ public class MainWindowViewModel : ViewModelBase
             ScanFolderCommand.IsExecuting.Select(x => !x)
         );
 
-        this.WhenAnyValue(x => x.TagFilterInput, x => x.SelectedImage)
-            .CombineLatest(TagList.ToObservableChangeSet(x => x).ToCollection())
-            .Subscribe(watched =>
-            {
-                var (tagFilterInput, selectedImage) = watched.First;
-                var tagList = watched.Second;
-                CreateFilteredTagList(tagList, tagFilterInput, selectedImage);
-            });
-        
-        this.WhenAnyValue(x => x.ImageToDisplay, x => x.SelectedImage)
-            .Throttle(TimeSpan.FromMilliseconds(50))
-            .Subscribe(DisplayNoPreview);
-        
-        this.WhenAnyValue(x => x.SelectedImage)
-            .Where(x => !string.IsNullOrWhiteSpace(x?.Item))
-            .Buffer(TimeSpan.FromMilliseconds(30))
-            .Where(x => x.Count > 0)
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .SelectMany(FetchThumbnail)
-            .Subscribe(UpdateImageDisplay);
-
         ExitCommand = ReactiveCommand.CreateFromTask(_ => Task.CompletedTask);
         ShowAboutDialogCommand = ReactiveCommand.CreateFromTask(async _ =>
         {
             AboutViewModel aboutViewModel = new();
             await ShowAboutDialog.Handle(aboutViewModel);
         });
-        _hashEvaluator = new HashEvaluator();
     }
 
 
