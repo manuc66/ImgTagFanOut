@@ -62,6 +62,6 @@ jobs:
           path: setupScript.iss
           options: /O+
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: InstallerOutput/ImgTagFanOut-installer.exe
