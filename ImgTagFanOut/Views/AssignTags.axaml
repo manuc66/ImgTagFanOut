@@ -30,7 +30,7 @@
                         </Button>
                     </Grid>
                     <ListBox DockPanel.Dock="Bottom" SelectedIndex="{Binding SelectedIndex}"
-                             ItemsSource="{Binding FilteredImages, Mode=OneWay}" SelectedItem="{Binding SelectedImage}">
+                             ItemsSource="{Binding FilteredImages, Mode=OneWay}" SelectedItem="{Binding SelectedImage, Mode=TwoWay}">
                       <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
                           <VirtualizingStackPanel/>

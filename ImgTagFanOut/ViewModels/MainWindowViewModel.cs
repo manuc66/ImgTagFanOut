@@ -11,7 +11,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using DynamicData;
@@ -30,7 +29,7 @@ public class MainWindowViewModel : ViewModelBase
     private string? _targetFolder;
     private CanHaveTag? _selectedImage;
     private Bitmap? _imageToDisplay;
-    private ReadOnlyObservableCollection<CanHaveTag> _filteredImages;
+    private readonly ReadOnlyObservableCollection<CanHaveTag> _filteredImages;
     private string? _tagFilterInput;
     private string? _itemFilterInput;
     private readonly ObservableCollection<Tag> _tagList = new();
@@ -42,10 +41,9 @@ public class MainWindowViewModel : ViewModelBase
     private bool _windowActivated;
     private readonly Settings _settings;
     private string _windowTitle = null!;
-    private Cursor _cursor = Cursor.Default;
     private bool _isBusy;
 
-    public string? WorkingFolder
+    private string? WorkingFolder
     {
         get => _workingFolder;
         set => this.RaiseAndSetIfChanged(ref _workingFolder, value);
@@ -57,11 +55,7 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _targetFolder, value);
     }
 
-    public ReadOnlyObservableCollection<CanHaveTag> FilteredImages
-    {
-        get => _filteredImages;
-        set => this.RaiseAndSetIfChanged(ref _filteredImages, value);
-    }
+    public ReadOnlyObservableCollection<CanHaveTag> FilteredImages => _filteredImages;
 
     private ObservableCollection<Tag> TagList
     {
@@ -72,7 +66,7 @@ public class MainWindowViewModel : ViewModelBase
     public List<SelectableTag> FilteredTagList
     {
         get => _filteredTagList;
-        set => this.RaiseAndSetIfChanged(ref _filteredTagList, value);
+        private set => this.RaiseAndSetIfChanged(ref _filteredTagList, value);
     }
 
     public CanHaveTag? SelectedImage
@@ -84,7 +78,7 @@ public class MainWindowViewModel : ViewModelBase
     public Bitmap? ImageToDisplay
     {
         get => _imageToDisplay;
-        set => this.RaiseAndSetIfChanged(ref _imageToDisplay, value);
+        private set => this.RaiseAndSetIfChanged(ref _imageToDisplay, value);
     }
 
     public string? TagFilterInput
@@ -120,19 +114,13 @@ public class MainWindowViewModel : ViewModelBase
     public string WindowTitle
     {
         get => _windowTitle;
-        set => this.RaiseAndSetIfChanged(ref _windowTitle, value);
-    }
-
-    public Cursor Cursor
-    {
-        get => _cursor;
-        set => this.RaiseAndSetIfChanged(ref _cursor, value);
+        private set => this.RaiseAndSetIfChanged(ref _windowTitle, value);
     }
 
     public bool IsBusy
     {
         get => _isBusy;
-        set => this.RaiseAndSetIfChanged(ref _isBusy, value);
+        private set => this.RaiseAndSetIfChanged(ref _isBusy, value);
     }
 
     public ReactiveCommand<Window, string> SelectFolderCommand { get; }
@@ -140,7 +128,6 @@ public class MainWindowViewModel : ViewModelBase
 
     public ReactiveCommand<Unit, Unit> ScanFolderCommand { get; }
     public ReactiveCommand<Window, Unit> PublishCommand { get; }
-    public ReactiveCommand<Unit, Unit> CancelScanCommand { get; }
     public ReactiveCommand<Tag, Unit> ToggleAssignTagToImageCommand { get; }
     public ReactiveCommand<Tag, Unit> RemoveTagToImageCommand { get; }
     public ReactiveCommand<Unit, Unit> AddToTagListCommand { get; }
@@ -198,7 +185,7 @@ public class MainWindowViewModel : ViewModelBase
             .ObserveOn(RxApp.MainThreadScheduler)
             .Bind(out _filteredImages)
             .Subscribe();
-        
+
         this.WhenAnyValue(x => x.WorkingFolder)
             .Subscribe(UpdateWindowTitle);
 
@@ -210,11 +197,11 @@ public class MainWindowViewModel : ViewModelBase
                 var tagList = watched.Second;
                 CreateFilteredTagList(tagList, tagFilterInput, selectedImage);
             });
-        
+
         this.WhenAnyValue(x => x.ImageToDisplay, x => x.SelectedImage)
             .Throttle(TimeSpan.FromMilliseconds(50))
             .Subscribe(DisplayNoPreview);
-        
+
         this.WhenAnyValue(x => x.SelectedImage)
             .Where(x => !string.IsNullOrWhiteSpace(x?.Item))
             .Buffer(TimeSpan.FromMilliseconds(30))
@@ -227,7 +214,7 @@ public class MainWindowViewModel : ViewModelBase
             ToggleDoneCurrentElement,
             this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null)
         );
-        OpenCommand = ReactiveCommand.CreateFromTask(ExecuteOpenFileComandAsync, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
+        OpenCommand = ReactiveCommand.CreateFromTask(ExecuteOpenFileCommandAsync, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
         LocateCommand = ReactiveCommand.CreateFromTask(ExecuteLocateFileCommandAsync, this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null));
         OpenTargetFolderCommand =
             ReactiveCommand.CreateFromTask(ExecuteOpenTargetFolderCommandAsync, this.WhenAnyValue(x => x.TargetFolder).Select(x => !string.IsNullOrWhiteSpace(x)));
@@ -240,12 +227,10 @@ public class MainWindowViewModel : ViewModelBase
         SelectFolderCommand = ReactiveCommand.CreateFromTask<Window, string>(ExecuteSelectFolderCommandAsync, ScanFolderCommand.IsExecuting.Select(x => !x));
         SelectFolderCommand.SelectMany(OpenFolder).Subscribe(_ => ScanFolderCommand.Execute().Subscribe());
 
-        CancelScanCommand = ReactiveCommand.Create(() => { }, ScanFolderCommand.IsExecuting);
-
         SelectTargetFolderCommand = ReactiveCommand.CreateFromTask<Window, string?>(SelectTargetFolder, ScanFolderCommand.IsExecuting.Select(x => !x));
 
         PublishCommand = ReactiveCommand.CreateFromObservable(
-            (Window _) => Observable.StartAsync(PublishToFolder, RxApp.TaskpoolScheduler).TakeUntil(CancelScanCommand),
+            (Window _) => Observable.StartAsync(PublishToFolder, RxApp.TaskpoolScheduler),
             this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x))
         );
 
@@ -517,7 +502,6 @@ public class MainWindowViewModel : ViewModelBase
     }
 
 
-
     private void UpdateImageDisplay((CanHaveTag?, Bitmap? thumbnail) x)
     {
         if (SelectedImage != x.Item1)
@@ -535,6 +519,8 @@ public class MainWindowViewModel : ViewModelBase
             previous?.Dispose();
         }
     }
+
+
     private void DisplayNoPreview((Bitmap? thumbnail, CanHaveTag?) x)
     {
         if (x is { Item1: not null, Item2: not null }) return;
@@ -666,8 +652,7 @@ public class MainWindowViewModel : ViewModelBase
         RefreshTagIsSelected();
     }
 
-
-    private async Task ExecuteOpenFileComandAsync()
+    private async Task ExecuteOpenFileCommandAsync()
     {
         if (SelectedImage == null || WorkingFolder == null)
         {

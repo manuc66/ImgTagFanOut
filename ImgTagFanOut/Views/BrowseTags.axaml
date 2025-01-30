@@ -38,7 +38,7 @@
                 </Button>
             </Grid>
 
-            <ItemsControl Grid.Row="1" Name="AllTagsComponent" ItemsSource="{Binding FilteredTagList}">
+            <ItemsControl Grid.Row="1" Name="AllTagsComponent" ItemsSource="{Binding FilteredTagList, Mode=OneWay}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel></WrapPanel>
@@ -66,7 +66,7 @@
             </ItemsControl>
 
             <ItemsControl Grid.Row="2" Name="AssignedTagComponent"
-                          ItemsSource="{Binding SelectedImage.Tags, FallbackValue={x:Null}}">
+                          ItemsSource="{Binding SelectedImage.Tags, Mode=OneWay, FallbackValue={x:Null}}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel></WrapPanel>
