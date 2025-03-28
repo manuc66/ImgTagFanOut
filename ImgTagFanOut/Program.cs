@@ -23,9 +23,21 @@ internal static class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        ConfigureSentryAndLogging();
+
+        RxApp.DefaultExceptionHandler = Observer.Create<Exception>(e => { HandleException(e, "Unhandled exception"); });
+        AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+        {
+            if (e.ExceptionObject is Exception ex)
+            {
+                HandleException(ex, $"Unhandled exception in domain: {AppDomain.CurrentDomain.FriendlyName}");
+            }
+
+            CleanupResources();
+        };
         AppDomain.CurrentDomain.ProcessExit += (_, _) => CleanupResources();
-        AppDomain.CurrentDomain.UnhandledException += (_, _) => CleanupResources();
-        
+
+
         try
         {
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
@@ -45,7 +57,7 @@ internal static class Program
     {
         if (Debugger.IsAttached)
             Debugger.Break();
-        
+
         try
         {
             Log.Error(e, context);
@@ -77,18 +89,9 @@ internal static class Program
                     UseDBusFilePicker = false, // to disable FreeDesktop file picker
                 }
             )
-            .AfterSetup(SetupApplication)
             .WithInterFont()
             .LogToTrace()
             .UseReactiveUI();
-
-
-    private static void SetupApplication(AppBuilder _)
-    {
-        ConfigureSentryAndLogging();
-
-        RegisterGlobalExceptionHandlers();
-    }
 
 
     private static void ConfigureSentryAndLogging()
@@ -104,7 +107,7 @@ internal static class Program
             .Enrich.WithProperty("ApplicationVersion", GetApplicationVersion())
             .Enrich.WithProperty("OS", Environment.OSVersion.ToString())
             .Enrich.WithProperty("DOTNET_ENVIRONMENT", Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production");
-        
+
         loggerConfiguration.WriteTo.File(EnvironmentService.GetLogFile());
 
         if (readSettings.ErrorTrackingAllowed ?? true)
@@ -117,21 +120,6 @@ internal static class Program
     private static string GetApplicationVersion()
     {
         return typeof(Program).Assembly.GetName().Version?.ToString() ?? "Unknown";
-    }
-
-    private static void RegisterGlobalExceptionHandlers()
-    {
-        AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
-        {
-            if (e.ExceptionObject is Exception ex)
-            {
-                HandleException(ex, $"Unhandled exception in domain: {AppDomain.CurrentDomain.FriendlyName}");
-            }
-        };
-        RxApp.DefaultExceptionHandler = Observer.Create<Exception>(e =>
-        {
-            HandleException(e, "Unhandled exception");
-        });
     }
 
 
