@@ -6,15 +6,15 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
             - name: Setup .NET SDK
-              uses: actions/setup-dotnet@v3
+              uses: actions/setup-dotnet@v4
               with:
                   dotnet-version: 8.0
 
             - name: Cache NuGet packages
-              uses: actions/cache@v3
+              uses: actions/cache@v4
               with:
                   path: ~/.nuget/packages
                   key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
@@ -32,15 +32,15 @@ jobs:
         runs-on: macos-latest
         steps:
             - name: Checkout code
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
             - name: Setup .NET SDK
-              uses: actions/setup-dotnet@v3
+              uses: actions/setup-dotnet@v4
               with:
                   dotnet-version: 8.0
 
             - name: Cache NuGet packages
-              uses: actions/cache@v3
+              uses: actions/cache@v4
               with:
                   path: ~/.nuget/packages
                   key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
@@ -59,15 +59,15 @@ jobs:
         runs-on: windows-latest
         steps:
             - name: Checkout code
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
             - name: Setup .NET SDK
-              uses: actions/setup-dotnet@v3
+              uses: actions/setup-dotnet@v4
               with:
-                  dotnet-version: 8.0
+                  dotnet-version: '8.0'
 
             - name: Cache NuGet packages
-              uses: actions/cache@v3
+              uses: actions/cache@v4
               with:
                   path: ~/.nuget/packages
                   key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
@@ -84,7 +84,7 @@ jobs:
               run: dotnet publish -c Release -p:PublishProfile=FolderProfile.pubxml ImgTagFanOut/ImgTagFanOut.csproj
 
             - name: Compile .ISS to .EXE Installer
-              uses: Minionguyjpro/Inno-Setup-Action@v1.0.0
+              uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
               with:
                   path: setupScript.iss
                   options: /O+
