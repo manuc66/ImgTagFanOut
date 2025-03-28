@@ -1,67 +1,67 @@
 name: Build Installer
 on: push
 jobs:
-  build-linux:
-    name: Build for Linux
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    build-linux:
+        name: Build for Linux
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@v3
 
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: 8.0
-        
-      - name: Restore dependencies
-        run: dotnet restore
-        
-      - name: Restore dependencies
-        run: dotnet build
-        
-  build-macos:
-    name: Build for MacOs
-    runs-on: macos-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+            -   name: Setup .NET SDK
+                uses: actions/setup-dotnet@v3
+                with:
+                    dotnet-version: 8.0
 
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: 8.0
-        
-      - name: Restore dependencies
-        run: dotnet restore
-        
-      - name: Restore dependencies
-        run: dotnet build
-        
-        
-  build-windows:
-    name: Build for windows with the Inno Setup Installer
-    runs-on: windows-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+            -   name: Restore dependencies
+                run: dotnet restore
 
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: 8.0
-        
-      - name: Restore dependencies
-        run: dotnet restore
+            -   name: Restore dependencies
+                run: dotnet build
+    
+    build-macos:
+        name: Build for MacOs
+        runs-on: macos-latest
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@v3
 
-      - name: Publish
-        run: dotnet publish -c Release -p:PublishProfile=FolderProfile.pubxml ImgTagFanOut\ImgTagFanOut.csproj
+            -   name: Setup .NET SDK
+                uses: actions/setup-dotnet@v3
+                with:
+                    dotnet-version: 8.0
 
-      - name: Compile .ISS to .EXE Installer
-        uses: Minionguyjpro/Inno-Setup-Action@v1.0.0
-        with:
-          path: setupScript.iss
-          options: /O+
+            -   name: Restore dependencies
+                run: dotnet restore
 
-      - uses: actions/upload-artifact@v4
-        with:
-          path: InstallerOutput/ImgTagFanOut-installer.exe
+            -   name: Restore dependencies
+                run: dotnet build
+    
+    
+    build-windows:
+        name: Build for windows with the Inno Setup Installer
+        runs-on: windows-latest
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@v3
+
+            -   name: Setup .NET SDK
+                uses: actions/setup-dotnet@v3
+                with:
+                    dotnet-version: 8.0
+
+            -   name: Restore dependencies
+                run: dotnet restore
+
+            -   name: Publish
+                run: dotnet publish -c Release -p:PublishProfile=FolderProfile.pubxml ImgTagFanOut\ImgTagFanOut.csproj
+
+            -   name: Compile .ISS to .EXE Installer
+                uses: Minionguyjpro/Inno-Setup-Action@v1.0.0
+                with:
+                    path: setupScript.iss
+                    options: /O+
+
+            -   uses: actions/upload-artifact@v4
+                with:
+                    path: InstallerOutput/ImgTagFanOut-installer.exe
