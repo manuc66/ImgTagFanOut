@@ -86,7 +86,7 @@ internal static class Program
             .With(
                 new X11PlatformOptions
                 {
-                    UseDBusFilePicker = false, // to disable FreeDesktop file picker
+                    UseDBusFilePicker = false // to disable FreeDesktop file picker
                 }
             )
             .WithInterFont()

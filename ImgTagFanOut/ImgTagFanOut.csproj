@@ -24,37 +24,37 @@
 
 
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="11.2.8" />
-        <PackageReference Include="Avalonia.Desktop" Version="11.2.8" />
-        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.6" />
-        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.5" />
+        <PackageReference Include="Avalonia" Version="11.3.0" />
+        <PackageReference Include="Avalonia.Desktop" Version="11.3.0" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.0" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.0" />
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
 <!--        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.10" />-->
-        <PackageReference Include="Avalonia.ReactiveUI" Version="11.2.7" />
-        <PackageReference Include="Avalonia.Xaml.Behaviors" Version="11.2.7.2" />
+        <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.0" />
+        <PackageReference Include="Avalonia.Xaml.Behaviors" Version="11.3.0" />
         <PackageReference Include="Blake3" Version="2.0.0" />
-        <PackageReference Include="DynamicData" Version="9.2.1" />
+        <PackageReference Include="DynamicData" Version="9.2.2" />
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.3">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.4">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.4" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.3">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.1" />
-        <PackageReference Include="Sentry" Version="5.5.0" />
-        <PackageReference Include="Sentry.Serilog" Version="5.5.0" />
+        <PackageReference Include="Sentry" Version="5.6.0" />
+        <PackageReference Include="Sentry.Serilog" Version="5.6.0" />
         <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
         <PackageReference Include="Serilog.Enrichers.Process" Version="3.0.0" />
         <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
-        <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+        <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
         <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.11" />
         <PackageReference Include="SQLitePCLRaw.core" Version="2.1.11" />
         <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.11" />
