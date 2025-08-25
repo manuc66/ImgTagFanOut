@@ -49,16 +49,16 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.1" />
-        <PackageReference Include="Sentry" Version="5.11.2" />
-        <PackageReference Include="Sentry.Serilog" Version="5.11.2" />
+        <PackageReference Include="Sentry" Version="5.13.0" />
+        <PackageReference Include="Sentry.Serilog" Version="5.13.0" />
         <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
         <PackageReference Include="Serilog.Enrichers.Process" Version="3.0.0" />
         <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
         <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.11" />
-        <PackageReference Include="SQLitePCLRaw.core" Version="2.1.11" />
-        <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.11" />
-        <PackageReference Include="SQLitePCLRaw.provider.e_sqlite3" Version="2.1.11" />
+        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.0" />
+        <PackageReference Include="SQLitePCLRaw.core" Version="3.0.0" />
+        <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.50.3" />
+        <PackageReference Include="SQLitePCLRaw.provider.e_sqlite3" Version="3.0.0" />
 
         <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.7.0" />
     </ItemGroup>
