@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -136,7 +137,7 @@ public class TagRepository : ITagRepository
         if (existingTag == null)
             return;
 
-        ItemDao? existingItem = _dbContext.Items.Include(x => x.Tags).FirstOrDefault(t => t.Name == tagAssignation.Item);
+        ItemDao? existingItem = _dbContext.Items.Include(x => x.Tags).Include(x => x.ItemTags).FirstOrDefault(t => t.Name == tagAssignation.Item);
 
         if (existingItem == null)
             return;
@@ -151,13 +152,11 @@ public class TagRepository : ITagRepository
         ItemTagDao? existingItemTag = _dbContext.ItemTags.FirstOrDefault(x => x.Item.ItemId == existingItem.ItemId && x.Tag.TagId == existingTag.TagId);
         if (existingItemTag != null)
         {
+            existingItem.ItemTags.Remove(existingItemTag);
             _dbContext.ItemTags.Remove(existingItemTag);
         }
 
-        for (int i = 0; i < existingItem.ItemTags.OrderBy(x => x.OrderIndex).ToList().Count; i++)
-        {
-            existingItem.ItemTags[i].OrderIndex = i;
-        }
+        ReindexItemTags(existingItem);
 
         tagAssignation.RemoveTag(_tagCache.GetOrCreate(existingTag));
     }
@@ -193,10 +192,7 @@ public class TagRepository : ITagRepository
             existingItem.ItemTags.Remove(existingItemTag);
             existingTag.ItemTags.Remove(existingItemTag);
             _dbContext.ItemTags.Remove(existingItemTag);
-            for (int i = 0; i < existingItem.ItemTags.OrderBy(x => x.OrderIndex).ToList().Count; i++)
-            {
-                existingItem.ItemTags[i].OrderIndex = i;
-            }
+            ReindexItemTags(existingItem);
 
             tagAssignation.RemoveTag(_tagCache.GetOrCreate(existingTag));
         }
@@ -216,6 +212,15 @@ public class TagRepository : ITagRepository
             existingTag.ItemTags.Add(newItemTag);
             _dbContext.ItemTags.Add(newItemTag);
             tagAssignation.AddTag(_tagCache.GetOrCreate(existingTag));
+        }
+    }
+
+    private static void ReindexItemTags(ItemDao item)
+    {
+        List<ItemTagDao> ordered = item.ItemTags.OrderBy(x => x.OrderIndex).ToList();
+        for (int i = 0; i < ordered.Count; i++)
+        {
+            ordered[i].OrderIndex = i;
         }
     }
 

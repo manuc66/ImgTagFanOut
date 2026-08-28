@@ -5,7 +5,7 @@ namespace ImgTagFanOut.Dao;
 
 public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext, IUnitOfWork
 {
-    private string DbPath { get; }
+    private readonly string? DbPath;
 
     public DbSet<TagDao> Tags { get; set; } = null!;
     public DbSet<ItemDao> Items { get; set; } = null!;
@@ -24,9 +24,20 @@ public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext, IUnitOfW
         ParameterRepository = new ParameterRepository(this);
     }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder options) => options.UseSqlite($"Data Source={DbPath}")
-    //  .LogTo(Console.WriteLine)
-    ;
+    public ImgTagFanOutDbContext(DbContextOptions<ImgTagFanOutDbContext> options, TagCache tagCache)
+        : base(options)
+    {
+        TagRepository = new TagRepository(this, tagCache);
+        ParameterRepository = new ParameterRepository(this);
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder options)
+    {
+        if (!options.IsConfigured)
+        {
+            options.UseSqlite($"Data Source={DbPath ?? System.IO.Path.Join(".", "ImgTagFanOut.db")}");
+        }
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
