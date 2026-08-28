@@ -12,10 +12,27 @@ class Settings
         _appSettingFile = EnvironmentService.GetAppSettingFile();
     }
 
+    internal Settings(string appSettingFile)
+    {
+        _appSettingFile = appSettingFile;
+    }
+
     internal AppSettings ReadSettings()
     {
-        AppSettings appSettings = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(_appSettingFile)) ?? new AppSettings();
-        return appSettings;
+        try
+        {
+            if (!File.Exists(_appSettingFile))
+            {
+                return new AppSettings();
+            }
+
+            string json = File.ReadAllText(_appSettingFile);
+            return JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
+        }
+        catch (JsonException)
+        {
+            return new AppSettings();
+        }
     }
 
     internal void Save(AppSettings settings)
