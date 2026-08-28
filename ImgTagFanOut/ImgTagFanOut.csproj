@@ -10,8 +10,11 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
         <LangVersion>12</LangVersion>
-        <InternalsVisibleTo>ImgTagFanOut.Tests</InternalsVisibleTo>
     </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="ImgTagFanOut.Tests" />
+    </ItemGroup>
 
 	<PropertyGroup>
 		<Copyright>Copyright © $([System.DateTime]::UtcNow.Year) Emmanuel Counasse</Copyright>

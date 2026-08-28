@@ -44,71 +44,76 @@ public class FileManagerHandler
         }
     }
 
-    public async Task RevealFileInFolder(string path)
+    internal static ProcessStartInfo? BuildRevealProcessStartInfo(string path, OSPlatform platform)
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (platform == OSPlatform.Windows)
         {
-            using Process fileOpener = new();
-            fileOpener.StartInfo.FileName = "explorer";
-            fileOpener.StartInfo.Arguments = "/select," + path + "\"";
-
-            if (fileOpener.Start())
+            return new()
             {
-                await fileOpener.WaitForExitAsync();
-            }
-
-            return;
+                FileName = "explorer",
+                Arguments = "/select," + path + "\"",
+                UseShellExecute = true,
+            };
         }
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        if (platform == OSPlatform.OSX)
         {
-            using Process fileOpener = new();
-            fileOpener.StartInfo.FileName = "explorer";
-            fileOpener.StartInfo.Arguments = "-R " + path;
-            fileOpener.Start();
-
-            if (fileOpener.Start())
+            return new()
             {
-                await fileOpener.WaitForExitAsync();
-            }
-
-            return;
+                FileName = "open",
+                Arguments = "-R " + path,
+                UseShellExecute = true,
+            };
         }
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        if (platform == OSPlatform.Linux)
         {
             // On linux, try to use dbus, see https://stackoverflow.com/questions/73409227/open-file-in-containing-folder-for-linux/73409251
-            Process? dbusShowItemsProcess = null;
-            try
+            return new()
             {
-                dbusShowItemsProcess = new()
-                {
-                    StartInfo = new()
-                    {
-                        FileName = "dbus-send",
-                        Arguments =
-                            $@"--print-reply --dest=org.freedesktop.FileManager1 --type=method_call /org/freedesktop/FileManager1 org.freedesktop.FileManager1.ShowItems array:string:""file://{path}"" string:""""",
-                        UseShellExecute = true,
-                    },
-                };
-                dbusShowItemsProcess.Start();
-                await dbusShowItemsProcess.WaitForExitAsync();
-
-                if (dbusShowItemsProcess.ExitCode == 0)
-                {
-                    // The dbus invocation can fail for a variety of reasons:
-                    // - dbus is not available
-                    // - no programs implement the service,
-                    // - ...
-                    return;
-                }
-            }
-            finally
-            {
-                dbusShowItemsProcess?.Dispose();
-            }
+                FileName = "dbus-send",
+                Arguments =
+                    $@"--print-reply --dest=org.freedesktop.FileManager1 --type=method_call /org/freedesktop/FileManager1 org.freedesktop.FileManager1.ShowItems array:string:""file://{path}"" string:""""",
+                UseShellExecute = true,
+            };
         }
 
-        await OpenParentFolder(path);
+        return null;
+    }
+
+    public async Task RevealFileInFolder(string path)
+    {
+        OSPlatform platform = GetCurrentPlatform();
+        ProcessStartInfo? startInfo = BuildRevealProcessStartInfo(path, platform);
+
+        if (startInfo == null)
+        {
+            await OpenParentFolder(path);
+            return;
+        }
+
+        using Process process = new() { StartInfo = startInfo };
+        process.Start();
+        await process.WaitForExitAsync();
+
+        if (platform == OSPlatform.Linux && process.ExitCode != 0)
+        {
+            // The dbus invocation can fail for a variety of reasons:
+            // - dbus is not available
+            // - no programs implement the service,
+            // - ...
+            await OpenParentFolder(path);
+        }
+    }
+
+    private static OSPlatform GetCurrentPlatform()
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            return OSPlatform.Windows;
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            return OSPlatform.OSX;
+
+        return OSPlatform.Linux;
     }
 }
