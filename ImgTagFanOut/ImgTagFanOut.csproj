@@ -10,6 +10,7 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
         <LangVersion>12</LangVersion>
+        <InternalsVisibleTo>ImgTagFanOut.Tests</InternalsVisibleTo>
     </PropertyGroup>
 
 	<PropertyGroup>
