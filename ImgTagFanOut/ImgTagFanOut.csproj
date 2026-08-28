@@ -36,6 +36,8 @@
 <!--        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.10" />-->
         <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.8" />
         <PackageReference Include="Avalonia.Xaml.Behaviors" Version="11.3.0.6" />
+        <!-- Pin to fix GHSA-xrw6-gwf8-vvr9 in the Tmds.DBus.Protocol 0.21.2 pulled by Avalonia.FreeDesktop -->
+        <PackageReference Include="Tmds.DBus.Protocol" Version="0.21.3" />
 <PackageReference Include="Blake3" Version="2.2.1" />
         <PackageReference Include="DynamicData" Version="9.4.31" />
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0">
@@ -61,7 +63,6 @@
         <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
         <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.2" />
         <PackageReference Include="SQLitePCLRaw.core" Version="3.0.2" />
-        <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.50.3" />
         <PackageReference Include="SQLitePCLRaw.provider.e_sqlite3" Version="3.0.2" />
 
         <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.16.0" />
