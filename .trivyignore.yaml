@@ -1,0 +1,12 @@
+# Licenses accepted by the project.
+#
+# The LGPL-3.0 and MPL-1.1 findings come from native libraries embedded inside
+# Magick.NET-Q8-AnyCPU (libheif/libde265 are LGPL-3.0, cairo/libcroco are MPL/LGPL).
+# The Magick.NET package itself is Apache-2.0. These libraries are only used to
+# generate thumbnail previews; they are reviewed and accepted.
+licenses:
+  - id: LGPL-3.0
+  - id: MPL-1.1
+  - id: MPL-2.0
+  - id: LGPL-2.1
+  - id: LGPL-2.1-only

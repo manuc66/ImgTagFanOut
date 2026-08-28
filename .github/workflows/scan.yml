@@ -1,0 +1,20 @@
+name: Scan Dependencies
+on: push
+jobs:
+    scan:
+        name: Trivy scan (vulnerabilities + licenses)
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Run Trivy vulnerability and license scanner
+              uses: aquasecurity/trivy-action@0.36.0
+              with:
+                  scan-type: fs
+                  scan-ref: .
+                  scanners: vuln,license
+                  trivyignores: .trivyignore.yaml
+                  format: table
+                  exit-code: 1
+                  severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
