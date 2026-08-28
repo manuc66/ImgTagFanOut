@@ -13,6 +13,8 @@ namespace ImgTagFanOut.ViewModels;
 public class PublishProgressViewModel : ViewModelBase
 {
     private readonly bool _dropEverythingFirst;
+    private readonly IPublisher _publisher;
+    private readonly IFileManagerHandler _fileManagerHandler;
     private string _trailLog;
     private bool _completed;
     public string WorkingFolder { get; }
@@ -35,7 +37,18 @@ public class PublishProgressViewModel : ViewModelBase
     }
 
     public PublishProgressViewModel(string workingFolder, string targetFolder, bool dropEverythingFirst, CancellationToken cancellationToken)
+        : this(workingFolder, targetFolder, dropEverythingFirst, cancellationToken, new Publisher(), new FileManagerHandler()) { }
+
+    internal PublishProgressViewModel(
+        string workingFolder,
+        string targetFolder,
+        bool dropEverythingFirst,
+        CancellationToken cancellationToken,
+        IPublisher publisher,
+        IFileManagerHandler fileManagerHandler)
     {
+        _publisher = publisher;
+        _fileManagerHandler = fileManagerHandler;
         _dropEverythingFirst = dropEverythingFirst;
         WorkingFolder = workingFolder;
         TargetFolder = targetFolder;
@@ -62,7 +75,7 @@ public class PublishProgressViewModel : ViewModelBase
 
         if (Directory.Exists(TargetFolder))
         {
-            await new FileManagerHandler().OpenFolder(TargetFolder);
+            await _fileManagerHandler.OpenFolder(TargetFolder);
         }
     }
 
@@ -70,7 +83,7 @@ public class PublishProgressViewModel : ViewModelBase
     {
         try
         {
-            await new Publisher().PublishToFolder(
+            await _publisher.PublishToFolder(
                 WorkingFolder,
                 TargetFolder,
                 _dropEverythingFirst,

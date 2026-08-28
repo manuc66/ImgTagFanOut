@@ -11,6 +11,7 @@
         <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
         <LangVersion>12</LangVersion>
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+        <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     </PropertyGroup>
 
     <ItemGroup>

@@ -10,11 +10,20 @@ using ImgTagFanOut.ViewModels;
 
 namespace ImgTagFanOut.Models;
 
-public class FolderScan
+public class FolderScan : IFolderScan
 {
-    private readonly HashEvaluator _hashEvaluator = new();
+    private readonly IHashEvaluator _hashEvaluator;
+    private readonly IUnitOfWorkFactory _unitOfWorkFactory;
 
-    internal async Task ScanFolder(CancellationToken cancellationToken, string workingFolder, SourceList<CanHaveTag> images)
+    public FolderScan() : this(new HashEvaluator(), new UnitOfWorkFactory()) { }
+
+    internal FolderScan(IHashEvaluator hashEvaluator, IUnitOfWorkFactory unitOfWorkFactory)
+    {
+        _hashEvaluator = hashEvaluator;
+        _unitOfWorkFactory = unitOfWorkFactory;
+    }
+
+    public async Task ScanFolder(CancellationToken cancellationToken, string workingFolder, SourceList<CanHaveTag> images)
     {
         HashSet<string> allowedExtensions = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -53,7 +62,7 @@ public class FolderScan
             .EnumerateFiles(workingFolder, "*", SearchOption.AllDirectories)
             .Where(x => !cancellationToken.IsCancellationRequested && allowedExtensions.Contains(Path.GetExtension(x)));
 
-        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(workingFolder, cancellationToken);
+        await using IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(workingFolder, cancellationToken);
         List<CanHaveTag> allCanHaveTags = [];
         foreach (string file in enumerateFiles)
         {

@@ -16,14 +16,24 @@ namespace ImgTagFanOut.ViewModels;
 public class TagToImagesViewModel : ViewModelBase
 {
     private readonly Func<string?> _workingFolderGetter;
+    private readonly IUnitOfWorkFactory _unitOfWorkFactory;
+    private readonly IThumbnailProvider _thumbnailProvider;
     private readonly ReadOnlyObservableCollection<CanHaveTag> _filteredImages;
     private readonly SourceList<CanHaveTag> _images = new();
     private Bitmap? _imageToDisplay;
     private CanHaveTag? _selectedImage;
 
     public TagToImagesViewModel(Func<string?> workingFolderGetter)
+        : this(workingFolderGetter, new UnitOfWorkFactory(), new ThumbnailProvider()) { }
+
+    internal TagToImagesViewModel(
+        Func<string?> workingFolderGetter,
+        IUnitOfWorkFactory unitOfWorkFactory,
+        IThumbnailProvider thumbnailProvider)
     {
         _workingFolderGetter = workingFolderGetter;
+        _unitOfWorkFactory = unitOfWorkFactory;
+        _thumbnailProvider = thumbnailProvider;
         _images
             .Connect()
             .Filter(this.WhenAnyValue(@this => @this.ItemFilterInput).Select(CreateFilterForItemFilterInput))
@@ -79,7 +89,7 @@ public class TagToImagesViewModel : ViewModelBase
             return;
         }
 
-        using IUnitOfWork unitOfWork = DbContextFactory.GetUnitOfWork(workingFolder);
+        using IUnitOfWork unitOfWork = _unitOfWorkFactory.GetUnitOfWork(workingFolder);
         TagList.Clear();
         TagList.AddRange(unitOfWork.TagRepository.GetAllTag());
     }
@@ -96,7 +106,7 @@ public class TagToImagesViewModel : ViewModelBase
             return;
         }
 
-        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(workingFolder);
+        await using IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(workingFolder);
         IReadOnlyList<string> items = unitOfWork.TagRepository.GetItemsWithTag(SelectedTag);
 
         foreach (string item in items)
@@ -119,7 +129,7 @@ public class TagToImagesViewModel : ViewModelBase
             return (canHaveTag, null);
         }
 
-        Bitmap? thumbnail = await new ThumbnailProvider().GetThumbnail(fullFilePath);
+        Bitmap? thumbnail = await _thumbnailProvider.GetThumbnail(fullFilePath);
         return (canHaveTag, thumbnail);
     }
 
