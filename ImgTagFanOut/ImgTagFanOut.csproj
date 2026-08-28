@@ -32,13 +32,13 @@
 <!--        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.10" />-->
         <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.8" />
         <PackageReference Include="Avalonia.Xaml.Behaviors" Version="11.3.0.6" />
-        <PackageReference Include="Blake3" Version="2.2.0" />
+<PackageReference Include="Blake3" Version="2.2.1" />
         <PackageReference Include="DynamicData" Version="9.4.31" />
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.13" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.14" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.13">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
@@ -60,7 +60,7 @@
         <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.50.3" />
         <PackageReference Include="SQLitePCLRaw.provider.e_sqlite3" Version="3.0.2" />
 
-        <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.10.3" />
+        <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.16.0" />
     </ItemGroup>
 
 
