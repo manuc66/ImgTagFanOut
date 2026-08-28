@@ -53,9 +53,9 @@ public class TagRepositoryTests : IDisposable
         _repository.AddTagToItem(new Tag("cat"), item);
         _dbContext.SaveChanges();
 
-        Assert.Equal(1, _dbContext.Items.Include(i => i.Tags).Single().Tags.Count);
-        Assert.Equal(1, _dbContext.ItemTags.Count());
-        Assert.Equal(1, item.Tags.Count);
+        Assert.Single(_dbContext.Items.Include(i => i.Tags).Single().Tags);
+        Assert.Single(_dbContext.ItemTags);
+        Assert.Single(item.Tags);
     }
 
     [Fact]
