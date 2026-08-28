@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace ImgTagFanOut;
 
-public class FileManagerHandler
+public class FileManagerHandler : IFileManagerHandler
 {
     public async Task OpenParentFolder(string path)
     {

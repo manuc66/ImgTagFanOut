@@ -9,16 +9,25 @@ using ImgTagFanOut.ViewModels;
 
 namespace ImgTagFanOut.Models;
 
-public class Publisher
+public class Publisher : IPublisher
 {
+    private readonly IUnitOfWorkFactory _unitOfWorkFactory;
+
+    public Publisher() : this(new UnitOfWorkFactory()) { }
+
+    internal Publisher(IUnitOfWorkFactory unitOfWorkFactory)
+    {
+        _unitOfWorkFactory = unitOfWorkFactory;
+    }
+
     public async Task PublishToFolder(
         string workingFolder,
         string targetFolder,
         bool dropEverythingFirst,
         Action<Tag> beginTag,
         Action<(string source, string? destination, bool copied)> onFileCompleted,
-        Action<(string path, bool sucess, string? error)> onFileDeleted,
-        Action<(string path, bool sucess, string? error)> onDirectoryDeleted,
+        Action<(string path, bool success, string? error)> onFileDeleted,
+        Action<(string path, bool success, string? error)> onDirectoryDeleted,
         CancellationToken cancellationToken
     )
     {
@@ -34,7 +43,7 @@ public class Publisher
             }
         }
 
-        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(workingFolder, cancellationToken);
+        await using IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(workingFolder, cancellationToken);
 
         foreach (Tag tag in unitOfWork.TagRepository.GetAllTag())
         {
@@ -148,8 +157,8 @@ public class Publisher
 
     static void DeleteDirectoryRecursively(
         string targetDir,
-        Action<(string path, bool sucess, string? error)> onFileDeleted,
-        Action<(string path, bool sucess, string? error)> onDirectoryDeleted,
+        Action<(string path, bool success, string? error)> onFileDeleted,
+        Action<(string path, bool success, string? error)> onDirectoryDeleted,
         CancellationToken cancellationToken
     )
     {

@@ -264,19 +264,36 @@ public class TagRepository : ITagRepository
 
     public void DeleteTag(Tag tag)
     {
-        TagDao? existingTag = _dbContext.Tags.Include(x => x.Items).Include(x => x.ItemTags).FirstOrDefault(t => t.Name == tag.Name.Trim());
+        TagDao? existingTag = _dbContext.Tags
+            .Include(x => x.Items)
+            .Include(x => x.ItemTags)
+            .FirstOrDefault(t => t.Name == tag.Name.Trim());
 
         if (existingTag == null)
         {
             return;
         }
 
-        foreach (ItemDao existingItem in existingTag.Items)
+        List<ItemDao> affectedItems = existingTag.Items.ToList();
+
+        foreach (ItemDao existingItem in affectedItems)
         {
             existingItem.Tags.Remove(existingTag);
         }
 
         _dbContext.ItemTags.RemoveRange(existingTag.ItemTags);
+
+        foreach (ItemDao existingItem in affectedItems)
+        {
+            var remaining = _dbContext.ItemTags.Local
+                .Where(x => x.Item.ItemId == existingItem.ItemId && x.Tag.TagId != existingTag.TagId)
+                .OrderBy(x => x.OrderIndex)
+                .ToList();
+            for (int i = 0; i < remaining.Count; i++)
+            {
+                remaining[i].OrderIndex = i;
+            }
+        }
 
         _dbContext.Tags.Remove(existingTag);
     }

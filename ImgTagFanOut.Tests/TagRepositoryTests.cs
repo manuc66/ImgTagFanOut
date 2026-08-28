@@ -98,4 +98,109 @@ public class TagRepositoryTests : IDisposable
         Assert.Empty(stored.Tags);
         Assert.Empty(item.Tags);
     }
+
+    [Fact]
+    public void ToggleToItem_ToggleOff_RemovesTagAndReindexesRemaining()
+    {
+        CreateTag("cat");
+        CreateTag("dog");
+        CreateTag("bird");
+        CreateItem("photo.jpg");
+        CanHaveTag item = new("photo.jpg");
+
+        _repository.AddTagToItem(new Tag("cat"), item);
+        _repository.AddTagToItem(new Tag("dog"), item);
+        _repository.AddTagToItem(new Tag("bird"), item);
+        _dbContext.SaveChanges();
+
+        _repository.ToggleToItem(new Tag("dog"), item);
+        _dbContext.SaveChanges();
+
+        ItemDao stored = _dbContext.Items.Include(i => i.ItemTags).Include(i => i.Tags).Single();
+        Assert.Equal(2, stored.ItemTags.Count);
+        Assert.DoesNotContain(stored.Tags, t => t.Name == "dog");
+        Assert.Equal(new[] { 0, 1 }, stored.ItemTags.OrderBy(x => x.OrderIndex).Select(x => x.OrderIndex).ToArray());
+    }
+
+    [Fact]
+    public void ToggleToItem_ToggleOn_AddsTagWithNextOrderIndex()
+    {
+        CreateTag("cat");
+        CreateTag("dog");
+        CreateItem("photo.jpg");
+        CanHaveTag item = new("photo.jpg");
+
+        _repository.AddTagToItem(new Tag("cat"), item);
+        _dbContext.SaveChanges();
+
+        _repository.ToggleToItem(new Tag("dog"), item);
+        _dbContext.SaveChanges();
+
+        ItemDao stored = _dbContext.Items.Include(i => i.ItemTags).Single();
+        Assert.Equal(2, stored.ItemTags.Count);
+        Assert.Equal(new[] { 0, 1 }, stored.ItemTags.OrderBy(x => x.OrderIndex).Select(x => x.OrderIndex).ToArray());
+    }
+
+    [Fact]
+    public void DeleteTag_ReindexesRemainingOrderIndexOnAffectedItems()
+    {
+        CreateTag("cat");
+        CreateTag("dog");
+        CreateTag("bird");
+        CreateItem("photo.jpg");
+        CanHaveTag item = new("photo.jpg");
+
+        _repository.AddTagToItem(new Tag("cat"), item);
+        _repository.AddTagToItem(new Tag("dog"), item);
+        _repository.AddTagToItem(new Tag("bird"), item);
+        _dbContext.SaveChanges();
+
+        _repository.DeleteTag(new Tag("dog"));
+        _dbContext.SaveChanges();
+
+        ItemDao stored = _dbContext.Items.Include(i => i.ItemTags).Single();
+        Assert.Equal(2, stored.ItemTags.Count);
+        Assert.Equal(new[] { 0, 1 }, stored.ItemTags.OrderBy(x => x.OrderIndex).Select(x => x.OrderIndex).ToArray());
+    }
+
+    [Fact]
+    public async Task AddOrUpdateItem_WithChangedHash_ClearsTagsAndDone()
+    {
+        CreateTag("cat");
+        CreateItem("photo.jpg");
+        CanHaveTag item = new("photo.jpg") { Hash = "original-hash" };
+
+        _repository.AddTagToItem(new Tag("cat"), item);
+        _dbContext.SaveChanges();
+        _repository.MarkDone(item);
+        _dbContext.SaveChanges();
+
+        CanHaveTag updatedItem = new("photo.jpg");
+        await _repository.AddOrUpdateItem(updatedItem, _ => Task.FromResult("different-hash"));
+        _dbContext.SaveChanges();
+
+        ItemDao stored = _dbContext.Items.Include(i => i.ItemTags).Include(i => i.Tags).Single();
+        Assert.False(stored.Done);
+        Assert.Empty(stored.ItemTags);
+        Assert.Empty(stored.Tags);
+    }
+
+    [Fact]
+    public async Task AddOrUpdateItem_WithSameHash_RestoresTagsAndDone()
+    {
+        CreateTag("cat");
+        CreateItem("photo.jpg");
+        CanHaveTag initial = new("photo.jpg") { Hash = "hash" };
+
+        _repository.AddTagToItem(new Tag("cat"), initial);
+        _repository.MarkDone(initial);
+        _dbContext.SaveChanges();
+
+        CanHaveTag updatedItem = new("photo.jpg");
+        await _repository.AddOrUpdateItem(updatedItem, _ => Task.FromResult("hash"));
+        _dbContext.SaveChanges();
+
+        Assert.Equal(1, updatedItem.Tags.Count);
+        Assert.True(updatedItem.Done);
+    }
 }

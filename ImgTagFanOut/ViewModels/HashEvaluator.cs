@@ -4,10 +4,11 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Blake3;
+using ImgTagFanOut.Models;
 
 namespace ImgTagFanOut.ViewModels;
 
-public class HashEvaluator
+public class HashEvaluator : IHashEvaluator
 {
 
     public async Task<string> ComputeHashAsync(string filePath, CancellationToken ctsToken)

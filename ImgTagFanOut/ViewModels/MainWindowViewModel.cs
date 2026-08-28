@@ -43,7 +43,7 @@ public class MainWindowViewModel : ViewModelBase
     private string _windowTitle = null!;
     private bool _isBusy;
 
-    private string? WorkingFolder
+    internal string? WorkingFolder
     {
         get => _workingFolder;
         set => this.RaiseAndSetIfChanged(ref _workingFolder, value);
@@ -123,6 +123,8 @@ public class MainWindowViewModel : ViewModelBase
         private set => this.RaiseAndSetIfChanged(ref _isBusy, value);
     }
 
+    public TagToImagesViewModel TagToImages { get; }
+
     public ReactiveCommand<Window, string> SelectFolderCommand { get; }
     public ReactiveCommand<Window, string?> SelectTargetFolderCommand { get; }
 
@@ -150,7 +152,21 @@ public class MainWindowViewModel : ViewModelBase
 
 
     public MainWindowViewModel()
+        : this(new UnitOfWorkFactory(), new FolderScan(), new HashEvaluator(), new ThumbnailProvider(), new FileManagerHandler()) { }
+
+    internal MainWindowViewModel(
+        IUnitOfWorkFactory unitOfWorkFactory,
+        IFolderScan folderScan,
+        IHashEvaluator hashEvaluator,
+        IThumbnailProvider thumbnailProvider,
+        IFileManagerHandler fileManagerHandler)
     {
+        _unitOfWorkFactory = unitOfWorkFactory;
+        _folderScan = folderScan;
+        _hashEvaluator = hashEvaluator;
+        _thumbnailProvider = thumbnailProvider;
+        _fileManagerHandler = fileManagerHandler;
+        TagToImages = new TagToImagesViewModel(() => WorkingFolder, unitOfWorkFactory, thumbnailProvider);
         ShowPublishProgressDialog = new();
         ShowConsentDialog = new();
         PublishDropOrMergeDialog = new();
@@ -159,7 +175,6 @@ public class MainWindowViewModel : ViewModelBase
         WorkingFolder = "";
         WindowTitle = nameof(ImgTagFanOut);
         TagList = new();
-        _hashEvaluator = new HashEvaluator();
         ImageToDisplay = _noPreviewToDisplay;
         _filteredTagList = new();
         ShowDone = false;
@@ -299,7 +314,7 @@ public class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, ct))
+        await using (IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(WorkingFolder, ct))
         {
             unitOfWork.TagRepository.DeleteTag(s.Tag);
 
@@ -327,7 +342,7 @@ public class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, ct))
+        await using (IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(WorkingFolder, ct))
         {
             unitOfWork.TagRepository.RemoveTagToItem(tag, SelectedImage);
 
@@ -345,7 +360,7 @@ public class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, ct))
+        await using (IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(WorkingFolder, ct))
         {
             if (SelectedImage != null)
             {
@@ -371,7 +386,7 @@ public class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, ct);
+        await using IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(WorkingFolder, ct);
         if (unitOfWork.TagRepository.TryCreateTag(TagFilterInput, out Tag? newTag))
         {
             TagList.Add(newTag);
@@ -395,7 +410,7 @@ public class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, ct))
+        await using (IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(WorkingFolder, ct))
         {
             foreach (Tag selectedImageTag in SelectedImage.Tags.ToImmutableList())
             {
@@ -448,7 +463,7 @@ public class MainWindowViewModel : ViewModelBase
         }
 
         int selectedIndex = SelectedIndex;
-        await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, ct))
+        await using (IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(WorkingFolder, ct))
         {
             if (!SelectedImage.Done)
             {
@@ -478,7 +493,7 @@ public class MainWindowViewModel : ViewModelBase
             return x;
         }
 
-        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder);
+        await using IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(WorkingFolder);
         unitOfWork.ParameterRepository.Update(ShowDoneSettingKey, x.ToString());
         await unitOfWork.SaveChangesAsync();
 
@@ -548,7 +563,7 @@ public class MainWindowViewModel : ViewModelBase
         {
             SearchForTagBasedOnFileHash(canHaveTag);
 
-            Bitmap? thumbnail = await new ThumbnailProvider().GetThumbnail(fullFilePath);
+            Bitmap? thumbnail = await _thumbnailProvider.GetThumbnail(fullFilePath);
 
             return ((CanHaveTag?)canHaveTag, thumbnail);
         }
@@ -560,7 +575,11 @@ public class MainWindowViewModel : ViewModelBase
 
 
     private CancellationTokenSource _currentHashLookup = new();
-    private readonly HashEvaluator _hashEvaluator;
+    private readonly IUnitOfWorkFactory _unitOfWorkFactory;
+    private readonly IFolderScan _folderScan;
+    private readonly IHashEvaluator _hashEvaluator;
+    private readonly IThumbnailProvider _thumbnailProvider;
+    private readonly IFileManagerHandler _fileManagerHandler;
     private readonly Bitmap _noPreviewToDisplay;
 
 
@@ -586,7 +605,7 @@ public class MainWindowViewModel : ViewModelBase
                 }
 
                 ImmutableList<Tag> allTagForHash;
-                await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken))
+                await using (IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken))
                 {
                     allTagForHash = unitOfWork.TagRepository.GetAllTagForHash(canHaveTag.Hash);
                 }
@@ -602,17 +621,18 @@ public class MainWindowViewModel : ViewModelBase
     }
 
 
-    private async Task<string> OpenFolder(string path)
+    internal async Task<string> OpenFolder(string path)
     {
         IsBusy = true;
         try
         {
-            await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(path);
+            await using IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(path);
 
             TargetFolder = unitOfWork.ParameterRepository.Get(TargetFolderSettingKey);
             ShowDone = Boolean.Parse(unitOfWork.ParameterRepository.Get(ShowDoneSettingKey) ?? false.ToString());
 
-            ReloadTagList(unitOfWork.TagRepository);
+ReloadTagList(unitOfWork.TagRepository);
+            TagToImages.LoadTags();
 
             return path;
         }
@@ -639,7 +659,7 @@ public class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken))
+        await using (IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken))
         {
             foreach (Tag selectedImageTag in allTags)
             {
@@ -663,7 +683,7 @@ public class MainWindowViewModel : ViewModelBase
 
         if (File.Exists(path))
         {
-            await new FileManagerHandler().OpenFile(path);
+            await _fileManagerHandler.OpenFile(path);
         }
     }
 
@@ -677,7 +697,7 @@ public class MainWindowViewModel : ViewModelBase
 
         if (Directory.Exists(TargetFolder))
         {
-            await new FileManagerHandler().OpenFolder(TargetFolder);
+            await _fileManagerHandler.OpenFolder(TargetFolder);
         }
     }
 
@@ -693,7 +713,7 @@ public class MainWindowViewModel : ViewModelBase
 
         if (File.Exists(path))
         {
-            await new FileManagerHandler().RevealFileInFolder(path);
+            await _fileManagerHandler.RevealFileInFolder(path);
         }
     }
 
@@ -709,7 +729,7 @@ public class MainWindowViewModel : ViewModelBase
 
     private void ReloadTagList(ITagRepository tagRepository)
     {
-        DbContextFactory.ClearTagCache();
+        _unitOfWorkFactory.ClearTagCache();
         TagList.Clear();
         TagList.AddRange(tagRepository.GetAllTag());
     }
@@ -753,7 +773,7 @@ public class MainWindowViewModel : ViewModelBase
 
             TargetFolder = selectedFolder;
 
-            await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder);
+            await using IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(WorkingFolder);
 
             unitOfWork.ParameterRepository.Update(TargetFolderSettingKey, selectedFolder);
 
@@ -815,10 +835,11 @@ public class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        await new FolderScan().ScanFolder(cancellationToken, WorkingFolder, _images);
+        await _folderScan.ScanFolder(cancellationToken, WorkingFolder, _images);
 
-        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken);
+        await using IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken);
         ReloadTagList(unitOfWork.TagRepository);
+        TagToImages.LoadTags();
     }
 
 

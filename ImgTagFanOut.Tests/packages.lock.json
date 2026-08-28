@@ -2,6 +2,25 @@
   "version": 1,
   "dependencies": {
     "net10.0": {
+      "Avalonia.Headless": {
+        "type": "Direct",
+        "requested": "[11.3.20, )",
+        "resolved": "11.3.20",
+        "contentHash": "HbJss0mCklpOF1nwMPE2jdlz7oKgU0MjJ+MFgEy/StBwIZ44bnoHOQAXFCj+XoCvRZgP8vggStSC2trQW8TZpQ==",
+        "dependencies": {
+          "Avalonia": "11.3.20"
+        }
+      },
+      "Avalonia.Headless.XUnit": {
+        "type": "Direct",
+        "requested": "[11.3.20, )",
+        "resolved": "11.3.20",
+        "contentHash": "QoMVa9fOlFyQCUaYt26C573udbpFpGFB+DzX1LSk+tCSjqPzuTiX6iaY187GtnzFhneXwnWhQH65ZFPMIq0Snw==",
+        "dependencies": {
+          "Avalonia.Headless": "11.3.20",
+          "xunit.core": "2.4.0"
+        }
+      },
       "coverlet.collector": {
         "type": "Direct",
         "requested": "[6.0.2, )",
@@ -52,11 +71,11 @@
       },
       "Avalonia": {
         "type": "Transitive",
-        "resolved": "11.3.12",
-        "contentHash": "CHB0gXMSba8gTXqTrO9lS1te9ejH52ngHPm+0i/RfXFzqHXHPQ3yciFc/GfGnXUBjqjwH85J1rhYNl4/EujP0w==",
+        "resolved": "11.3.20",
+        "contentHash": "nbT+swxCTTvtXxNZC7ZOBGq6GKE5G8PpQ9rDw4+fKvzpbUqPgVVoUfnTGUY+Y+THvuAQN0Xyk/R7flyKYADX0w==",
         "dependencies": {
           "Avalonia.BuildServices": "11.3.2",
-          "Avalonia.Remote.Protocol": "11.3.12",
+          "Avalonia.Remote.Protocol": "11.3.20",
           "MicroCom.Runtime": "0.11.0"
         }
       },
@@ -119,8 +138,8 @@
       },
       "Avalonia.Remote.Protocol": {
         "type": "Transitive",
-        "resolved": "11.3.12",
-        "contentHash": "zaWTPaBKxGfHxqQfPh1WP+vWy3iVAwYWW/7FGlz63/wT1b+3b7Wn37H6c9C2E/M3cgllrW5/cirye516QUDZiA=="
+        "resolved": "11.3.20",
+        "contentHash": "ZOKQmS0qetctZjK001FNAq8zxH7D3jZk9MkJP3cx7/Z6Ch4C3g0iAzGM/ND7/l6ki2sV/qEHzGvQZ02zB2GYOw=="
       },
       "Avalonia.Skia": {
         "type": "Transitive",

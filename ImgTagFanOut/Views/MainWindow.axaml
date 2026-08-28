@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:resources="clr-namespace:ImgTagFanOut.Resources"
+        xmlns:ui="using:ImgTagFanOut"
         xmlns:views="clr-namespace:ImgTagFanOut.Views"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="550"
         x:Class="ImgTagFanOut.Views.MainWindow"
@@ -34,13 +35,13 @@
 			</MenuItem>
 		</Menu>
 
-		<TabControl DockPanel.Dock="Bottom">
+		<TabControl DockPanel.Dock="Bottom" Name="tabControl">
 			<TabItem Header="{x:Static resources:Resources.Images}">
 				<views:AssignTags />
 			</TabItem>
-			<!-- <TabItem Header="{x:Static resources:Resources.Tags}"> -->
-			<!-- 	<TextBlock Margin="5">This tab is not ready yet</TextBlock> -->
-			<!-- </TabItem> -->
+			<TabItem Header="{x:Static resources:Resources.Tags}" AutomationProperties.AutomationId="{x:Static ui:AutomationIds.TagsTab}">
+				<views:TagToImagesView DataContext="{Binding TagToImages}" />
+			</TabItem>
 		</TabControl>
 	</DockPanel>
 </Window>
