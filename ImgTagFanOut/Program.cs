@@ -110,7 +110,7 @@ internal static class Program
 
         loggerConfiguration.WriteTo.File(EnvironmentService.GetLogFile());
 
-        if (readSettings.ErrorTrackingAllowed ?? true)
+        if (ErrorTrackingPolicy.ShouldEnable(readSettings.ErrorTrackingAllowed))
         {
             InitializeSentry(loggerConfiguration);
         }
