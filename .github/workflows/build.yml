@@ -11,21 +11,21 @@ jobs:
             - name: Setup .NET SDK
               uses: actions/setup-dotnet@v4
               with:
-                  dotnet-version: 9.0.x
+                  dotnet-version: 10.0.x
 
             - name: Cache NuGet packages
               uses: actions/cache@v4
               with:
                   path: ~/.nuget/packages
-                  key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+                  key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
                   restore-keys: |
                       ${{ runner.os }}-nuget-
 
             - name: Restore dependencies
-              run: dotnet restore
+              run: dotnet restore --locked-mode
 
             - name: Build
-              run: dotnet build
+              run: dotnet build --no-restore
     
     build-macos:
         name: Build for MacOs
@@ -37,24 +37,24 @@ jobs:
             - name: Setup .NET SDK
               uses: actions/setup-dotnet@v4
               with:
-                  dotnet-version: 9.0.x
+                  dotnet-version: 10.0.x
 
             - name: Cache NuGet packages
               uses: actions/cache@v4
               with:
                   path: ~/.nuget/packages
-                  key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+                  key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
                   restore-keys: |
                       ${{ runner.os }}-nuget-
 
             - name: Restore dependencies
-              run: dotnet restore
+              run: dotnet restore --locked-mode
 
             - name: Build
-              run: dotnet build
+              run: dotnet build --no-restore
 
     
-    build-windows:
+build-windows:
         name: Build for windows with the Inno Setup Installer
         runs-on: windows-latest
         steps:
@@ -64,24 +64,27 @@ jobs:
             - name: Setup .NET SDK
               uses: actions/setup-dotnet@v4
               with:
-                dotnet-version: 9.0.x
+                dotnet-version: 10.0.x
 
             - name: Cache NuGet packages
               uses: actions/cache@v4
               with:
                   path: ~/.nuget/packages
-                  key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+                  key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
                   restore-keys: |
                       ${{ runner.os }}-nuget-
 
             - name: Restore dependencies
-              run: dotnet restore
+              run: dotnet restore --locked-mode
+
+            - name: Restore dependencies for win-x64 publish
+              run: dotnet restore --locked-mode -r win-x64 -p:PublishReadyToRun=true ImgTagFanOut/ImgTagFanOut.csproj
 
             - name: Build
-              run: dotnet build
+              run: dotnet build --no-restore
 
             - name: Publish
-              run: dotnet publish -c Release -p:PublishProfile=FolderProfile.pubxml ImgTagFanOut/ImgTagFanOut.csproj
+              run: dotnet publish -c Release --no-restore -p:PublishProfile=FolderProfile.pubxml ImgTagFanOut/ImgTagFanOut.csproj
 
             - name: Compile .ISS to .EXE Installer
               uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
