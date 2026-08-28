@@ -43,7 +43,7 @@ public class MainWindowViewModel : ViewModelBase
     private string _windowTitle = null!;
     private bool _isBusy;
 
-    private string? WorkingFolder
+    internal string? WorkingFolder
     {
         get => _workingFolder;
         set => this.RaiseAndSetIfChanged(ref _workingFolder, value);
@@ -123,6 +123,8 @@ public class MainWindowViewModel : ViewModelBase
         private set => this.RaiseAndSetIfChanged(ref _isBusy, value);
     }
 
+    public TagToImagesViewModel TagToImages { get; }
+
     public ReactiveCommand<Window, string> SelectFolderCommand { get; }
     public ReactiveCommand<Window, string?> SelectTargetFolderCommand { get; }
 
@@ -151,6 +153,7 @@ public class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel()
     {
+        TagToImages = new TagToImagesViewModel(() => WorkingFolder);
         ShowPublishProgressDialog = new();
         ShowConsentDialog = new();
         PublishDropOrMergeDialog = new();
@@ -819,6 +822,7 @@ public class MainWindowViewModel : ViewModelBase
 
         await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken);
         ReloadTagList(unitOfWork.TagRepository);
+        TagToImages.LoadTags();
     }
 
 
