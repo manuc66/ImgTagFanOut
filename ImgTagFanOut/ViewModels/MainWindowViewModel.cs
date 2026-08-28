@@ -605,7 +605,7 @@ public class MainWindowViewModel : ViewModelBase
     }
 
 
-    private async Task<string> OpenFolder(string path)
+    internal async Task<string> OpenFolder(string path)
     {
         IsBusy = true;
         try
@@ -615,7 +615,8 @@ public class MainWindowViewModel : ViewModelBase
             TargetFolder = unitOfWork.ParameterRepository.Get(TargetFolderSettingKey);
             ShowDone = Boolean.Parse(unitOfWork.ParameterRepository.Get(ShowDoneSettingKey) ?? false.ToString());
 
-            ReloadTagList(unitOfWork.TagRepository);
+ReloadTagList(unitOfWork.TagRepository);
+            TagToImages.LoadTags();
 
             return path;
         }

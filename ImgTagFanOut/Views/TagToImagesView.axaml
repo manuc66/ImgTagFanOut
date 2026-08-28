@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:resources="clr-namespace:ImgTagFanOut.Resources"
+             xmlns:ui="using:ImgTagFanOut"
              xmlns:viewModels="clr-namespace:ImgTagFanOut.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ImgTagFanOut.Views.TagToImagesView"
@@ -13,9 +14,11 @@
     <Grid ColumnDefinitions="Auto,*,1*,Auto" RowDefinitions="Auto,*">
         <TextBlock Grid.Row="0" Grid.Column="0" Margin="4" VerticalAlignment="Center" Text="{x:Static resources:Resources.Tags}"></TextBlock>
         <TextBox Grid.Row="0" Grid.Column="1" Margin="4" Text="{Binding ItemFilterInput}"
+                 AutomationProperties.AutomationId="{x:Static ui:AutomationIds.TagToImagesFilter}"
                  Watermark="{x:Static resources:Resources.Filter}"></TextBox>
 
         <ListBox Grid.Row="1" Grid.Column="0" Margin="4" MinWidth="150"
+                 AutomationProperties.AutomationId="{x:Static ui:AutomationIds.TagToImagesTagList}"
                  ItemsSource="{Binding TagList, Mode=OneWay}"
                  SelectedItem="{Binding SelectedTag, Mode=TwoWay}">
             <ListBox.ItemTemplate>
@@ -26,6 +29,7 @@
         </ListBox>
 
         <ListBox Grid.Row="1" Grid.Column="1" Margin="4"
+                 AutomationProperties.AutomationId="{x:Static ui:AutomationIds.TagToImagesImageList}"
                  ItemsSource="{Binding FilteredImages, Mode=OneWay}"
                  SelectedItem="{Binding SelectedImage, Mode=TwoWay}">
             <ListBox.ItemsPanel>
