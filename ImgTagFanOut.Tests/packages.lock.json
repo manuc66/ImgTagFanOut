@@ -210,8 +210,8 @@
       },
       "DynamicData": {
         "type": "Transitive",
-        "resolved": "9.4.31",
-        "contentHash": "w2bT92Z5ADtnmtKiC9mzk21h7MtXtZEQKWFyytuHqhPBo7rKPWnvFk/xy1M/VA6XQTbCjRWMNV795w+RizFn4g==",
+        "resolved": "9.4.33",
+        "contentHash": "JpjbJOhwdZjmA0Y0USZH1jpJ8EHkzPNDKfEVuiaRVbtuPpheNSTbJ7ik1PkrLcDqnSu+uMP999FOHZAfoVndUA==",
         "dependencies": {
           "System.Reactive": "6.1.0"
         }
@@ -690,7 +690,7 @@
           "Avalonia.ReactiveUI": "[11.3.9, )",
           "Avalonia.Themes.Fluent": "[12.1.2, )",
           "Blake3": "[3.0.2, )",
-          "DynamicData": "[9.4.31, )",
+          "DynamicData": "[9.4.33, )",
           "Magick.NET-Q8-AnyCPU": "[14.16.0, )",
           "Microsoft.EntityFrameworkCore": "[9.0.20, )",
           "Microsoft.EntityFrameworkCore.Sqlite": "[9.0.20, )",
