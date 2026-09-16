@@ -63,7 +63,7 @@
         <PackageReference Include="Serilog.Enrichers.Process" Version="3.0.0" />
         <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
         <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.2" />
+        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.5" />
         <PackageReference Include="SQLitePCLRaw.core" Version="3.0.2" />
         <PackageReference Include="SQLitePCLRaw.provider.e_sqlite3" Version="3.0.2" />
 
