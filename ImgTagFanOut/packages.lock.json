@@ -64,9 +64,9 @@
       },
       "DynamicData": {
         "type": "Direct",
-        "requested": "[9.4.31, )",
-        "resolved": "9.4.31",
-        "contentHash": "w2bT92Z5ADtnmtKiC9mzk21h7MtXtZEQKWFyytuHqhPBo7rKPWnvFk/xy1M/VA6XQTbCjRWMNV795w+RizFn4g==",
+        "requested": "[9.4.33, )",
+        "resolved": "9.4.33",
+        "contentHash": "JpjbJOhwdZjmA0Y0USZH1jpJ8EHkzPNDKfEVuiaRVbtuPpheNSTbJ7ik1PkrLcDqnSu+uMP999FOHZAfoVndUA==",
         "dependencies": {
           "System.Reactive": "6.1.0"
         }

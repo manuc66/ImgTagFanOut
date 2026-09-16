@@ -40,7 +40,7 @@
         <!-- Pin to fix GHSA-xrw6-gwf8-vvr9 in the Tmds.DBus.Protocol 0.21.2 pulled by Avalonia.FreeDesktop -->
         <PackageReference Include="Tmds.DBus.Protocol" Version="0.95.1" />
 <PackageReference Include="Blake3" Version="3.0.2" />
-        <PackageReference Include="DynamicData" Version="9.4.31" />
+        <PackageReference Include="DynamicData" Version="9.4.33" />
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="5.9.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
