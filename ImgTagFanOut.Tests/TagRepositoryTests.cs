@@ -200,7 +200,7 @@ public class TagRepositoryTests : IDisposable
         await _repository.AddOrUpdateItem(updatedItem, _ => Task.FromResult("hash"));
         _dbContext.SaveChanges();
 
-        Assert.Equal(1, updatedItem.Tags.Count);
+        Assert.Single(updatedItem.Tags);
         Assert.True(updatedItem.Done);
     }
 }
