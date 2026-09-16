@@ -87,7 +87,7 @@ jobs:
               run: dotnet publish -c Release --no-restore -p:PublishProfile=FolderProfile.pubxml ImgTagFanOut/ImgTagFanOut.csproj
 
             - name: Compile .ISS to .EXE Installer
-              uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
+              uses: Minionguyjpro/Inno-Setup-Action@v1.2.9
               with:
                   path: setupScript.iss
                   options: /O+
