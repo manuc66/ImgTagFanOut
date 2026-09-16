@@ -41,17 +41,17 @@
         <PackageReference Include="Tmds.DBus.Protocol" Version="0.95.1" />
 <PackageReference Include="Blake3" Version="3.0.2" />
         <PackageReference Include="DynamicData" Version="9.4.31" />
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0">
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="5.9.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.14" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.13">
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.20" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.20">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.13" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.13">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.20" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.20">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
