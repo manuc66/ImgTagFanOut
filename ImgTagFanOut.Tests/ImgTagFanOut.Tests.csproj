@@ -9,13 +9,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="10.0.1" />
+    <PackageReference Include="coverlet.collector" Version="10.1.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+    <!-- Pinned to 3.2.2: Avalonia.Headless.XUnit 12.1.3 compiles against the xunit.v3 3.x
+         internals (TestIntrospectionHelper.GetTestCaseDetails), which xunit.v3 4.x removed.
+         Revisit when Avalonia ships a headless xunit adapter for xunit.v3 4.x. -->
     <PackageReference Include="xunit.v3" Version="3.2.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="4.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.12" />
-    <PackageReference Include="Avalonia.Headless" Version="12.1.2" />
-    <PackageReference Include="Avalonia.Headless.XUnit" Version="12.1.2" />
+    <PackageReference Include="Avalonia.Headless" Version="12.1.3" />
+    <PackageReference Include="Avalonia.Headless.XUnit" Version="12.1.3" />
   </ItemGroup>
 
   <ItemGroup>
