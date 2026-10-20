@@ -295,4 +295,10 @@ All tags and face analyses stored for this folder will be lost. This cannot be u
   <data name="LinkedTo" xml:space="preserve">
     <value>linked to</value>
   </data>
+  <data name="PublishFailed" xml:space="preserve">
+    <value>could not be published:</value>
+  </data>
+  <data name="PublishCancelled" xml:space="preserve">
+    <value>Publication cancelled.</value>
+  </data>
 </root>

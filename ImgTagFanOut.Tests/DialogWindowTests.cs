@@ -188,6 +188,42 @@ public class DialogWindowTests : IDisposable
         await SettleAsync();
     }
 
+    [AvaloniaFact]
+    public async Task PublishProgress_WhenPublisherFails_ShowsTheErrorAndCompletes()
+    {
+        FakePublisher publisher = new();
+        PublishProgressViewModel vm = new(_tempDir, _tempDir, false, PublishLinkMode.Copy, CancellationToken.None, publisher, new FakeFileManagerHandler());
+        PublishProgressWindow window = new() { DataContext = vm };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        publisher.Fail(new IOException("disk full"));
+        await SettleAsync();
+
+        Assert.True(vm.Completed);
+        Assert.Contains("disk full", vm.TrailLog);
+        Assert.Contains(ImgTagFanOut.Resources.Resources.PublishFailed, vm.TrailLog);
+    }
+
+    [AvaloniaFact]
+    public async Task PublishProgress_ReportsAFileThatCouldNotBePublished()
+    {
+        FakePublisher publisher = new();
+        publisher.OnStart = (_, onFileCompleted, _, _) =>
+            onFileCompleted(new PublishFileResult("/src/a.png", null, false, false, "access denied"));
+
+        PublishProgressViewModel vm = new(_tempDir, _tempDir, false, PublishLinkMode.Copy, CancellationToken.None, publisher, new FakeFileManagerHandler());
+        PublishProgressWindow window = new() { DataContext = vm };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Contains("access denied", vm.TrailLog);
+        Assert.Contains(ImgTagFanOut.Resources.Resources.PublishFailed, vm.TrailLog);
+
+        publisher.Complete();
+        await SettleAsync();
+    }
+
     // -------------------------------------------------------------------- Settings
 
     [AvaloniaFact]

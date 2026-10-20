@@ -400,5 +400,17 @@ namespace ImgTagFanOut.Resources {
                 return ResourceManager.GetString("LinkedTo", resourceCulture);
             }
         }
+        
+        public static string PublishFailed {
+            get {
+                return ResourceManager.GetString("PublishFailed", resourceCulture);
+            }
+        }
+        
+        public static string PublishCancelled {
+            get {
+                return ResourceManager.GetString("PublishCancelled", resourceCulture);
+            }
+        }
     }
 }

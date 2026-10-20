@@ -295,4 +295,10 @@ Tous les libellés et analyses de visages enregistrés pour ce dossier seront pe
   <data name="LinkedTo" xml:space="preserve">
     <value>lié à</value>
   </data>
+  <data name="PublishFailed" xml:space="preserve">
+    <value>n'a pas pu être publié :</value>
+  </data>
+  <data name="PublishCancelled" xml:space="preserve">
+    <value>Publication annulée.</value>
+  </data>
 </root>

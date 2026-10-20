@@ -99,10 +99,15 @@ public class PublishProgressViewModel : ViewModelBase
             );
             TrailLog += $"{Environment.NewLine}{Environment.NewLine}==> Done!";
         }
+        catch (OperationCanceledException)
+        {
+            TrailLog += $"{Environment.NewLine}{Environment.NewLine} ==> {Resources.Resources.PublishCancelled}";
+        }
         catch (Exception e)
         {
-            TrailLog += $"{Environment.NewLine}{Environment.NewLine} ==> Error! -> {e.Message}";
-            throw;
+            // The dialog is the only place that can show the failure: let it
+            // stay open with the error instead of bubbling an unhandled task.
+            TrailLog += $"{Environment.NewLine}{Environment.NewLine} ==> {Resources.Resources.PublishFailed} -> {e.Message}";
         }
         finally
         {
@@ -146,7 +151,11 @@ public class PublishProgressViewModel : ViewModelBase
     {
         string toAdd = string.IsNullOrEmpty(TrailLog) ? string.Empty : Environment.NewLine;
 
-        if (result.Linked)
+        if (result.Failed)
+        {
+            toAdd += $"{result.Source} {Resources.Resources.PublishFailed} {result.Error}";
+        }
+        else if (result.Linked)
         {
             toAdd += $"{result.Source} {Resources.Resources.LinkedTo} {result.Destination}";
         }
