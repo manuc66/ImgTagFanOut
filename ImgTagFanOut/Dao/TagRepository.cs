@@ -60,32 +60,39 @@ public class TagRepository : ITagRepository
             .Include(i => i.ItemTags)
             .ThenInclude(x => x.Tag)
             .FirstOrDefaultAsync(t => t.Name == tagAssignation.Item);
+
+        // The hash identifies the file content. Compute it for new items too:
+        // without it, a later scan cannot tell an edited photo from the same
+        // one and the face cache has no valid key.
+        string hash = await getHash(tagAssignation);
+        tagAssignation.Hash = hash;
+
         if (existingItem != null)
         {
-            if (!string.IsNullOrEmpty(existingItem.Hash))
+            // No stored hash means we cannot prove the content changed: keep the
+            // tags and backfill the hash instead of silently dropping them.
+            if (string.IsNullOrEmpty(existingItem.Hash) || existingItem.Hash == hash)
             {
-                string hash = await getHash(tagAssignation);
-                if (existingItem.Hash == hash)
+                foreach (ItemTagDao itemTagDao in existingItem.ItemTags.OrderBy(x => x.OrderIndex))
                 {
-                    foreach (ItemTagDao itemTagDao in existingItem.ItemTags.OrderBy(x => x.OrderIndex))
-                    {
-                        tagAssignation.AddTag(_tagCache.GetOrCreate(itemTagDao.Tag));
-                    }
-                    tagAssignation.Done = existingItem.Done;
+                    tagAssignation.AddTag(_tagCache.GetOrCreate(itemTagDao.Tag));
                 }
-                else
-                {
-                    // the file is not the same, so remove the existing assignations
-                    _dbContext.ItemTags.RemoveRange(existingItem.ItemTags);
-                    existingItem.ItemTags.Clear();
-                    existingItem.Tags.Clear();
-                    existingItem.Done = false;
-                }
+                tagAssignation.Done = existingItem.Done;
             }
+            else
+            {
+                // the file is not the same, so remove the existing assignations
+                _dbContext.ItemTags.RemoveRange(existingItem.ItemTags);
+                existingItem.ItemTags.Clear();
+                existingItem.Tags.Clear();
+                existingItem.Done = false;
+            }
+
+            existingItem.Hash = hash;
         }
         else
         {
-            _dbContext.Items.Add(new(tagAssignation.Item));
+            _dbContext.Items.Add(new(tagAssignation.Item) { Hash = hash });
         }
     }
 

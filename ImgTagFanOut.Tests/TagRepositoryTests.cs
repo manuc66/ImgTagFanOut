@@ -203,4 +203,40 @@ public class TagRepositoryTests : IDisposable
         Assert.Single(updatedItem.Tags);
         Assert.True(updatedItem.Done);
     }
+
+    [Fact]
+    public async Task AddOrUpdateItem_NewItem_StoresTheComputedHash()
+    {
+        CanHaveTag item = new("photo.jpg");
+
+        await _repository.AddOrUpdateItem(item, _ => Task.FromResult("computed-hash"));
+        _dbContext.SaveChanges();
+
+        ItemDao stored = Assert.Single(_dbContext.Items);
+        Assert.Equal("computed-hash", stored.Hash);
+        Assert.Equal("computed-hash", item.Hash);
+    }
+
+    [Fact]
+    public async Task AddOrUpdateItem_ItemWithoutHash_BackfillsTheHashAndKeepsItsTags()
+    {
+        CreateTag("cat");
+        CreateItem("photo.jpg");
+        CanHaveTag initial = new("photo.jpg");
+
+        _repository.AddTagToItem(new Tag("cat"), initial);
+        _repository.MarkDone(initial);
+        _dbContext.SaveChanges();
+
+        CanHaveTag updatedItem = new("photo.jpg");
+        await _repository.AddOrUpdateItem(updatedItem, _ => Task.FromResult("backfilled-hash"));
+        _dbContext.SaveChanges();
+
+        ItemDao stored = Assert.Single(_dbContext.Items);
+        Assert.Equal("backfilled-hash", stored.Hash);
+        Assert.Single(stored.Tags);
+        Assert.True(stored.Done);
+        Assert.Single(updatedItem.Tags);
+        Assert.True(updatedItem.Done);
+    }
 }
