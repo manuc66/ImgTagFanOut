@@ -92,6 +92,9 @@ public class FacesViewModel : ViewModelBase
 
     public bool HasFaces => Faces.Count > 0;
 
+    /// <summary>Raised when a person tag was created, assigned or removed.</summary>
+    public event EventHandler? TagsChanged;
+
     public ReactiveCommand<Unit, Unit> AssignPersonCommand { get; }
     public ReactiveCommand<Unit, Unit> ClearPersonCommand { get; }
     public ReactiveCommand<Unit, Unit> CreatePersonCommand { get; }
@@ -198,6 +201,13 @@ public class FacesViewModel : ViewModelBase
         public float SuggestedScore => Suggestion?.Score ?? 0;
     }
 
+    private static bool HasOtherFaceWithPerson(IUnitOfWork unitOfWork, string itemName, int faceId, string personName)
+    {
+        return unitOfWork.FaceRepository
+            .GetFacesWithPerson(itemName)
+            .Any(row => row.Face.FaceId != faceId && row.PersonName == personName);
+    }
+
     private static IImage? Crop(Bitmap? source, FaceDao face)
     {
         if (source is null || source.PixelSize.Width == 0)
@@ -254,6 +264,7 @@ public class FacesViewModel : ViewModelBase
 
         string folder = Folder;
         CanHaveTag image = Image;
+        string? previousPerson = face.Person;
 
         await Task.Run(() =>
         {
@@ -281,6 +292,12 @@ public class FacesViewModel : ViewModelBase
                 // Naming a face also tags its image, otherwise publishing would ignore it.
                 unitOfWork.TagRepository.AddTagToItem(new Tag(tagDao.Name), image);
             }
+            else if (previousPerson is not null
+                     && !HasOtherFaceWithPerson(unitOfWork, image.Item, face.FaceId, previousPerson))
+            {
+                // The label was only there for that face: remove it from the photo too.
+                unitOfWork.TagRepository.RemoveTagToItem(new Tag(previousPerson), image);
+            }
 
             unitOfWork.SaveChanges();
         });
@@ -289,5 +306,8 @@ public class FacesViewModel : ViewModelBase
         _personSuggester.Invalidate(folder);
         ReloadPersonTags(folder);
         SelectedPersonTag = PersonTags.FirstOrDefault(tag => tag.Name == personName);
+
+        // Person names are tags like the others: the label panel must show them.
+        TagsChanged?.Invoke(this, EventArgs.Empty);
     }
 }

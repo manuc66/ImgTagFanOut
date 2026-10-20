@@ -118,6 +118,57 @@ public class FacesViewModelTests : IDisposable
         Assert.Equal("Maman", _viewModel.SelectedPersonTag?.Name);
     }
 
+    [Fact]
+    public async Task Naming_RaisesTagsChanged_SoTheLabelPanelCanRefresh()
+    {
+        await _viewModel.LoadAsync(_folder, Item());
+
+        int raised = 0;
+        _viewModel.TagsChanged += (_, _) => raised++;
+
+        _viewModel.SelectedFace = _viewModel.Faces[0];
+        _viewModel.NewPersonName = "Maman";
+        await _viewModel.CreatePersonCommand.Execute().FirstAsync();
+
+        Assert.Equal(1, raised);
+    }
+
+    [Fact]
+    public async Task Forget_RemovesTheImageTag_WhenNoOtherFaceHasThatPerson()
+    {
+        CanHaveTag item = Item();
+        await _viewModel.LoadAsync(_folder, item);
+
+        _viewModel.SelectedFace = _viewModel.Faces[0];
+        _viewModel.NewPersonName = "Maman";
+        await _viewModel.CreatePersonCommand.Execute().FirstAsync();
+        Assert.True(item.Has(new Tag("Maman")));
+
+        await _viewModel.ClearPersonCommand.Execute().FirstAsync();
+
+        Assert.False(item.Has(new Tag("Maman")));
+    }
+
+    [Fact]
+    public async Task Forget_KeepsTheImageTag_WhenAnotherFaceStillHasThatPerson()
+    {
+        CanHaveTag item = Item();
+        await _viewModel.LoadAsync(_folder, item);
+
+        _viewModel.SelectedFace = _viewModel.Faces[0];
+        _viewModel.NewPersonName = "Maman";
+        await _viewModel.CreatePersonCommand.Execute().FirstAsync();
+
+        _viewModel.SelectedFace = _viewModel.Faces[1];
+        _viewModel.SelectedPersonTag = _viewModel.PersonTags.Single(tag => tag.Name == "Maman");
+        await _viewModel.AssignPersonCommand.Execute().FirstAsync();
+
+        _viewModel.SelectedFace = _viewModel.Faces[0];
+        await _viewModel.ClearPersonCommand.Execute().FirstAsync();
+
+        Assert.True(item.Has(new Tag("Maman")));
+    }
+
     private static AnalyzedFace FaceWith(float x, params float[] embedding)
     {
         byte[] bytes = new byte[embedding.Length * sizeof(float)];

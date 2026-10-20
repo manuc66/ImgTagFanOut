@@ -32,6 +32,21 @@ public class MainWindowViewModelTests : IDisposable
     }
 
     [AvaloniaFact]
+    public async Task ReloadTags_ShowsATagCreatedBehindTheViewModelsBack()
+    {
+        MainWindowViewModel vm = new() { WorkingFolder = _tempDir };
+        await vm.OpenFolder(_tempDir);
+        Assert.Empty(vm.TagToImages.TagList);
+
+        // Ce que fait la bande de visages quand on nomme quelqu'un.
+        await SeedTagAsync("Maman");
+        vm.ReloadTags();
+
+        Assert.Contains(vm.TagToImages.TagList, tag => tag.Name == "Maman");
+        Assert.Contains(vm.FilteredTagList, tag => tag.Tag.Name == "Maman");
+    }
+
+    [AvaloniaFact]
     public async Task OpenFolder_PopulatesTagToImagesTagList()
     {
         await SeedTagAsync("cat");

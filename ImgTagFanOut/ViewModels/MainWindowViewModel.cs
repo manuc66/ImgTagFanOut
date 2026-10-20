@@ -211,6 +211,7 @@ public class MainWindowViewModel : ViewModelBase
         _faceScan = faceScan ?? new FaceScan(unitOfWorkFactory, hashEvaluator);
         TagToImages = new TagToImagesViewModel(() => WorkingFolder, unitOfWorkFactory, thumbnailProvider);
         Faces = new FacesViewModel(unitOfWorkFactory, thumbnailProvider, new PersonSuggester(unitOfWorkFactory));
+        Faces.TagsChanged += (_, _) => ReloadTags();
         ShowPublishProgressDialog = new();
         ShowConsentDialog = new();
         PublishDropOrMergeDialog = new();
@@ -885,6 +886,23 @@ ReloadTagList(unitOfWork.TagRepository);
         using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName) ?? throw new Exception("Resource not found: " + resourceName);
         Bitmap noPreviewToDisplay = new(stream);
         return noPreviewToDisplay;
+    }
+
+
+    /// <summary>
+    /// Recharges le panneau des libellés : nommer un visage crée ou assigne un tag,
+    /// qui doit apparaître comme les autres, y compris dans l'onglet Libellés.
+    /// </summary>
+    internal void ReloadTags()
+    {
+        if (string.IsNullOrWhiteSpace(WorkingFolder) || !_unitOfWorkFactory.DatabaseExists(WorkingFolder))
+        {
+            return;
+        }
+
+        using IUnitOfWork unitOfWork = _unitOfWorkFactory.GetUnitOfWork(WorkingFolder);
+        ReloadTagList(unitOfWork.TagRepository);
+        TagToImages.LoadTags();
     }
 
 
