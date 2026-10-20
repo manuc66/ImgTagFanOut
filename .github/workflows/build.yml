@@ -1,5 +1,13 @@
 name: Build Installer
 on: push
+
+permissions:
+    contents: read
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
 jobs:
     build-linux:
         name: Build for Linux
@@ -27,9 +35,20 @@ jobs:
             - name: Build
               run: dotnet build --no-restore
 
-            - name: Test
-              run: dotnet test --no-build
-    
+            - name: Test with coverage
+              run: dotnet test --no-build --collect:"XPlat Code Coverage" --results-directory TestResults
+
+            - name: Check the coverage floors
+              run: python3 tools/check-coverage.py TestResults --min-line 78 --min-branch 55
+
+            - name: Upload coverage report
+              if: always()
+              uses: actions/upload-artifact@v7
+              with:
+                  name: coverage
+                  path: TestResults/**/coverage.cobertura.xml
+                  if-no-files-found: warn
+
     build-macos:
         name: Build for MacOs
         runs-on: macos-latest
