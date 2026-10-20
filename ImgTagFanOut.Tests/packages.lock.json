@@ -463,6 +463,26 @@
         "resolved": "5.0.0",
         "contentHash": "dDoKi0PnDz31yAyETfRntsLArTlVAVzUzCIvvEDsDsucrl33Dl8pIJG06ePTJTI3tGpeyHS9Cq7Foc/s4EeKcg=="
       },
+      "OpenCvSharp5": {
+        "type": "Transitive",
+        "resolved": "5.0.0.20261018",
+        "contentHash": "AVRSdqht1PRr9QfQjVzd6CM4o4IxHS5VeT94ZEEKdMHSQIx7U+VR0O3OzCxRROirJlmH6oz+MMw0SUBxKEN3Qw=="
+      },
+      "OpenCvSharp5.official.runtime.linux-arm64": {
+        "type": "Transitive",
+        "resolved": "5.0.0.20261018",
+        "contentHash": "IK6/D4u4wOAuiDVbIPeNkrxAqXdqZEQU1AbpmXQEjK6fqfZEsysT7J2ON3AwK/F/mKICPfywVHYiB0yQyE9eEA=="
+      },
+      "OpenCvSharp5.official.runtime.linux-x64": {
+        "type": "Transitive",
+        "resolved": "5.0.0.20261018",
+        "contentHash": "bZJL0OX8P5MH7S1ji5bVrYxDGMvohYUVj0DIZrMlD/SIggkEWsI0GLF3fA9PASauz/emYg/DNxafkdB7F4U3FA=="
+      },
+      "OpenCvSharp5.runtime.win.slim": {
+        "type": "Transitive",
+        "resolved": "5.0.0.20261018",
+        "contentHash": "7tzvOcZTn8/j3MDsFBaiOVa+1LVddGwoyUk2pjGYP6UuURnd+Df9WgavhpVHoU5zRSroWQmaunWAs8t2E+0HPA=="
+      },
       "ReactiveUI": {
         "type": "Transitive",
         "resolved": "20.1.1",
@@ -689,6 +709,10 @@
           "Microsoft.EntityFrameworkCore": "[10.0.12, )",
           "Microsoft.EntityFrameworkCore.Sqlite": "[10.0.12, )",
           "Microsoft.IO.RecyclableMemoryStream": "[3.0.1, )",
+          "OpenCvSharp5": "[5.0.0.20261018, )",
+          "OpenCvSharp5.official.runtime.linux-arm64": "[5.0.0.20261018, )",
+          "OpenCvSharp5.official.runtime.linux-x64": "[5.0.0.20261018, )",
+          "OpenCvSharp5.runtime.win.slim": "[5.0.0.20261018, )",
           "SQLitePCLRaw.bundle_e_sqlite3": "[3.0.5, )",
           "SQLitePCLRaw.core": "[3.0.5, )",
           "SQLitePCLRaw.provider.e_sqlite3": "[3.0.5, )",

@@ -148,6 +148,30 @@
         "resolved": "3.0.1",
         "contentHash": "s/s20YTVY9r9TPfTrN5g8zPF1YhwxyqO6PxUkrYTGI2B+OGPe9AdajWZrLhFqXIvqIW23fnUE4+ztrUWNU1+9g=="
       },
+      "OpenCvSharp5": {
+        "type": "Direct",
+        "requested": "[5.0.0.20261018, )",
+        "resolved": "5.0.0.20261018",
+        "contentHash": "AVRSdqht1PRr9QfQjVzd6CM4o4IxHS5VeT94ZEEKdMHSQIx7U+VR0O3OzCxRROirJlmH6oz+MMw0SUBxKEN3Qw=="
+      },
+      "OpenCvSharp5.official.runtime.linux-arm64": {
+        "type": "Direct",
+        "requested": "[5.0.0.20261018, )",
+        "resolved": "5.0.0.20261018",
+        "contentHash": "IK6/D4u4wOAuiDVbIPeNkrxAqXdqZEQU1AbpmXQEjK6fqfZEsysT7J2ON3AwK/F/mKICPfywVHYiB0yQyE9eEA=="
+      },
+      "OpenCvSharp5.official.runtime.linux-x64": {
+        "type": "Direct",
+        "requested": "[5.0.0.20261018, )",
+        "resolved": "5.0.0.20261018",
+        "contentHash": "bZJL0OX8P5MH7S1ji5bVrYxDGMvohYUVj0DIZrMlD/SIggkEWsI0GLF3fA9PASauz/emYg/DNxafkdB7F4U3FA=="
+      },
+      "OpenCvSharp5.runtime.win.slim": {
+        "type": "Direct",
+        "requested": "[5.0.0.20261018, )",
+        "resolved": "5.0.0.20261018",
+        "contentHash": "7tzvOcZTn8/j3MDsFBaiOVa+1LVddGwoyUk2pjGYP6UuURnd+Df9WgavhpVHoU5zRSroWQmaunWAs8t2E+0HPA=="
+      },
       "Sentry": {
         "type": "Direct",
         "requested": "[6.12.0, )",
@@ -699,6 +723,24 @@
         "dependencies": {
           "Magick.NET.Core": "15.0.0"
         }
+      },
+      "OpenCvSharp5.official.runtime.linux-arm64": {
+        "type": "Direct",
+        "requested": "[5.0.0.20261018, )",
+        "resolved": "5.0.0.20261018",
+        "contentHash": "IK6/D4u4wOAuiDVbIPeNkrxAqXdqZEQU1AbpmXQEjK6fqfZEsysT7J2ON3AwK/F/mKICPfywVHYiB0yQyE9eEA=="
+      },
+      "OpenCvSharp5.official.runtime.linux-x64": {
+        "type": "Direct",
+        "requested": "[5.0.0.20261018, )",
+        "resolved": "5.0.0.20261018",
+        "contentHash": "bZJL0OX8P5MH7S1ji5bVrYxDGMvohYUVj0DIZrMlD/SIggkEWsI0GLF3fA9PASauz/emYg/DNxafkdB7F4U3FA=="
+      },
+      "OpenCvSharp5.runtime.win.slim": {
+        "type": "Direct",
+        "requested": "[5.0.0.20261018, )",
+        "resolved": "5.0.0.20261018",
+        "contentHash": "7tzvOcZTn8/j3MDsFBaiOVa+1LVddGwoyUk2pjGYP6UuURnd+Df9WgavhpVHoU5zRSroWQmaunWAs8t2E+0HPA=="
       },
       "Avalonia.Angle.Windows.Natives": {
         "type": "Transitive",
