@@ -309,6 +309,13 @@ namespace ImgTagFanOut.Resources {
                 return ResourceManager.GetString("PersonTagHint", resourceCulture);
             }
         }
+
+        
+        public static string PersonLabelWithoutFace {
+            get {
+                return ResourceManager.GetString("PersonLabelWithoutFace", resourceCulture);
+            }
+        }
         
         public static string AnalyzeFaces {
             get {

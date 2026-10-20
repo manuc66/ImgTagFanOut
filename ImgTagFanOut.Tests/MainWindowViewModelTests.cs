@@ -36,11 +36,12 @@ public class MainWindowViewModelTests : IDisposable
     }
 
     [AvaloniaFact]
-    public async Task RemovingAPersonLabel_ForgetsTheFacesOfThatPhoto()
+    public async Task PersonLabels_TellWhenTheyTeachNothing_AndForgetTheFacesWhenRemoved()
     {
-        string photo = Path.Combine(_tempDir, "photo.jpg");
-        File.WriteAllBytes(photo, [1, 2, 3]);
-        string hash = await new HashEvaluator().ComputeHashAsync(photo, CancellationToken.None);
+        string linked = Path.Combine(_tempDir, "linked.jpg");
+        string plain = Path.Combine(_tempDir, "plain.jpg");
+        File.WriteAllBytes(linked, [1, 2, 3]);
+        File.WriteAllBytes(plain, [4, 5, 6]);
 
         await SeedTagAsync("Maman");
 
@@ -48,20 +49,21 @@ public class MainWindowViewModelTests : IDisposable
         {
             db.Database.Migrate();
 
-            ItemDao item = new("photo.jpg") { Hash = hash };
+            ItemDao item = new("linked.jpg") { Hash = await new HashEvaluator().ComputeHashAsync(linked, CancellationToken.None) };
+            db.Items.Add(new ItemDao("plain.jpg") { Hash = await new HashEvaluator().ComputeHashAsync(plain, CancellationToken.None) });
             db.Items.Add(item);
             db.SaveChanges();
 
             db.FaceRepository.Replace(
                 item,
-                hash,
+                item.Hash!,
                 "det",
                 [new AnalyzedFace(new FaceDetection(0.1f, 0.1f, 0.2f, 0.2f, 0.9f, new float[FaceLandmarks.ValueCount]), [1, 2, 3, 4])],
                 "emb");
             db.SaveChanges();
 
             db.FaceRepository.SetPersonTag(db.Faces.Single(), db.Tags.Single(tag => tag.Name == "Maman"));
-            db.TagRepository.AddTagToItem(new Tag("Maman"), new CanHaveTag("photo.jpg"));
+            db.TagRepository.AddTagToItem(new Tag("Maman"), new CanHaveTag("linked.jpg"));
             db.SaveChanges();
         }
 
@@ -69,15 +71,21 @@ public class MainWindowViewModelTests : IDisposable
         await vm.OpenFolder(_tempDir);
         await vm.ScanFolderCommand.Execute(Unit.Default).FirstAsync();
 
-        for (int i = 0; i < 20 && vm.FilteredImages.Count == 0; i++)
+        for (int i = 0; i < 20 && vm.FilteredImages.Count < 2; i++)
         {
             Dispatcher.UIThread.RunJobs();
             await Task.Delay(25);
         }
 
-        vm.SelectedImage = vm.FilteredImages.Single();
-        Assert.True(vm.SelectedImage.Has(new Tag("Maman")));
+        // Ajouter le libellé sur une photo sans visage associé n'apprend rien : on le dit.
+        vm.SelectedImage = vm.FilteredImages.Single(image => image.Item == "plain.jpg");
+        await vm.ToggleAssignTagToImageCommand.Execute(new Tag("Maman")).FirstAsync();
 
+        Assert.NotNull(vm.StatusMessage);
+        Assert.Contains("Maman", vm.StatusMessage);
+
+        // Le retirer d'une photo où un visage est associé oublie ce visage.
+        vm.SelectedImage = vm.FilteredImages.Single(image => image.Item == "linked.jpg");
         await vm.ToggleAssignTagToImageCommand.Execute(new Tag("Maman")).FirstAsync();
 
         using (ImgTagFanOutDbContext db = new(new TagCache(), _tempDir))

@@ -154,6 +154,26 @@ public class FaceTagTests : IDisposable
     }
 
     [Fact]
+    public void GetPersonFaceCounts_CountsTheFacesLearnedPerPerson()
+    {
+        ItemDao photo = CreateItemWithFaces(faceCount: 2);
+        ItemDao other = CreateItemWithFaces("other.jpg", faceCount: 1);
+        TagDao maman = CreateTag("Maman");
+        TagDao papa = CreateTag("Papa");
+
+        _faces.SetPersonTag(FacesOf(photo)[0], maman);
+        _faces.SetPersonTag(FacesOf(photo)[1], maman);
+        _faces.SetPersonTag(FacesOf(other)[0], papa);
+        _db.SaveChanges();
+
+        IReadOnlyDictionary<string, int> counts = _faces.GetPersonFaceCounts();
+
+        Assert.Equal(2, counts["Maman"]);
+        Assert.Equal(1, counts["Papa"]);
+        Assert.Equal(2, counts.Count);
+    }
+
+    [Fact]
     public void ClearPersonLinks_OnlyRemovesThatPersonInThatImage()
     {
         ItemDao photo = CreateItemWithFaces(faceCount: 2);

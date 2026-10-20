@@ -35,7 +35,7 @@ public class MainWindowViewModel : ViewModelBase
     private string? _itemFilterInput;
     private readonly ObservableCollection<Tag> _tagList = new();
     private List<SelectableTag> _filteredTagList;
-    private HashSet<string> _personTagNames = new(StringComparer.Ordinal);
+    private Dictionary<string, int> _personFaceCounts = new(StringComparer.Ordinal);
 
     private bool _showDone;
     private readonly SourceList<CanHaveTag> _images = new();
@@ -381,7 +381,8 @@ public class MainWindowViewModel : ViewModelBase
             .Select(tag => new SelectableTag(tag)
             {
                 IsSelected = IsSelected(tag, selectedImage),
-                IsPerson = _personTagNames.Contains(tag.Name),
+                IsPerson = _personFaceCounts.ContainsKey(tag.Name),
+                PersonFaceCount = _personFaceCounts.GetValueOrDefault(tag.Name),
             })
             .OrderBy(tag => tag.Tag.Name)
             .ToList();
@@ -518,6 +519,7 @@ public class MainWindowViewModel : ViewModelBase
         }
 
         Faces.OnPersonDetached(tag.Name);
+        ReloadTags();
         RefreshTagIsSelected();
     }
 
@@ -530,6 +532,7 @@ public class MainWindowViewModel : ViewModelBase
         }
 
         bool removed = SelectedImage?.Has(s) ?? false;
+        bool teachesSomething = false;
 
         await using (IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(WorkingFolder, ct))
         {
@@ -541,6 +544,12 @@ public class MainWindowViewModel : ViewModelBase
                 {
                     unitOfWork.FaceRepository.ClearPersonLinks(SelectedImage.Item, s.Name);
                 }
+                else if (_personFaceCounts.ContainsKey(s.Name))
+                {
+                    teachesSomething = unitOfWork.FaceRepository
+                        .GetFacesWithPerson(SelectedImage.Item)
+                        .Any(row => row.PersonName == s.Name);
+                }
             }
 
             await unitOfWork.SaveChangesAsync(ct);
@@ -549,6 +558,17 @@ public class MainWindowViewModel : ViewModelBase
         if (removed)
         {
             Faces.OnPersonDetached(s.Name);
+            ReloadTags();
+            StatusMessage = null;
+        }
+        else if (_personFaceCounts.ContainsKey(s.Name) && !teachesSomething)
+        {
+            // Le libellé seul ne dit pas quel visage c'est : les suggestions n'apprennent rien.
+            StatusMessage = string.Format(Resources.Resources.PersonLabelWithoutFace, s.Name);
+        }
+        else
+        {
+            StatusMessage = null;
         }
 
         RefreshTagIsSelected();
@@ -609,6 +629,8 @@ public class MainWindowViewModel : ViewModelBase
             {
                 Faces.OnPersonDetached(name);
             }
+
+            ReloadTags();
         }
 
         RefreshTagIsSelected();
@@ -941,10 +963,9 @@ ReloadTagList(unitOfWork);
     {
         // Avant de vider la liste : le changement déclenche la reconstruction des
         // entrées, qui a besoin de savoir quels libellés sont des personnes.
-        _personTagNames = unitOfWork.FaceRepository
-            .GetPersonTags()
-            .Select(tag => tag.Name)
-            .ToHashSet(StringComparer.Ordinal);
+        _personFaceCounts = new Dictionary<string, int>(
+            unitOfWork.FaceRepository.GetPersonFaceCounts(),
+            StringComparer.Ordinal);
 
         _unitOfWorkFactory.ClearTagCache();
         TagList.Clear();

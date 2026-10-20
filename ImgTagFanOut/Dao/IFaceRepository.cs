@@ -23,6 +23,9 @@ public interface IFaceRepository
     /// <summary>Tags naming at least one detected face, sorted by name.</summary>
     IReadOnlyList<TagDao> GetPersonTags();
 
+    /// <summary>How many faces each person has taught, by tag name.</summary>
+    IReadOnlyDictionary<string, int> GetPersonFaceCounts();
+
     /// <summary>Tag naming this face, or null when the face is still unknown.</summary>
     TagDao? GetPersonTag(int faceId);
 

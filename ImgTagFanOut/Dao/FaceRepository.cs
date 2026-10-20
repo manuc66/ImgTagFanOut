@@ -94,6 +94,14 @@ public class FaceRepository : IFaceRepository
             .ToList();
     }
 
+    public IReadOnlyDictionary<string, int> GetPersonFaceCounts()
+    {
+        return _dbContext.FaceTags
+            .GroupBy(link => link.Tag.Name)
+            .Select(group => new { Name = group.Key, Count = group.Count() })
+            .ToDictionary(row => row.Name, row => row.Count);
+    }
+
     public TagDao? GetPersonTag(int faceId)
     {
         return _dbContext.FaceTags

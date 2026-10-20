@@ -9,6 +9,7 @@ using DynamicData;
 using DynamicData.Binding;
 using ImgTagFanOut.Dao;
 using ImgTagFanOut.Models;
+using ImgTagFanOut.Models.Faces;
 using ReactiveUI;
 
 namespace ImgTagFanOut.ViewModels;
@@ -34,6 +35,14 @@ public class TagToImagesViewModel : ViewModelBase
         _workingFolderGetter = workingFolderGetter;
         _unitOfWorkFactory = unitOfWorkFactory;
         _thumbnailProvider = thumbnailProvider;
+        Faces = new FacesViewModel(unitOfWorkFactory, thumbnailProvider, new PersonSuggester(unitOfWorkFactory));
+
+        // Parcourir les photos d'une personne et corriger un visage mal nommé.
+        this.WhenAnyValue(x => x.SelectedImage)
+            .Throttle(TimeSpan.FromMilliseconds(80))
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .SelectMany(image => Observable.FromAsync(() => Faces.LoadAsync(_workingFolderGetter(), image)))
+            .Subscribe();
         _images
             .Connect()
             .Filter(this.WhenAnyValue(@this => @this.ItemFilterInput).Select(CreateFilterForItemFilterInput))
@@ -52,6 +61,9 @@ public class TagToImagesViewModel : ViewModelBase
     }
 
     public ObservableCollection<Tag> TagList { get; } = new();
+
+    /// <summary>Visages de l'image sélectionnée, pour revoir et corriger les personnes.</summary>
+    public FacesViewModel Faces { get; }
 
     private Tag? _selectedTag;
     public Tag? SelectedTag

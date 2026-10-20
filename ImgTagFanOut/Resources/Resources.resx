@@ -272,6 +272,9 @@ All tags and face analyses stored for this folder will be lost. This cannot be u
     <value>Person</value>
   </data>
   <data name="PersonTagHint" xml:space="preserve">
-    <value>Person: naming a face in the face strip also adds this label, and removing it here forgets those faces.</value>
+    <value>Person · {0} face(s) learned. Adding this label here teaches nothing: the suggestions learn when you name faces in the strip. Removing it forgets the faces of this photo.</value>
+  </data>
+  <data name="PersonLabelWithoutFace" xml:space="preserve">
+    <value>“{0}” added to the photo, but no face is linked: the suggestions will not learn from it. Name the faces under the preview to teach them.</value>
   </data>
 </root>

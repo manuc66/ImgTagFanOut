@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:resources="clr-namespace:ImgTagFanOut.Resources"
+             xmlns:vm="clr-namespace:ImgTagFanOut.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="180"
+             x:Class="ImgTagFanOut.Views.FaceStrip"
+             x:DataType="vm:FacesViewModel">
+    <Design.DataContext>
+        <vm:FacesViewModel />
+    </Design.DataContext>
+    <StackPanel IsVisible="{Binding HasFaces}">
+        <ListBox Height="118" ItemsSource="{Binding Faces}"
+                 SelectedItem="{Binding SelectedFace, Mode=TwoWay}">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal"/>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Width="72">
+                        <Image Source="{Binding Image}" Width="64" Height="64" Stretch="UniformToFill"/>
+                        <TextBlock Text="{Binding Label}" HorizontalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding SuggestionLabel}" HorizontalAlignment="Center"
+                                   FontSize="10" Opacity="0.7" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,4,0,0">
+            <ComboBox MinWidth="120" ItemsSource="{Binding PersonTags}"
+                      SelectedItem="{Binding SelectedPersonTag, Mode=TwoWay}"
+                      PlaceholderText="{x:Static resources:Resources.Person}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Button Content="{x:Static resources:Resources.AssignPerson}"
+                    Command="{Binding AssignPersonCommand}"/>
+            <Button Content="{x:Static resources:Resources.ForgetPerson}"
+                    Command="{Binding ClearPersonCommand}"/>
+            <TextBox MinWidth="120" Text="{Binding NewPersonName}"
+                     PlaceholderText="{x:Static resources:Resources.NewPerson}"/>
+            <Button Content="{x:Static resources:Resources.CreatePerson}"
+                    Command="{Binding CreatePersonCommand}"/>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

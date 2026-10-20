@@ -272,6 +272,9 @@ Tous les libellés et analyses de visages enregistrés pour ce dossier seront pe
     <value>Personne</value>
   </data>
   <data name="PersonTagHint" xml:space="preserve">
-    <value>Personne : nommer un visage dans la bande de visages ajoute aussi ce libellé, et le retirer ici oublie ces visages.</value>
+    <value>Personne · {0} visage(s) appris. Ajouter ce libellé ici n'apprend rien : les suggestions progressent quand vous nommez des visages dans la bande. Le retirer oublie les visages de cette photo.</value>
+  </data>
+  <data name="PersonLabelWithoutFace" xml:space="preserve">
+    <value>« {0} » ajouté à la photo, mais aucun visage n'y est associé : les suggestions n'apprendront rien de cette photo. Nommez les visages sous l'aperçu pour les entraîner.</value>
   </data>
 </root>

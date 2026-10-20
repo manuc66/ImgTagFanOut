@@ -19,7 +19,7 @@
     </Design.DataContext>
     <Grid>
         <Grid IsEnabled="{Binding !IsBusy, Mode=OneWay}" ColumnDefinitions="*,*" RowDefinitions="*,Auto">
-            <Grid Grid.Row="0" Grid.Column="0" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,*,*,Auto,Auto">
+            <Grid Grid.Row="0" Grid.Column="0" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,*,*,Auto">
                 <Grid Grid.Row="2" Grid.Column="0" RowDefinitions="Auto,Auto,Auto,*">
                     <TextBlock Grid.Row="0" Text="{x:Static resources:Resources.Images}"></TextBlock>
                     <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,4,0,4">
@@ -105,48 +105,8 @@
                        Grid.ColumnSpan="2">
                 </Image>
 
-                <ListBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Height="118" Margin="0,4,0,0"
-                         ItemsSource="{Binding Faces.Faces}"
-                         SelectedItem="{Binding Faces.SelectedFace, Mode=TwoWay}"
-                         IsVisible="{Binding Faces.HasFaces}">
-                    <ListBox.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal"/>
-                        </ItemsPanelTemplate>
-                    </ListBox.ItemsPanel>
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Width="72">
-                                <Image Source="{Binding Image}" Width="64" Height="64" Stretch="UniformToFill"/>
-                                <TextBlock Text="{Binding Label}" HorizontalAlignment="Center"
-                                           TextTrimming="CharacterEllipsis"/>
-                                <TextBlock Text="{Binding SuggestionLabel}" HorizontalAlignment="Center"
-                                           FontSize="10" Opacity="0.7" TextTrimming="CharacterEllipsis"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-
-                <StackPanel Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="4"
-                            Margin="0,4,0,0" IsVisible="{Binding Faces.HasFaces}">
-                    <ComboBox MinWidth="120" ItemsSource="{Binding Faces.PersonTags}"
-                              SelectedItem="{Binding Faces.SelectedPersonTag, Mode=TwoWay}"
-                              PlaceholderText="{x:Static resources:Resources.Person}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Name}"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                    <Button Content="{x:Static resources:Resources.AssignPerson}"
-                            Command="{Binding Faces.AssignPersonCommand}"/>
-                    <Button Content="{x:Static resources:Resources.ForgetPerson}"
-                            Command="{Binding Faces.ClearPersonCommand}"/>
-                    <TextBox MinWidth="120" Text="{Binding Faces.NewPersonName}"
-                             PlaceholderText="{x:Static resources:Resources.NewPerson}"/>
-                    <Button Content="{x:Static resources:Resources.CreatePerson}"
-                            Command="{Binding Faces.CreatePersonCommand}"/>
-                </StackPanel>
+                <views:FaceStrip Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,4,0,0"
+                                DataContext="{Binding Faces}"/>
             </Grid>
 
             <views:BrowseTags Grid.Row="0" Grid.Column="1" />
