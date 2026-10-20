@@ -46,7 +46,10 @@ public class FacesViewModelTests : IDisposable
             unitOfWork.SaveChanges();
         }
 
-        _viewModel = new FacesViewModel(_unitOfWorkFactory, new FakeThumbnailProvider());
+        _viewModel = new FacesViewModel(
+            _unitOfWorkFactory,
+            new FakeThumbnailProvider(),
+            new PersonSuggester(_unitOfWorkFactory));
     }
 
     public void Dispose()
@@ -84,6 +87,44 @@ public class FacesViewModelTests : IDisposable
         Assert.Equal("Maman", _viewModel.Faces[0].Person);
         Assert.Null(_viewModel.Faces[1].Person);
         Assert.Equal("Maman", Assert.Single(_viewModel.PersonTags).Name);
+    }
+
+    [Fact]
+    public async Task Load_SuggestsThePersonSeenOnOtherPhotos()
+    {
+        using (IUnitOfWork unitOfWork = _unitOfWorkFactory.GetUnitOfWork(_folder))
+        {
+            ImgTagFanOutDbContext db = unitOfWork.AsDbContext();
+
+            ItemDao photo = db.Items.Single(x => x.Name == "photo.jpg");
+            unitOfWork.FaceRepository.Replace(photo, "hash-1", "det-v1", [FaceWith(0.1f, [1, 0, 0]), FaceWith(0.6f, [0, 1, 0])], "emb-v1");
+
+            ItemDao reference = new("refs.jpg");
+            db.Items.Add(reference);
+            unitOfWork.SaveChanges();
+            unitOfWork.FaceRepository.Replace(reference, "hash-9", "det-v1", [FaceWith(0.1f, [1, 0, 0])], "emb-v1");
+            unitOfWork.SaveChanges();
+
+            unitOfWork.FaceRepository.SetPersonTag(
+                unitOfWork.FaceRepository.GetFacesWithPerson("refs.jpg")[0].Face,
+                unitOfWork.TagRepository.GetTagDao("Maman"));
+            unitOfWork.SaveChanges();
+        }
+
+        await _viewModel.LoadAsync(_folder, Item());
+
+        Assert.Equal("Maman", _viewModel.Faces[0].SuggestedPerson);
+        Assert.Null(_viewModel.Faces[1].SuggestedPerson);
+        Assert.Equal("Maman", _viewModel.SelectedPersonTag?.Name);
+    }
+
+    private static AnalyzedFace FaceWith(float x, params float[] embedding)
+    {
+        byte[] bytes = new byte[embedding.Length * sizeof(float)];
+        Buffer.BlockCopy(embedding, 0, bytes, 0, bytes.Length);
+        return new AnalyzedFace(
+            new FaceDetection(x, 0.1f, 0.2f, 0.2f, 0.9f, new float[FaceLandmarks.ValueCount]),
+            bytes);
     }
 
     [Fact]

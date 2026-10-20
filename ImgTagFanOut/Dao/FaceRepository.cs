@@ -118,6 +118,18 @@ public class FaceRepository : IFaceRepository
             .ToList();
     }
 
+    public List<PersonEmbedding> GetPersonEmbeddings()
+    {
+        var rows = _dbContext.FaceTags
+            .Where(link => link.Face.Embedding != null)
+            .Select(link => new { link.Tag.Name, link.Face.Embedding })
+            .ToList();
+
+        return rows
+            .Select(row => new PersonEmbedding(row.Name, row.Embedding!))
+            .ToList();
+    }
+
     public void SetPersonTag(FaceDao face, TagDao? tag)
     {
         List<FaceTagDao> existing = _dbContext.FaceTags

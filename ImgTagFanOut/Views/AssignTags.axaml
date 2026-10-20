@@ -103,7 +103,7 @@
                        Grid.ColumnSpan="2">
                 </Image>
 
-                <ListBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Height="104" Margin="0,4,0,0"
+                <ListBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Height="118" Margin="0,4,0,0"
                          ItemsSource="{Binding Faces.Faces}"
                          SelectedItem="{Binding Faces.SelectedFace, Mode=TwoWay}"
                          IsVisible="{Binding Faces.HasFaces}">
@@ -118,6 +118,8 @@
                                 <Image Source="{Binding Image}" Width="64" Height="64" Stretch="UniformToFill"/>
                                 <TextBlock Text="{Binding Label}" HorizontalAlignment="Center"
                                            TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{Binding SuggestionLabel}" HorizontalAlignment="Center"
+                                           FontSize="10" Opacity="0.7" TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>

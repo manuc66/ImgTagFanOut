@@ -210,7 +210,7 @@ public class MainWindowViewModel : ViewModelBase
         _fileManagerHandler = fileManagerHandler;
         _faceScan = faceScan ?? new FaceScan(unitOfWorkFactory, hashEvaluator);
         TagToImages = new TagToImagesViewModel(() => WorkingFolder, unitOfWorkFactory, thumbnailProvider);
-        Faces = new FacesViewModel(unitOfWorkFactory, thumbnailProvider);
+        Faces = new FacesViewModel(unitOfWorkFactory, thumbnailProvider, new PersonSuggester(unitOfWorkFactory));
         ShowPublishProgressDialog = new();
         ShowConsentDialog = new();
         PublishDropOrMergeDialog = new();

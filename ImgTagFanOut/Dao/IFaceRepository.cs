@@ -33,7 +33,14 @@ public interface IFaceRepository
 
     /// <summary>Faces of one image, with the person tag when it is already known.</summary>
     IReadOnlyList<FaceWithPerson> GetFacesWithPerson(string itemName);
+
+    /// <summary>Embeddings of every named face, used to recognise the others.</summary>
+    List<PersonEmbedding> GetPersonEmbeddings();
 }
+
+/// <param name="PersonName">Tag naming the person.</param>
+/// <param name="Embedding">L2 normalized embedding of one of their faces.</param>
+public sealed record PersonEmbedding(string PersonName, byte[] Embedding);
 
 /// <param name="Face">The detected face.</param>
 /// <param name="PersonName">Name of the person, or null when the face is unknown.</param>

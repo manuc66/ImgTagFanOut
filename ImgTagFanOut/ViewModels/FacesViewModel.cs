@@ -28,19 +28,32 @@ public class FacesViewModel : ViewModelBase
 
     private readonly IUnitOfWorkFactory _unitOfWorkFactory;
     private readonly IThumbnailProvider _thumbnailProvider;
+    private readonly IPersonSuggester _personSuggester;
     private FaceItemViewModel? _selectedFace;
     private Tag? _selectedPersonTag;
     private string? _newPersonName;
 
     public FacesViewModel()
-        : this(new UnitOfWorkFactory(), new ThumbnailProvider()) { }
+        : this(new UnitOfWorkFactory(), new ThumbnailProvider(), new PersonSuggester(new UnitOfWorkFactory())) { }
 
-    internal FacesViewModel(IUnitOfWorkFactory unitOfWorkFactory, IThumbnailProvider thumbnailProvider)
+    internal FacesViewModel(
+        IUnitOfWorkFactory unitOfWorkFactory,
+        IThumbnailProvider thumbnailProvider,
+        IPersonSuggester personSuggester)
     {
         _unitOfWorkFactory = unitOfWorkFactory;
         _thumbnailProvider = thumbnailProvider;
+        _personSuggester = personSuggester;
 
         IObservable<bool> hasFace = this.WhenAnyValue(x => x.SelectedFace).Select(face => face is not null);
+
+        // Selecting a face pre-fills the suggested person: one click to accept.
+        this.WhenAnyValue(x => x.SelectedFace)
+            .Subscribe(face =>
+            {
+                string? name = face?.Person ?? face?.SuggestedPerson;
+                SelectedPersonTag = name is null ? null : PersonTags.FirstOrDefault(tag => tag.Name == name);
+            });
 
         AssignPersonCommand = ReactiveCommand.CreateFromTask(
             AssignSelectedPersonAsync,
@@ -107,7 +120,7 @@ public class FacesViewModel : ViewModelBase
             return;
         }
 
-        IReadOnlyList<(FaceDao Face, string? Person)> rows = await Task.Run(() => LoadRows(folder, image.Item));
+        IReadOnlyList<FaceRow> rows = await Task.Run(() => LoadRows(folder, image.Item));
 
         Bitmap? source = rows.Count > 0
             ? await _thumbnailProvider.GetThumbnail(image.GetFullFilePath(folder), CropSourceWidth)
@@ -119,9 +132,14 @@ public class FacesViewModel : ViewModelBase
             return;
         }
 
-        foreach ((FaceDao face, string? person) in rows)
+        foreach (FaceRow row in rows)
         {
-            Faces.Add(new FaceItemViewModel(face.FaceId, person, Crop(source, face)));
+            Faces.Add(new FaceItemViewModel(
+                row.Face.FaceId,
+                row.Person,
+                Crop(source, row.Face),
+                row.SuggestedPerson,
+                row.SuggestedScore));
         }
 
         ReloadPersonTags(folder);
@@ -129,14 +147,26 @@ public class FacesViewModel : ViewModelBase
         this.RaisePropertyChanged(nameof(HasFaces));
     }
 
-    private IReadOnlyList<(FaceDao, string?)> LoadRows(string folder, string itemName)
+    private IReadOnlyList<FaceRow> LoadRows(string folder, string itemName)
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.GetUnitOfWork(folder);
 
         return unitOfWork.FaceRepository
             .GetFacesWithPerson(itemName)
-            .Select(row => (row.Face, row.PersonName))
+            .Select(row => new FaceRow(
+                row.Face,
+                row.PersonName,
+                row.PersonName is null ? Suggest(folder, row.Face) : null))
             .ToList();
+    }
+
+    private PersonMatch? Suggest(string folder, FaceDao face)
+    {
+        return face.Embedding is null
+            ? null
+            : _personSuggester.Suggest(folder, face.Embedding).FirstOrDefault() is { PersonName: not null } match
+                ? match
+                : null;
     }
 
     private void ReloadPersonTags(string? folder)
@@ -153,6 +183,13 @@ public class FacesViewModel : ViewModelBase
         {
             PersonTags.Add(tag);
         }
+    }
+
+    private sealed record FaceRow(FaceDao Face, string? Person, PersonMatch? Suggestion)
+    {
+        public string? SuggestedPerson => Suggestion?.PersonName;
+
+        public float SuggestedScore => Suggestion?.Score ?? 0;
     }
 
     private static IImage? Crop(Bitmap? source, FaceDao face)
@@ -243,6 +280,7 @@ public class FacesViewModel : ViewModelBase
         });
 
         face.Person = personName;
+        _personSuggester.Invalidate(folder);
         ReloadPersonTags(folder);
         SelectedPersonTag = PersonTags.FirstOrDefault(tag => tag.Name == personName);
     }
