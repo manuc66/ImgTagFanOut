@@ -8,4 +8,6 @@ public interface IImgTagFanOutDbContext
     DbSet<ItemDao> Items { get; }
     DbSet<ItemTagDao> ItemTags { get; }
     DbSet<ParameterDao> Parameters { get; }
+    DbSet<FaceDao> Faces { get; }
+    DbSet<FaceAnalysisDao> FaceAnalyses { get; }
 }

@@ -11,8 +11,11 @@ public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext, IUnitOfW
     public DbSet<ItemDao> Items { get; set; } = null!;
     public DbSet<ItemTagDao> ItemTags { get; set; } = null!;
     public DbSet<ParameterDao> Parameters { get; set; } = null!;
+    public DbSet<FaceDao> Faces { get; set; } = null!;
+    public DbSet<FaceAnalysisDao> FaceAnalyses { get; set; } = null!;
     public ITagRepository TagRepository { get; }
     public IParameterRepository ParameterRepository { get; }
+    public IFaceRepository FaceRepository { get; }
 
     public ImgTagFanOutDbContext()
         : this(new(), ".") { }
@@ -22,6 +25,7 @@ public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext, IUnitOfW
         DbPath = System.IO.Path.Join(folder, "ImgTagFanOut.db");
         TagRepository = new TagRepository(this, tagCache);
         ParameterRepository = new ParameterRepository(this);
+        FaceRepository = new FaceRepository(this);
     }
 
     public ImgTagFanOutDbContext(DbContextOptions<ImgTagFanOutDbContext> options, TagCache tagCache)
@@ -29,6 +33,7 @@ public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext, IUnitOfW
     {
         TagRepository = new TagRepository(this, tagCache);
         ParameterRepository = new ParameterRepository(this);
+        FaceRepository = new FaceRepository(this);
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
@@ -79,5 +84,33 @@ public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext, IUnitOfW
         modelBuilder.Entity<ParameterDao>().HasIndex(b => new { b.Name }).IsUnique().IsDescending();
         modelBuilder.Entity<ParameterDao>().HasKey(x => x.ParameterId);
         modelBuilder.Entity<ParameterDao>().Property(x => x.ParameterId).IsRequired().ValueGeneratedOnAdd();
+
+        // Faces
+        modelBuilder.Entity<FaceDao>().ToTable("faces");
+
+        modelBuilder.Entity<FaceDao>().HasKey(x => x.FaceId);
+        modelBuilder.Entity<FaceDao>().Property(x => x.FaceId).IsRequired().ValueGeneratedOnAdd();
+        modelBuilder.Entity<FaceDao>().HasIndex(x => new { x.ItemForeignKey });
+
+        modelBuilder
+            .Entity<FaceDao>()
+            .HasOne(x => x.Item)
+            .WithMany(x => x.Faces)
+            .HasForeignKey(x => x.ItemForeignKey)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // FaceAnalyses
+        modelBuilder.Entity<FaceAnalysisDao>().ToTable("face_analyses");
+
+        modelBuilder.Entity<FaceAnalysisDao>().HasKey(x => x.ItemForeignKey);
+        modelBuilder.Entity<FaceAnalysisDao>().Property(x => x.ItemForeignKey).IsRequired();
+        modelBuilder.Entity<FaceAnalysisDao>().HasIndex(x => new { x.SourceHash });
+
+        modelBuilder
+            .Entity<FaceAnalysisDao>()
+            .HasOne(x => x.Item)
+            .WithOne(x => x.FaceAnalysis)
+            .HasForeignKey<FaceAnalysisDao>(x => x.ItemForeignKey)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

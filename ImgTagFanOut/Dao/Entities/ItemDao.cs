@@ -16,6 +16,8 @@ public class ItemDao
 
     public List<ItemTagDao> ItemTags { get; } = new();
     public List<TagDao> Tags { get; } = new();
+    public List<FaceDao> Faces { get; } = new();
+    public FaceAnalysisDao? FaceAnalysis { get; set; }
 
     public ItemDao(string name)
     {
