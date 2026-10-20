@@ -210,6 +210,22 @@
   <data name="OpenWorkDirectory" xml:space="preserve">
     <value>Ouvrir le dossier de travail...</value>
   </data>
+  <data name="EjectDatabase" xml:space="preserve">
+    <value>Éjecter la base de données...</value>
+  </data>
+  <data name="EjectDatabaseTitle" xml:space="preserve">
+    <value>Éjecter la base de données</value>
+  </data>
+  <data name="EjectDatabaseConfirmation" xml:space="preserve">
+    <value>Supprimer définitivement la base de données ImgTagFanOut de ce dossier ?
+
+{0}
+
+Tous les libellés et analyses de visages enregistrés pour ce dossier seront perdus. Cette action est irréversible.</value>
+  </data>
+  <data name="Eject" xml:space="preserve">
+    <value>Éjecter</value>
+  </data>
   <data name="File" xml:space="preserve">
     <value>Fichier</value>
   </data>

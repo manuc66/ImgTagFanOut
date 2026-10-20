@@ -1,3 +1,4 @@
+using System.Reactive.Linq;
 using Avalonia.Headless.XUnit;
 using ImgTagFanOut.Dao;
 using ImgTagFanOut.Models;
@@ -43,5 +44,39 @@ public class MainWindowViewModelTests : IDisposable
         Assert.Equal(2, vm.TagToImages.TagList.Count);
         Assert.Contains(vm.TagToImages.TagList, t => t.Name == "cat");
         Assert.Contains(vm.TagToImages.TagList, t => t.Name == "dog");
+    }
+
+    [AvaloniaFact]
+    public async Task EjectDatabase_RemovesTheDatabaseAndResetsTheWorkspace()
+    {
+        await SeedTagAsync("cat");
+
+        MainWindowViewModel vm = new() { WorkingFolder = _tempDir };
+        await vm.OpenFolder(_tempDir);
+        vm.ShowEjectDatabaseDialog.RegisterHandler(context => context.SetOutput(true));
+        Assert.True(DbContextFactory.DatabaseExists(_tempDir));
+
+        await vm.EjectDatabaseCommand.Execute().FirstAsync();
+
+        Assert.False(DbContextFactory.DatabaseExists(_tempDir));
+        Assert.Null(vm.WorkingFolder);
+        Assert.Null(vm.TargetFolder);
+        Assert.Empty(vm.TagToImages.TagList);
+        Assert.Empty(vm.FilteredImages);
+    }
+
+    [AvaloniaFact]
+    public async Task EjectDatabase_KeepsTheDatabaseWhenCancelled()
+    {
+        await SeedTagAsync("cat");
+
+        MainWindowViewModel vm = new() { WorkingFolder = _tempDir };
+        await vm.OpenFolder(_tempDir);
+        vm.ShowEjectDatabaseDialog.RegisterHandler(context => context.SetOutput(false));
+
+        await vm.EjectDatabaseCommand.Execute().FirstAsync();
+
+        Assert.True(DbContextFactory.DatabaseExists(_tempDir));
+        Assert.Equal(_tempDir, vm.WorkingFolder);
     }
 }

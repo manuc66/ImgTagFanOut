@@ -28,6 +28,7 @@
 				<MenuItem Header="{x:Static resources:Resources.OpenWorkDirectory}" Command="{Binding SelectFolderCommand}"
                           CommandParameter="{Binding $parent[Window]}" />
                 <MenuItem Header="{x:Static resources:Resources.Scan}" Command="{Binding ScanFolderCommand}" />
+                <MenuItem Header="{x:Static resources:Resources.EjectDatabase}" Command="{Binding EjectDatabaseCommand}" />
 				<Separator/>
 				<MenuItem Header="{x:Static resources:Resources.Exit}" Command="{Binding ExitCommand}"/>
 			</MenuItem>

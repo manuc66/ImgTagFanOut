@@ -5,6 +5,8 @@ namespace ImgTagFanOut.Dao;
 
 public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext, IUnitOfWork
 {
+    public const string DatabaseFileName = "ImgTagFanOut.db";
+
     private readonly string? DbPath;
 
     public DbSet<TagDao> Tags { get; set; } = null!;
@@ -22,7 +24,7 @@ public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext, IUnitOfW
 
     public ImgTagFanOutDbContext(TagCache tagCache, string folder)
     {
-        DbPath = System.IO.Path.Join(folder, "ImgTagFanOut.db");
+        DbPath = System.IO.Path.Join(folder, DatabaseFileName);
         TagRepository = new TagRepository(this, tagCache);
         ParameterRepository = new ParameterRepository(this);
         FaceRepository = new FaceRepository(this);
@@ -40,7 +42,7 @@ public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext, IUnitOfW
     {
         if (!options.IsConfigured)
         {
-            options.UseSqlite($"Data Source={DbPath ?? System.IO.Path.Join(".", "ImgTagFanOut.db")}");
+            options.UseSqlite($"Data Source={DbPath ?? System.IO.Path.Join(".", DatabaseFileName)}");
         }
     }
 

@@ -129,6 +129,7 @@ public class MainWindowViewModel : ViewModelBase
     public ReactiveCommand<Window, string?> SelectTargetFolderCommand { get; }
 
     public ReactiveCommand<Unit, Unit> ScanFolderCommand { get; }
+    public ReactiveCommand<Unit, Unit> EjectDatabaseCommand { get; }
     public ReactiveCommand<Window, Unit> PublishCommand { get; }
     public ReactiveCommand<Tag, Unit> ToggleAssignTagToImageCommand { get; }
     public ReactiveCommand<Tag, Unit> RemoveTagToImageCommand { get; }
@@ -148,6 +149,7 @@ public class MainWindowViewModel : ViewModelBase
     public Interaction<PublishProgressViewModel, int?> ShowPublishProgressDialog { get; }
     public Interaction<ConsentViewModel, int?> ShowConsentDialog { get; }
     public Interaction<PublishDropOrMergeViewModel, int?> PublishDropOrMergeDialog { get; }
+    public Interaction<EjectDatabaseViewModel, bool?> ShowEjectDatabaseDialog { get; }
     public Interaction<AboutViewModel, int?> ShowAboutDialog { get; }
 
 
@@ -170,6 +172,7 @@ public class MainWindowViewModel : ViewModelBase
         ShowPublishProgressDialog = new();
         ShowConsentDialog = new();
         PublishDropOrMergeDialog = new();
+        ShowEjectDatabaseDialog = new();
         ShowAboutDialog = new();
         _settings = new();
         WorkingFolder = "";
@@ -237,6 +240,16 @@ public class MainWindowViewModel : ViewModelBase
         ScanFolderCommand = ReactiveCommand.CreateFromTask(
             ExecuteScanFolderCommandAsync,
             this.WhenAnyValue(x => x.WorkingFolder).Select(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(x))
+        );
+
+        EjectDatabaseCommand = ReactiveCommand.CreateFromTask(
+            ExecuteEjectDatabaseCommandAsync,
+            this.WhenAnyValue(x => x.WorkingFolder, x => x.IsBusy,
+                    (folder, isBusy) => !isBusy
+                                     && !string.IsNullOrWhiteSpace(folder)
+                                     && Directory.Exists(folder)
+                                     && _unitOfWorkFactory.DatabaseExists(folder))
+                .CombineLatest(ScanFolderCommand.IsExecuting, (canEject, isScanning) => canEject && !isScanning)
         );
 
         SelectFolderCommand = ReactiveCommand.CreateFromTask<Window, string>(ExecuteSelectFolderCommandAsync, ScanFolderCommand.IsExecuting.Select(x => !x));
@@ -327,6 +340,51 @@ public class MainWindowViewModel : ViewModelBase
         {
             item.RemoveTag(s.Tag);
         }
+    }
+
+
+    private async Task ExecuteEjectDatabaseCommandAsync(CancellationToken ct)
+    {
+        string? folder = WorkingFolder;
+        if (string.IsNullOrWhiteSpace(folder) || !Directory.Exists(folder) || !_unitOfWorkFactory.DatabaseExists(folder))
+        {
+            return;
+        }
+
+        bool? confirmed = await ShowEjectDatabaseDialog.Handle(new EjectDatabaseViewModel(folder));
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        IsBusy = true;
+        try
+        {
+            ct.ThrowIfCancellationRequested();
+            _unitOfWorkFactory.DeleteDatabase(folder);
+            ResetWorkspace();
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+
+    private void ResetWorkspace()
+    {
+        // Clear the working folder first: changing ShowDone afterwards must not recreate the
+        // database that was just deleted.
+        WorkingFolder = null;
+        TargetFolder = null;
+        ShowDone = false;
+        SelectedImage = null;
+        SelectedIndex = 0;
+        TagFilterInput = string.Empty;
+        ItemFilterInput = string.Empty;
+        _images.Clear();
+        TagList.Clear();
+        TagToImages.Reset();
     }
 
 

@@ -81,6 +81,20 @@ public class TagToImagesViewModel : ViewModelBase
         private set => this.RaiseAndSetIfChanged(ref _imageToDisplay, value);
     }
 
+    public void Reset()
+    {
+        SelectedTag = null;
+        TagList.Clear();
+        ItemFilterInput = string.Empty;
+        _images.Clear();
+        SelectedImage = null;
+
+        Bitmap? previous = ImageToDisplay;
+        ImageToDisplay = null;
+        previous?.Dispose();
+    }
+
+
     public void LoadTags()
     {
         string? workingFolder = _workingFolderGetter();

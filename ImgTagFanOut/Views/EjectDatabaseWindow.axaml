@@ -1,0 +1,27 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="520" d:DesignHeight="240"
+        x:Class="ImgTagFanOut.Views.EjectDatabaseWindow"
+        WindowStartupLocation="CenterOwner"
+        Width="520"
+        Height="240"
+        xmlns:vm="using:ImgTagFanOut.ViewModels"
+        xmlns:resources="clr-namespace:ImgTagFanOut.Resources"
+        x:DataType="vm:EjectDatabaseViewModel"
+        Icon="/Assets/logo.ico"
+        Title="{x:Static resources:Resources.EjectDatabaseTitle}">
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:EjectDatabaseViewModel />
+    </Design.DataContext>
+    <StackPanel Margin="20">
+        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+            <Button Name="CancelButton" Content="{x:Static resources:Resources.Cancel}" Margin="5" Command="{Binding CancelCommand}" />
+            <Button Name="EjectButton" Content="{x:Static resources:Resources.Eject}" Margin="5" Background="OrangeRed" Command="{Binding EjectCommand}" />
+        </StackPanel>
+    </StackPanel>
+</Window>

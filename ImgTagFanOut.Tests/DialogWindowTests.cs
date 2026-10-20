@@ -227,6 +227,38 @@ public class DialogWindowTests : IDisposable
         Assert.False(new Settings().ReadSettings().ErrorTrackingAllowed);
     }
 
+    // ------------------------------------------------------------------ EjectDatabase
+
+    [AvaloniaFact]
+    public void EjectDatabase_CancelButton_ClosesWindowWithoutConfirming()
+    {
+        EjectDatabaseViewModel vm = new(_tempDir);
+        EjectDatabaseWindow window = new() { DataContext = vm };
+        Func<bool> isOpen = window.TrackOpen();
+
+        Button cancel = window.FindControl<Button>("CancelButton")!;
+        Assert.NotNull(cancel);
+        Execute(cancel.Command);
+
+        Assert.False(isOpen());
+        Assert.False(vm.Confirmed);
+    }
+
+    [AvaloniaFact]
+    public void EjectDatabase_EjectButton_ClosesWindowAndConfirms()
+    {
+        EjectDatabaseViewModel vm = new(_tempDir);
+        EjectDatabaseWindow window = new() { DataContext = vm };
+        Func<bool> isOpen = window.TrackOpen();
+
+        Button eject = window.FindControl<Button>("EjectButton")!;
+        Assert.NotNull(eject);
+        Execute(eject.Command);
+
+        Assert.False(isOpen());
+        Assert.True(vm.Confirmed);
+    }
+
     // ------------------------------------------------- MainWindow activation regression
 
     [AvaloniaFact]

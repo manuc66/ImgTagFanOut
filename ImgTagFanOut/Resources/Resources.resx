@@ -210,6 +210,22 @@
   <data name="OpenWorkDirectory" xml:space="preserve">
     <value>Open workspace folder...</value>
   </data>
+  <data name="EjectDatabase" xml:space="preserve">
+    <value>Eject database...</value>
+  </data>
+  <data name="EjectDatabaseTitle" xml:space="preserve">
+    <value>Eject database</value>
+  </data>
+  <data name="EjectDatabaseConfirmation" xml:space="preserve">
+    <value>Permanently delete the ImgTagFanOut database from this folder?
+
+{0}
+
+All tags and face analyses stored for this folder will be lost. This cannot be undone.</value>
+  </data>
+  <data name="Eject" xml:space="preserve">
+    <value>Eject</value>
+  </data>
   <data name="File" xml:space="preserve">
     <value>File</value>
   </data>

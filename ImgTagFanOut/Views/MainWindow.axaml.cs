@@ -18,6 +18,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         this.WhenActivated(d => d(ViewModel!.PublishDropOrMergeDialog.RegisterHandler(DoShowPublishDropOrMergeDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ShowPublishProgressDialog.RegisterHandler(DoShowPublishProgressDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ShowConsentDialog.RegisterHandler(DoShowConsentDialogAsync)));
+        this.WhenActivated(d => d(ViewModel!.ShowEjectDatabaseDialog.RegisterHandler(DoShowEjectDatabaseDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ShowAboutDialog.RegisterHandler(DoShowABoutDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ExitCommand.Subscribe(_ => Close())));
         Activated += OnWindowActivated;
@@ -65,6 +66,14 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         ConsentWindow dialog = new() { DataContext = interaction.Input };
 
         int? result = await dialog.ShowDialog<int?>(this);
+        interaction.SetOutput(result);
+    }
+
+    private async Task DoShowEjectDatabaseDialogAsync(IInteractionContext<EjectDatabaseViewModel, bool?> interaction)
+    {
+        EjectDatabaseWindow dialog = new() { DataContext = interaction.Input };
+
+        bool? result = await dialog.ShowDialog<bool?>(this);
         interaction.SetOutput(result);
     }
 

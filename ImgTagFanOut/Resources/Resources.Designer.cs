@@ -236,5 +236,29 @@ namespace ImgTagFanOut.Resources {
                 return ResourceManager.GetString("File", resourceCulture);
             }
         }
+        
+        public static string EjectDatabase {
+            get {
+                return ResourceManager.GetString("EjectDatabase", resourceCulture);
+            }
+        }
+        
+        public static string EjectDatabaseTitle {
+            get {
+                return ResourceManager.GetString("EjectDatabaseTitle", resourceCulture);
+            }
+        }
+        
+        public static string EjectDatabaseConfirmation {
+            get {
+                return ResourceManager.GetString("EjectDatabaseConfirmation", resourceCulture);
+            }
+        }
+        
+        public static string Eject {
+            get {
+                return ResourceManager.GetString("Eject", resourceCulture);
+            }
+        }
     }
 }
