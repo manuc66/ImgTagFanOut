@@ -28,6 +28,7 @@
 				<MenuItem Header="{x:Static resources:Resources.OpenWorkDirectory}" Command="{Binding SelectFolderCommand}"
                           CommandParameter="{Binding $parent[Window]}" />
                 <MenuItem Header="{x:Static resources:Resources.Scan}" Command="{Binding ScanFolderCommand}" />
+                <MenuItem Header="{x:Static resources:Resources.AnalyzeFaces}" Command="{Binding AnalyzeFacesCommand}" />
                 <MenuItem Header="{x:Static resources:Resources.EjectDatabase}" Command="{Binding EjectDatabaseCommand}" />
 				<Separator/>
 				<MenuItem Header="{x:Static resources:Resources.Exit}" Command="{Binding ExitCommand}"/>
@@ -35,6 +36,8 @@
 			<MenuItem Header="{x:Static resources:Resources.About}" Command="{Binding ShowAboutDialogCommand}">
 			</MenuItem>
 		</Menu>
+
+		<TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusMessage}" Margin="8,4" TextWrapping="Wrap" />
 
 		<TabControl DockPanel.Dock="Bottom" Name="tabControl">
 			<TabItem Header="{x:Static resources:Resources.Images}">

@@ -175,8 +175,7 @@ public class FaceAnalysisCacheTests : IDisposable
             IReadOnlyList<FaceDetection>? knownDetections,
             bool computeEmbeddings,
             CancellationToken cancellationToken)
-        {
-            IReadOnlyList<FaceDetection> detections;
+        {            IReadOnlyList<FaceDetection> detections;
             if (knownDetections is null)
             {
                 DetectCalls++;
@@ -209,6 +208,10 @@ public class FaceAnalysisCacheTests : IDisposable
             }
 
             return Task.FromResult(new FaceAnalysisResult(faces));
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

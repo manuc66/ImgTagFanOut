@@ -20,4 +20,5 @@ public interface ITagRepository
     void DeleteTag(Tag tag);
     ImmutableList<string> GetItemsWithTag(Tag tag);
     ImmutableList<Tag> GetAllTagForHash(string hash);
+    ImmutableList<ItemDao> GetAllItems();
 }

@@ -260,6 +260,43 @@ namespace ImgTagFanOut.Resources {
                 return ResourceManager.GetString("Eject", resourceCulture);
             }
         }
+
+        
+        public static string PleaseWait {
+            get {
+                return ResourceManager.GetString("PleaseWait", resourceCulture);
+            }
+        }
+        
+        public static string AnalyzeFaces {
+            get {
+                return ResourceManager.GetString("AnalyzeFaces", resourceCulture);
+            }
+        }
+        
+        public static string AnalyzingFaces {
+            get {
+                return ResourceManager.GetString("AnalyzingFaces", resourceCulture);
+            }
+        }
+        
+        public static string FaceScanSummary {
+            get {
+                return ResourceManager.GetString("FaceScanSummary", resourceCulture);
+            }
+        }
+        
+        public static string FaceScanCancelled {
+            get {
+                return ResourceManager.GetString("FaceScanCancelled", resourceCulture);
+            }
+        }
+        
+        public static string FaceScanUnavailable {
+            get {
+                return ResourceManager.GetString("FaceScanUnavailable", resourceCulture);
+            }
+        }
         
         public static string NoFolderOpen {
             get {

@@ -93,4 +93,9 @@ class InMemoryTagRepository : ITagRepository
     {
         return new List<Tag>().ToImmutableList();
     }
+
+    public ImmutableList<ItemDao> GetAllItems()
+    {
+        return ImmutableList<ItemDao>.Empty;
+    }
 }

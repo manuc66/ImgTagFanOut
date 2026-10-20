@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -237,5 +237,23 @@ Tous les libellés et analyses de visages enregistrés pour ce dossier seront pe
   </data>
   <data name="File" xml:space="preserve">
     <value>Fichier</value>
+  </data>
+  <data name="AnalyzeFaces" xml:space="preserve">
+    <value>Analyser les visages</value>
+  </data>
+  <data name="AnalyzingFaces" xml:space="preserve">
+    <value>Analyse des visages : {0}/{1}</value>
+  </data>
+  <data name="FaceScanSummary" xml:space="preserve">
+    <value>Visages : {0} image(s) analysée(s), {1} déjà à jour, {2} visage(s) trouvé(s).</value>
+  </data>
+  <data name="FaceScanCancelled" xml:space="preserve">
+    <value>Analyse des visages annulée.</value>
+  </data>
+  <data name="FaceScanUnavailable" xml:space="preserve">
+    <value>L'analyse des visages n'est pas disponible sur ce système.</value>
+  </data>
+  <data name="PleaseWait" xml:space="preserve">
+    <value>Veuillez patienter...</value>
   </data>
 </root>

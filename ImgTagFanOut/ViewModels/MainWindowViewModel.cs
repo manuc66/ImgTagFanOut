@@ -17,6 +17,7 @@ using DynamicData;
 using DynamicData.Binding;
 using ImgTagFanOut.Dao;
 using ImgTagFanOut.Models;
+using ImgTagFanOut.Models.Faces;
 using ReactiveUI;
 
 namespace ImgTagFanOut.ViewModels;
@@ -42,6 +43,8 @@ public class MainWindowViewModel : ViewModelBase
     private readonly Settings _settings;
     private string _windowTitle = null!;
     private bool _isBusy;
+    private string? _busyMessage;
+    private string? _statusMessage;
 
     internal string? WorkingFolder
     {
@@ -126,7 +129,33 @@ public class MainWindowViewModel : ViewModelBase
     public bool IsBusy
     {
         get => _isBusy;
-        private set => this.RaiseAndSetIfChanged(ref _isBusy, value);
+        private set
+        {
+            this.RaiseAndSetIfChanged(ref _isBusy, value);
+
+            if (value)
+            {
+                BusyMessage ??= Resources.Resources.PleaseWait;
+            }
+            else
+            {
+                BusyMessage = null;
+            }
+        }
+    }
+
+    /// <summary>Texte de la progression affichée pendant une opération longue.</summary>
+    public string? BusyMessage
+    {
+        get => _busyMessage;
+        private set => this.RaiseAndSetIfChanged(ref _busyMessage, value);
+    }
+
+    /// <summary>Compte rendu de la dernière opération, affiché en bas de la fenêtre.</summary>
+    public string? StatusMessage
+    {
+        get => _statusMessage;
+        private set => this.RaiseAndSetIfChanged(ref _statusMessage, value);
     }
 
     public TagToImagesViewModel TagToImages { get; }
@@ -136,6 +165,8 @@ public class MainWindowViewModel : ViewModelBase
 
     public ReactiveCommand<Unit, Unit> ScanFolderCommand { get; }
     public ReactiveCommand<Unit, Unit> EjectDatabaseCommand { get; }
+    public ReactiveCommand<Unit, Unit> AnalyzeFacesCommand { get; }
+    public ReactiveCommand<Unit, Unit> CancelBusyCommand { get; }
     public ReactiveCommand<Window, Unit> PublishCommand { get; }
     public ReactiveCommand<Tag, Unit> ToggleAssignTagToImageCommand { get; }
     public ReactiveCommand<Tag, Unit> RemoveTagToImageCommand { get; }
@@ -167,13 +198,15 @@ public class MainWindowViewModel : ViewModelBase
         IFolderScan folderScan,
         IHashEvaluator hashEvaluator,
         IThumbnailProvider thumbnailProvider,
-        IFileManagerHandler fileManagerHandler)
+        IFileManagerHandler fileManagerHandler,
+        IFaceScan? faceScan = null)
     {
         _unitOfWorkFactory = unitOfWorkFactory;
         _folderScan = folderScan;
         _hashEvaluator = hashEvaluator;
         _thumbnailProvider = thumbnailProvider;
         _fileManagerHandler = fileManagerHandler;
+        _faceScan = faceScan ?? new FaceScan(unitOfWorkFactory, hashEvaluator);
         TagToImages = new TagToImagesViewModel(() => WorkingFolder, unitOfWorkFactory, thumbnailProvider);
         ShowPublishProgressDialog = new();
         ShowConsentDialog = new();
@@ -256,6 +289,20 @@ public class MainWindowViewModel : ViewModelBase
                                      && Directory.Exists(folder)
                                      && _unitOfWorkFactory.DatabaseExists(folder))
                 .CombineLatest(ScanFolderCommand.IsExecuting, (canEject, isScanning) => canEject && !isScanning)
+        );
+
+        AnalyzeFacesCommand = ReactiveCommand.CreateFromTask(
+            ExecuteAnalyzeFacesCommandAsync,
+            this.WhenAnyValue(x => x.WorkingFolder, x => x.IsBusy,
+                    (folder, isBusy) => !isBusy
+                                     && !string.IsNullOrWhiteSpace(folder)
+                                     && Directory.Exists(folder))
+                .CombineLatest(ScanFolderCommand.IsExecuting, (canAnalyze, isScanning) => canAnalyze && !isScanning)
+        );
+
+        CancelBusyCommand = ReactiveCommand.Create(
+            () => _busyCancellation?.Cancel(),
+            this.WhenAnyValue(x => x.IsBusy)
         );
 
         SelectFolderCommand = ReactiveCommand.CreateFromTask<Window, string>(ExecuteSelectFolderCommandAsync, ScanFolderCommand.IsExecuting.Select(x => !x));
@@ -348,6 +395,45 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
+
+    private async Task ExecuteAnalyzeFacesCommandAsync(CancellationToken cancellationToken)
+    {
+        string? folder = WorkingFolder;
+        if (string.IsNullOrWhiteSpace(folder) || !Directory.Exists(folder))
+        {
+            return;
+        }
+
+        using CancellationTokenSource cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        _busyCancellation = cancellation;
+        IsBusy = true;
+        BusyMessage = string.Format(Resources.Resources.AnalyzingFaces, 0, 0);
+        StatusMessage = null;
+
+        try
+        {
+            Progress<FaceScanProgress> progress = new(report =>
+                BusyMessage = string.Format(Resources.Resources.AnalyzingFaces, report.Processed, report.Total));
+
+            FaceScanSummary summary = await Task.Run(
+                () => _faceScan.ScanAsync(folder, progress, cancellation.Token),
+                cancellation.Token);
+
+            StatusMessage = summary.AnalyzerUnavailable
+                ? Resources.Resources.FaceScanUnavailable
+                : string.Format(Resources.Resources.FaceScanSummary, summary.Analyzed, summary.Cached, summary.FaceCount);
+        }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = Resources.Resources.FaceScanCancelled;
+        }
+        finally
+        {
+            _busyCancellation = null;
+            BusyMessage = null;
+            IsBusy = false;
+        }
+    }
 
     private async Task ExecuteEjectDatabaseCommandAsync(CancellationToken ct)
     {
@@ -644,6 +730,8 @@ public class MainWindowViewModel : ViewModelBase
     private readonly IHashEvaluator _hashEvaluator;
     private readonly IThumbnailProvider _thumbnailProvider;
     private readonly IFileManagerHandler _fileManagerHandler;
+    private readonly IFaceScan _faceScan;
+    private CancellationTokenSource? _busyCancellation;
     private readonly Bitmap _noPreviewToDisplay;
 
 

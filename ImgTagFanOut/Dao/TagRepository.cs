@@ -298,6 +298,11 @@ public class TagRepository : ITagRepository
         _dbContext.Tags.Remove(existingTag);
     }
 
+    public ImmutableList<ItemDao> GetAllItems()
+    {
+        return _dbContext.Items.OrderBy(x => x.Name).ToImmutableList();
+    }
+
     public ImmutableList<string> GetItemsWithTag(Tag tag)
     {
         TagDao? existingTag = _dbContext.Tags.Include(x => x.Items).FirstOrDefault(t => t.Name == tag.Name.Trim());

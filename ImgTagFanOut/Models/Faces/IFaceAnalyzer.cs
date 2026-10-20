@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ namespace ImgTagFanOut.Models.Faces;
 /// The real implementation uses OpenCV (YuNet + SFace); tests use a fake so
 /// the cache logic can be verified without any model.
 /// </summary>
-public interface IFaceAnalyzer
+public interface IFaceAnalyzer : IDisposable
 {
     /// <summary>
     /// Fingerprint of the detector and its settings (model, working resolution,
