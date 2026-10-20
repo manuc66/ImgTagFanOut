@@ -143,7 +143,7 @@
                     <Button Content="{x:Static resources:Resources.ForgetPerson}"
                             Command="{Binding Faces.ClearPersonCommand}"/>
                     <TextBox MinWidth="120" Text="{Binding Faces.NewPersonName}"
-                             Watermark="{x:Static resources:Resources.NewPerson}"/>
+                             PlaceholderText="{x:Static resources:Resources.NewPerson}"/>
                     <Button Content="{x:Static resources:Resources.CreatePerson}"
                             Command="{Binding Faces.CreatePersonCommand}"/>
                 </StackPanel>

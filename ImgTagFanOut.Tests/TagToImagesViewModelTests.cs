@@ -1,4 +1,4 @@
-using ImgTagFanOut.Dao;
+﻿using ImgTagFanOut.Dao;
 using ImgTagFanOut.Models;
 using ImgTagFanOut.ViewModels;
 using ReactiveUI;
@@ -134,7 +134,7 @@ public class TagToImagesViewModelTests : IDisposable
 
         Tag? unusedTag = new("unused");
         vm.SelectedTag = unusedTag;
-        await Task.Delay(200);
+        await Task.Delay(200, TestContext.Current.CancellationToken);
 
         Assert.Empty(vm.FilteredImages);
     }
