@@ -13,6 +13,7 @@ using ImgTagFanOut.Dao;
 using ImgTagFanOut.Models;
 using ImgTagFanOut.Models.Faces;
 using ReactiveUI;
+using Serilog;
 
 namespace ImgTagFanOut.ViewModels;
 
@@ -135,6 +136,7 @@ public class FacesViewModel : ViewModelBase
         Image = image;
         Folder = folder;
         Faces.Clear();
+        PersonTags.Clear();
         SelectedFace = null;
         NewPersonName = null;
 
@@ -145,33 +147,55 @@ public class FacesViewModel : ViewModelBase
             return;
         }
 
-        IReadOnlyList<FaceRow> rows = await Task.Run(() => LoadRows(folder, image.Item));
-
-        // Décodage hors du thread UI : 1200 px prennent quelques dizaines de millisecondes.
-        string fullPath = image.GetFullFilePath(folder);
-        Bitmap? source = rows.Count > 0
-            ? await Task.Run(() => _thumbnailProvider.GetThumbnail(fullPath, CropSourceWidth))
-            : null;
-
-        // A newer selection won while the image was being decoded.
-        if (version != _loadVersion)
+        try
         {
-            return;
-        }
+            IReadOnlyList<FaceRow> rows = await Task.Run(() => LoadRows(folder, image.Item));
 
-        foreach (FaceRow row in rows)
+            // Décodage hors du thread UI : 1200 px prennent quelques dizaines de millisecondes.
+            string fullPath = image.GetFullFilePath(folder);
+            Bitmap? source = rows.Count > 0
+                ? await Task.Run(() => _thumbnailProvider.GetThumbnail(fullPath, CropSourceWidth))
+                : null;
+
+            // A newer selection won while the image was being decoded.
+            if (version != _loadVersion)
+            {
+                return;
+            }
+
+            foreach (FaceRow row in rows)
+            {
+                Faces.Add(new FaceItemViewModel(
+                    row.Face.FaceId,
+                    row.Person,
+                    Crop(source, row.Face),
+                    row.SuggestedPerson,
+                    row.SuggestedScore));
+            }
+
+            ReloadPersonTags(folder);
+            SelectedFace = Faces.FirstOrDefault();
+        }
+        catch (Exception ex)
         {
-            Faces.Add(new FaceItemViewModel(
-                row.Face.FaceId,
-                row.Person,
-                Crop(source, row.Face),
-                row.SuggestedPerson,
-                row.SuggestedScore));
-        }
+            // Selecting a photo is a background action: a locked database or a
+            // deleted file must leave the previous state clean and the app alive.
+            Log.Warning(ex, "Cannot load the faces of {Item}", image.Item);
 
-        ReloadPersonTags(folder);
-        SelectedFace = Faces.FirstOrDefault();
-        this.RaisePropertyChanged(nameof(HasFaces));
+            if (version == _loadVersion)
+            {
+                Faces.Clear();
+                PersonTags.Clear();
+                SelectedFace = null;
+            }
+        }
+        finally
+        {
+            if (version == _loadVersion)
+            {
+                this.RaisePropertyChanged(nameof(HasFaces));
+            }
+        }
     }
 
     private IReadOnlyList<FaceRow> LoadRows(string folder, string itemName)

@@ -253,6 +253,43 @@ public class FacesViewModelTests : IDisposable
         Assert.All(unitOfWork.FaceRepository.GetFacesWithPerson("photo.jpg"), row => Assert.Null(row.PersonName));
     }
 
+    [Fact]
+    public async Task Load_WhenTheDatabaseIsUnavailable_LeavesAnEmptyStrip()
+    {
+        ThrowingUnitOfWorkFactory factory = new();
+        FacesViewModel viewModel = new(factory, new FakeThumbnailProvider(), new PersonSuggester(factory));
+
+        await viewModel.LoadAsync(_folder, Item());
+
+        Assert.False(viewModel.HasFaces);
+        Assert.Empty(viewModel.Faces);
+        Assert.Empty(viewModel.PersonTags);
+        Assert.Null(viewModel.SelectedFace);
+    }
+
+    private sealed class ThrowingUnitOfWorkFactory : IUnitOfWorkFactory
+    {
+        public Task<IUnitOfWork> GetUnitOfWorkAsync(string path, CancellationToken cancellationToken = default)
+        {
+            throw new IOException("database unavailable");
+        }
+
+        public IUnitOfWork GetUnitOfWork(string path)
+        {
+            throw new IOException("database unavailable");
+        }
+
+        public void ClearTagCache()
+        {
+        }
+
+        public bool DatabaseExists(string path) => true;
+
+        public void DeleteDatabase(string path)
+        {
+        }
+    }
+
     private sealed class FakeThumbnailProvider : IThumbnailProvider
     {
         public Task<Bitmap?> GetThumbnail(string fullFilePath) => Task.FromResult<Bitmap?>(null);

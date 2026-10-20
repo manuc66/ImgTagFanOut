@@ -139,6 +139,44 @@ public class TagToImagesViewModelTests : IDisposable
         Assert.Empty(vm.FilteredImages);
     }
 
+    [Fact]
+    public async Task SelectingTag_WhenTheDatabaseFails_LeavesAnEmptyListInsteadOfThrowing()
+    {
+        TagToImagesViewModel vm = new(
+            () => _tempDir,
+            new ThrowingUnitOfWorkFactory(),
+            new ThumbnailProvider());
+
+        vm.SelectedTag = new Tag("cat");
+        await Task.Delay(200, TestContext.Current.CancellationToken);
+
+        Assert.Empty(vm.FilteredImages);
+        Assert.Null(vm.SelectedImage);
+    }
+
+    private sealed class ThrowingUnitOfWorkFactory : IUnitOfWorkFactory
+    {
+        public Task<IUnitOfWork> GetUnitOfWorkAsync(string path, CancellationToken cancellationToken = default)
+        {
+            throw new IOException("database unavailable");
+        }
+
+        public IUnitOfWork GetUnitOfWork(string path)
+        {
+            throw new IOException("database unavailable");
+        }
+
+        public void ClearTagCache()
+        {
+        }
+
+        public bool DatabaseExists(string path) => true;
+
+        public void DeleteDatabase(string path)
+        {
+        }
+    }
+
     private static async Task WaitUntilAsync(Func<bool> condition, int timeoutMs = 5000)
     {
         long start = Environment.TickCount64;

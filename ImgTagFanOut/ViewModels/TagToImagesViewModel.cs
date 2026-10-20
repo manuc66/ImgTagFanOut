@@ -11,6 +11,7 @@ using ImgTagFanOut.Dao;
 using ImgTagFanOut.Models;
 using ImgTagFanOut.Models.Faces;
 using ReactiveUI;
+using Serilog;
 
 namespace ImgTagFanOut.ViewModels;
 
@@ -132,12 +133,22 @@ public class TagToImagesViewModel : ViewModelBase
             return;
         }
 
-        await using IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(workingFolder);
-        IReadOnlyList<string> items = unitOfWork.TagRepository.GetItemsWithTag(SelectedTag);
-
-        foreach (string item in items)
+        try
         {
-            _images.Add(new CanHaveTag(item));
+            await using IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(workingFolder);
+            IReadOnlyList<string> items = unitOfWork.TagRepository.GetItemsWithTag(SelectedTag);
+
+            foreach (string item in items)
+            {
+                _images.Add(new CanHaveTag(item));
+            }
+        }
+        catch (Exception ex)
+        {
+            // The tag panel subscribes to this without awaiting: a database
+            // error must not become an unobserved task or kill the subscription.
+            Log.Warning(ex, "Cannot load the images of tag {Tag}", SelectedTag.Name);
+            _images.Clear();
         }
     }
 
