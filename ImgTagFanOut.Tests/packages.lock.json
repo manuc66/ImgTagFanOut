@@ -258,6 +258,20 @@
         "resolved": "15.0.0",
         "contentHash": "mP/VovMRuXBX2Rcnn1wWu0Zur6cjsf8IQhmTUCrasEk8cyAtN5sjHE7NxiH88whw8/2mjRvuphKUwj6bAZslpQ=="
       },
+      "Material.Icons": {
+        "type": "Transitive",
+        "resolved": "3.0.2",
+        "contentHash": "vzeJjXu0PWJSZDCG0lL8+xx4Zf3i+iKOmu4GjGXtgAex22JPKDOaYPUU77Fd21LEsKrkrAQ1cZ61mrHPX1Elsg=="
+      },
+      "Material.Icons.Avalonia": {
+        "type": "Transitive",
+        "resolved": "3.0.2",
+        "contentHash": "zXUS04QfxgSv0oMbsIf+6fZqcQbyh3L920Ucif8UHLaaFRK9E5R80ixUPnBpFRwGNe4sTDNhUS2Ti1T1wT3g5A==",
+        "dependencies": {
+          "Avalonia": "12.0.0",
+          "Material.Icons": "3.0.2"
+        }
+      },
       "MicroCom.Runtime": {
         "type": "Transitive",
         "resolved": "0.11.6",
@@ -706,6 +720,7 @@
           "Blake3": "[3.0.2, )",
           "DynamicData": "[9.4.33, )",
           "Magick.NET-Q8-AnyCPU": "[15.0.0, )",
+          "Material.Icons.Avalonia": "[3.0.2, )",
           "Microsoft.EntityFrameworkCore": "[10.0.12, )",
           "Microsoft.EntityFrameworkCore.Sqlite": "[10.0.12, )",
           "Microsoft.IO.RecyclableMemoryStream": "[3.0.1, )",

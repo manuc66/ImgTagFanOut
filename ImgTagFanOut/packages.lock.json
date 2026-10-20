@@ -80,6 +80,16 @@
           "Magick.NET.Core": "15.0.0"
         }
       },
+      "Material.Icons.Avalonia": {
+        "type": "Direct",
+        "requested": "[3.0.2, )",
+        "resolved": "3.0.2",
+        "contentHash": "zXUS04QfxgSv0oMbsIf+6fZqcQbyh3L920Ucif8UHLaaFRK9E5R80ixUPnBpFRwGNe4sTDNhUS2Ti1T1wT3g5A==",
+        "dependencies": {
+          "Avalonia": "12.0.0",
+          "Material.Icons": "3.0.2"
+        }
+      },
       "Microsoft.CodeAnalysis.Analyzers": {
         "type": "Direct",
         "requested": "[5.9.0, )",
@@ -378,6 +388,11 @@
         "type": "Transitive",
         "resolved": "15.0.0",
         "contentHash": "mP/VovMRuXBX2Rcnn1wWu0Zur6cjsf8IQhmTUCrasEk8cyAtN5sjHE7NxiH88whw8/2mjRvuphKUwj6bAZslpQ=="
+      },
+      "Material.Icons": {
+        "type": "Transitive",
+        "resolved": "3.0.2",
+        "contentHash": "vzeJjXu0PWJSZDCG0lL8+xx4Zf3i+iKOmu4GjGXtgAex22JPKDOaYPUU77Fd21LEsKrkrAQ1cZ61mrHPX1Elsg=="
       },
       "MicroCom.Runtime": {
         "type": "Transitive",

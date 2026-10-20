@@ -44,6 +44,7 @@
         <PackageReference Include="Tmds.DBus.Protocol" Version="0.95.1" />
 <PackageReference Include="Blake3" Version="3.0.2" />
         <PackageReference Include="DynamicData" Version="9.4.33" />
+        <PackageReference Include="Material.Icons.Avalonia" Version="3.0.2" />
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="5.9.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

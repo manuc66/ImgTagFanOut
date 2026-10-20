@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:resources="clr-namespace:ImgTagFanOut.Resources"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:viewModels="clr-namespace:ImgTagFanOut.ViewModels"
              xmlns:views="clr-namespace:ImgTagFanOut.Views"
              xmlns:converters="clr-namespace:ImgTagFanOut.Converters"
@@ -23,13 +24,25 @@
                 <Grid Grid.Row="2" Grid.Column="0" RowDefinitions="Auto,Auto,Auto,*">
                     <TextBlock Grid.Row="0" Text="{x:Static resources:Resources.Images}"></TextBlock>
                     <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,4,0,4">
-                        <Button Content="{x:Static resources:Resources.OpenFolder}"
-                                Command="{Binding SelectFolderCommand}"
-                                CommandParameter="{Binding $parent[Window]}" />
-                        <Button Content="{x:Static resources:Resources.Refresh}"
-                                Command="{Binding ScanFolderCommand}" Margin="4,0,0,0" />
-                        <Button Content="{x:Static resources:Resources.AnalyzeFaces}"
-                                Command="{Binding AnalyzeFacesCommand}" Margin="4,0,0,0" />
+                        <Button Command="{Binding SelectFolderCommand}"
+                                CommandParameter="{Binding $parent[Window]}">
+                            <StackPanel Classes="withIcon">
+                                <materialIcons:MaterialIcon Kind="FolderOpen" Classes="toolIcon" />
+                                <TextBlock Text="{x:Static resources:Resources.OpenFolder}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button Command="{Binding ScanFolderCommand}" Margin="4,0,0,0">
+                            <StackPanel Classes="withIcon">
+                                <materialIcons:MaterialIcon Kind="Refresh" Classes="toolIcon" />
+                                <TextBlock Text="{x:Static resources:Resources.Refresh}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button Command="{Binding AnalyzeFacesCommand}" Margin="4,0,0,0">
+                            <StackPanel Classes="withIcon">
+                                <materialIcons:MaterialIcon Kind="FaceRecognition" Classes="toolIcon" />
+                                <TextBlock Text="{x:Static resources:Resources.AnalyzeFaces}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
                     <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,0,0,4">
                         <TextBlock Grid.Column="0" Text="{x:Static resources:Resources.Filter}"></TextBlock>
@@ -65,7 +78,9 @@
                             </ListBox.ItemTemplate>
                         </ListBox>
                         <Border IsVisible="{Binding !HasWorkingFolder}" Background="Transparent">
-                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="FolderOpenOutline" Classes="emptyIcon"
+                                                           HorizontalAlignment="Center" />
                                 <TextBlock Text="{x:Static resources:Resources.NoFolderOpen}"
                                            FontSize="16" HorizontalAlignment="Center" Margin="0,0,0,10" />
                                 <Button Content="{x:Static resources:Resources.OpenFolder}"
@@ -85,20 +100,40 @@
                                   OffContent="{x:Static resources:Resources.ShowDoneOff}">
                     </ToggleSwitch>
                     <Button DockPanel.Dock="Top" Command="{Binding AllCommand}" HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.All}">
+                            HorizontalContentAlignment="Center">
+                        <StackPanel Classes="withIcon">
+                            <materialIcons:MaterialIcon Kind="CheckAll" Classes="toolIcon" />
+                            <TextBlock Text="{x:Static resources:Resources.All}" VerticalAlignment="Center" />
+                        </StackPanel>
                     </Button>
                     <Button DockPanel.Dock="Top" Command="{Binding NoneCommand}" HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.None}">
+                            HorizontalContentAlignment="Center">
+                        <StackPanel Classes="withIcon">
+                            <materialIcons:MaterialIcon Kind="CheckboxBlankOutline" Classes="toolIcon" />
+                            <TextBlock Text="{x:Static resources:Resources.None}" VerticalAlignment="Center" />
+                        </StackPanel>
                     </Button>
                     <ToggleButton DockPanel.Dock="Top" Command="{Binding DoneCommand}" HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.Done}"
+                            HorizontalContentAlignment="Center"
                             IsChecked="{Binding SelectedImage.Done, FallbackValue=False, Mode=OneWay}">
+                        <StackPanel Classes="withIcon">
+                            <materialIcons:MaterialIcon Kind="CheckCircleOutline" Classes="toolIcon" />
+                            <TextBlock Text="{x:Static resources:Resources.Done}" VerticalAlignment="Center" />
+                        </StackPanel>
                     </ToggleButton>
                     <Button DockPanel.Dock="Bottom" Command="{Binding OpenCommand}" HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.Open}">
+                            HorizontalContentAlignment="Center">
+                        <StackPanel Classes="withIcon">
+                            <materialIcons:MaterialIcon Kind="OpenInNew" Classes="toolIcon" />
+                            <TextBlock Text="{x:Static resources:Resources.Open}" VerticalAlignment="Center" />
+                        </StackPanel>
                     </Button>
                     <Button DockPanel.Dock="Bottom" Command="{Binding LocateCommand}" HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Center" Content="{x:Static resources:Resources.Locate}">
+                            HorizontalContentAlignment="Center">
+                        <StackPanel Classes="withIcon">
+                            <materialIcons:MaterialIcon Kind="FolderSearchOutline" Classes="toolIcon" />
+                            <TextBlock Text="{x:Static resources:Resources.Locate}" VerticalAlignment="Center" />
+                        </StackPanel>
                     </Button>
                 </DockPanel>
                 <Image HorizontalAlignment="Left" Source="{Binding ImageToDisplay, Mode=OneWay}" Grid.Row="3" Grid.Column="0"

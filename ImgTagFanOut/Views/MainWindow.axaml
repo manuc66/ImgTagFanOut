@@ -1,9 +1,10 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:ImgTagFanOut.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:resources="clr-namespace:ImgTagFanOut.Resources"
+        xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         xmlns:ui="using:ImgTagFanOut"
         xmlns:views="clr-namespace:ImgTagFanOut.Views"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="550"
@@ -22,28 +23,65 @@
 	<DockPanel>
 		<Menu DockPanel.Dock="Top">
 			<MenuItem Header="{x:Static resources:Resources.File}">
-				<!--<MenuItem Header="_Open..."/>
-				<Separator/>
-				<MenuItem Header="_Publish..."/>-->
 				<MenuItem Header="{x:Static resources:Resources.OpenWorkDirectory}" Command="{Binding SelectFolderCommand}"
-                          CommandParameter="{Binding $parent[Window]}" />
-                <MenuItem Header="{x:Static resources:Resources.Scan}" Command="{Binding ScanFolderCommand}" />
-                <MenuItem Header="{x:Static resources:Resources.AnalyzeFaces}" Command="{Binding AnalyzeFacesCommand}" />
-                <MenuItem Header="{x:Static resources:Resources.EjectDatabase}" Command="{Binding EjectDatabaseCommand}" />
+                          CommandParameter="{Binding $parent[Window]}">
+                    <MenuItem.Icon>
+                        <materialIcons:MaterialIcon Kind="FolderOpen" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="{x:Static resources:Resources.Scan}" Command="{Binding ScanFolderCommand}">
+                    <MenuItem.Icon>
+                        <materialIcons:MaterialIcon Kind="Refresh" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="{x:Static resources:Resources.AnalyzeFaces}" Command="{Binding AnalyzeFacesCommand}">
+                    <MenuItem.Icon>
+                        <materialIcons:MaterialIcon Kind="FaceRecognition" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="{x:Static resources:Resources.EjectDatabase}" Command="{Binding EjectDatabaseCommand}">
+                    <MenuItem.Icon>
+                        <materialIcons:MaterialIcon Kind="Eject" />
+                    </MenuItem.Icon>
+                </MenuItem>
 				<Separator/>
-				<MenuItem Header="{x:Static resources:Resources.Exit}" Command="{Binding ExitCommand}"/>
+				<MenuItem Header="{x:Static resources:Resources.Exit}" Command="{Binding ExitCommand}">
+                    <MenuItem.Icon>
+                        <materialIcons:MaterialIcon Kind="ExitToApp" />
+                    </MenuItem.Icon>
+                </MenuItem>
+			</MenuItem>
+			<MenuItem Header="{x:Static resources:Resources.AdvancedSettings}" Command="{Binding ShowSettingsDialogCommand}">
+                <MenuItem.Icon>
+                    <materialIcons:MaterialIcon Kind="Cog" />
+                </MenuItem.Icon>
 			</MenuItem>
 			<MenuItem Header="{x:Static resources:Resources.About}" Command="{Binding ShowAboutDialogCommand}">
+                <MenuItem.Icon>
+                    <materialIcons:MaterialIcon Kind="InformationOutline" />
+                </MenuItem.Icon>
 			</MenuItem>
 		</Menu>
 
-		<TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusMessage}" Margin="8,4" TextWrapping="Wrap" />
+		<TextBlock DockPanel.Dock="Bottom" Classes="status" Text="{Binding StatusMessage}" Margin="8,4" TextWrapping="Wrap" />
 
 		<TabControl DockPanel.Dock="Bottom" Name="tabControl">
-			<TabItem Header="{x:Static resources:Resources.Images}">
+			<TabItem>
+				<TabItem.Header>
+					<StackPanel Classes="withIcon">
+						<materialIcons:MaterialIcon Kind="ImageMultiple" />
+						<TextBlock Text="{x:Static resources:Resources.Images}" VerticalAlignment="Center" />
+					</StackPanel>
+				</TabItem.Header>
 				<views:AssignTags />
 			</TabItem>
-			<TabItem Header="{x:Static resources:Resources.Tags}" AutomationProperties.AutomationId="{x:Static ui:AutomationIds.TagsTab}">
+			<TabItem AutomationProperties.AutomationId="{x:Static ui:AutomationIds.TagsTab}">
+				<TabItem.Header>
+					<StackPanel Classes="withIcon">
+						<materialIcons:MaterialIcon Kind="TagMultiple" />
+						<TextBlock Text="{x:Static resources:Resources.Tags}" VerticalAlignment="Center" />
+					</StackPanel>
+				</TabItem.Header>
 				<views:TagToImagesView DataContext="{Binding TagToImages}" />
 			</TabItem>
 		</TabControl>
