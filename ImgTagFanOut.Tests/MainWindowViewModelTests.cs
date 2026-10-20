@@ -1,8 +1,12 @@
+using System.Reactive;
 using System.Reactive.Linq;
 using Avalonia.Headless.XUnit;
 using ImgTagFanOut.Dao;
 using ImgTagFanOut.Models;
+using ImgTagFanOut.Models.Faces;
 using ImgTagFanOut.ViewModels;
+using Avalonia.Threading;
+using Microsoft.EntityFrameworkCore;
 
 namespace ImgTagFanOut.Tests;
 
@@ -29,6 +33,57 @@ public class MainWindowViewModelTests : IDisposable
         await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(_tempDir);
         unitOfWork.TagRepository.TryCreateTag(tagName, out _);
         await unitOfWork.SaveChangesAsync();
+    }
+
+    [AvaloniaFact]
+    public async Task RemovingAPersonLabel_ForgetsTheFacesOfThatPhoto()
+    {
+        string photo = Path.Combine(_tempDir, "photo.jpg");
+        File.WriteAllBytes(photo, [1, 2, 3]);
+        string hash = await new HashEvaluator().ComputeHashAsync(photo, CancellationToken.None);
+
+        await SeedTagAsync("Maman");
+
+        using (ImgTagFanOutDbContext db = new(new TagCache(), _tempDir))
+        {
+            db.Database.Migrate();
+
+            ItemDao item = new("photo.jpg") { Hash = hash };
+            db.Items.Add(item);
+            db.SaveChanges();
+
+            db.FaceRepository.Replace(
+                item,
+                hash,
+                "det",
+                [new AnalyzedFace(new FaceDetection(0.1f, 0.1f, 0.2f, 0.2f, 0.9f, new float[FaceLandmarks.ValueCount]), [1, 2, 3, 4])],
+                "emb");
+            db.SaveChanges();
+
+            db.FaceRepository.SetPersonTag(db.Faces.Single(), db.Tags.Single(tag => tag.Name == "Maman"));
+            db.TagRepository.AddTagToItem(new Tag("Maman"), new CanHaveTag("photo.jpg"));
+            db.SaveChanges();
+        }
+
+        MainWindowViewModel vm = new() { WorkingFolder = _tempDir };
+        await vm.OpenFolder(_tempDir);
+        await vm.ScanFolderCommand.Execute(Unit.Default).FirstAsync();
+
+        for (int i = 0; i < 20 && vm.FilteredImages.Count == 0; i++)
+        {
+            Dispatcher.UIThread.RunJobs();
+            await Task.Delay(25);
+        }
+
+        vm.SelectedImage = vm.FilteredImages.Single();
+        Assert.True(vm.SelectedImage.Has(new Tag("Maman")));
+
+        await vm.ToggleAssignTagToImageCommand.Execute(new Tag("Maman")).FirstAsync();
+
+        using (ImgTagFanOutDbContext db = new(new TagCache(), _tempDir))
+        {
+            Assert.Empty(db.FaceTags);
+        }
     }
 
     [AvaloniaFact]

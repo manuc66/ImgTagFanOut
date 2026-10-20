@@ -35,6 +35,7 @@ public class MainWindowViewModel : ViewModelBase
     private string? _itemFilterInput;
     private readonly ObservableCollection<Tag> _tagList = new();
     private List<SelectableTag> _filteredTagList;
+    private HashSet<string> _personTagNames = new(StringComparer.Ordinal);
 
     private bool _showDone;
     private readonly SourceList<CanHaveTag> _images = new();
@@ -377,7 +378,11 @@ public class MainWindowViewModel : ViewModelBase
     private void CreateFilteredTagList(IReadOnlyCollection<Tag> list, string? tagFilterInput, CanHaveTag? selectedImage)
     {
         FilteredTagList = list.Where(tag => string.IsNullOrWhiteSpace(tagFilterInput) || tag.MatchFilter(tagFilterInput))
-            .Select(tag => new SelectableTag(tag) { IsSelected = IsSelected(tag, selectedImage) })
+            .Select(tag => new SelectableTag(tag)
+            {
+                IsSelected = IsSelected(tag, selectedImage),
+                IsPerson = _personTagNames.Contains(tag.Name),
+            })
             .OrderBy(tag => tag.Tag.Name)
             .ToList();
     }
@@ -506,9 +511,13 @@ public class MainWindowViewModel : ViewModelBase
         {
             unitOfWork.TagRepository.RemoveTagToItem(tag, SelectedImage);
 
+            // Le libellé dit « cette personne est sur la photo » : on retire aussi les visages.
+            unitOfWork.FaceRepository.ClearPersonLinks(SelectedImage.Item, tag.Name);
+
             await unitOfWork.SaveChangesAsync(ct);
         }
 
+        Faces.OnPersonDetached(tag.Name);
         RefreshTagIsSelected();
     }
 
@@ -520,14 +529,26 @@ public class MainWindowViewModel : ViewModelBase
             return;
         }
 
+        bool removed = SelectedImage?.Has(s) ?? false;
+
         await using (IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(WorkingFolder, ct))
         {
             if (SelectedImage != null)
             {
                 unitOfWork.TagRepository.ToggleToItem(s, SelectedImage);
+
+                if (removed)
+                {
+                    unitOfWork.FaceRepository.ClearPersonLinks(SelectedImage.Item, s.Name);
+                }
             }
 
             await unitOfWork.SaveChangesAsync(ct);
+        }
+
+        if (removed)
+        {
+            Faces.OnPersonDetached(s.Name);
         }
 
         RefreshTagIsSelected();
@@ -572,12 +593,22 @@ public class MainWindowViewModel : ViewModelBase
 
         await using (IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(WorkingFolder, ct))
         {
+            List<string> removed = SelectedImage.Tags.Select(tag => tag.Name).ToList();
+
             foreach (Tag selectedImageTag in SelectedImage.Tags.ToImmutableList())
             {
                 unitOfWork.TagRepository.RemoveTagToItem(selectedImageTag, SelectedImage);
             }
 
+            unitOfWork.FaceRepository.ClearAllPersonLinks(SelectedImage.Item);
+
             await unitOfWork.SaveChangesAsync(ct);
+
+            // Après la sauvegarde : la liste des personnes est relue depuis la base.
+            foreach (string name in removed)
+            {
+                Faces.OnPersonDetached(name);
+            }
         }
 
         RefreshTagIsSelected();
@@ -793,7 +824,7 @@ public class MainWindowViewModel : ViewModelBase
             TargetFolder = unitOfWork.ParameterRepository.Get(TargetFolderSettingKey);
             ShowDone = Boolean.Parse(unitOfWork.ParameterRepository.Get(ShowDoneSettingKey) ?? false.ToString());
 
-ReloadTagList(unitOfWork.TagRepository);
+ReloadTagList(unitOfWork);
             TagToImages.LoadTags();
 
             return path;
@@ -901,16 +932,23 @@ ReloadTagList(unitOfWork.TagRepository);
         }
 
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.GetUnitOfWork(WorkingFolder);
-        ReloadTagList(unitOfWork.TagRepository);
+        ReloadTagList(unitOfWork);
         TagToImages.LoadTags();
     }
 
 
-    private void ReloadTagList(ITagRepository tagRepository)
+    private void ReloadTagList(IUnitOfWork unitOfWork)
     {
+        // Avant de vider la liste : le changement déclenche la reconstruction des
+        // entrées, qui a besoin de savoir quels libellés sont des personnes.
+        _personTagNames = unitOfWork.FaceRepository
+            .GetPersonTags()
+            .Select(tag => tag.Name)
+            .ToHashSet(StringComparer.Ordinal);
+
         _unitOfWorkFactory.ClearTagCache();
         TagList.Clear();
-        TagList.AddRange(tagRepository.GetAllTag());
+        TagList.AddRange(unitOfWork.TagRepository.GetAllTag());
     }
 
 
@@ -1017,7 +1055,7 @@ ReloadTagList(unitOfWork.TagRepository);
         await _folderScan.ScanFolder(cancellationToken, WorkingFolder, _images);
 
         await using IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken);
-        ReloadTagList(unitOfWork.TagRepository);
+        ReloadTagList(unitOfWork);
         TagToImages.LoadTags();
     }
 

@@ -302,6 +302,13 @@ namespace ImgTagFanOut.Resources {
                 return ResourceManager.GetString("Person", resourceCulture);
             }
         }
+
+        
+        public static string PersonTagHint {
+            get {
+                return ResourceManager.GetString("PersonTagHint", resourceCulture);
+            }
+        }
         
         public static string AnalyzeFaces {
             get {

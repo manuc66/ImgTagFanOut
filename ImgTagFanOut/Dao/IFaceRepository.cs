@@ -29,6 +29,15 @@ public interface IFaceRepository
     /// <summary>Names a face, replacing any previous link. Null clears the name.</summary>
     void SetPersonTag(FaceDao face, TagDao? tag);
 
+    /// <summary>
+    /// Drops every link of that person inside one image. Removing the label from the
+    /// photo means the photo no longer claims that person, faces included.
+    /// </summary>
+    void ClearPersonLinks(string itemName, string personName);
+
+    /// <summary>Drops every person link of one image, used when all labels are removed.</summary>
+    void ClearAllPersonLinks(string itemName);
+
     FaceDao? GetFace(int faceId);
 
     /// <summary>Faces of one image, with the person tag when it is already known.</summary>

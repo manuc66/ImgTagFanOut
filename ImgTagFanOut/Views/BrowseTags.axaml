@@ -45,6 +45,7 @@
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
                             <ToggleButton Content="{Binding Tag.Name}"
+                                          ToolTip.Tip="{Binding PersonHint}"
                                           IsChecked="{Binding IsSelected}"
                                           CommandParameter="{Binding Tag}"
                                           Command="{Binding $parent[ItemsControl].((viewModels:MainWindowViewModel)DataContext).ToggleAssignTagToImageCommand, DataType={x:Type viewModels:MainWindowViewModel}, FallbackValue={x:Null}}">

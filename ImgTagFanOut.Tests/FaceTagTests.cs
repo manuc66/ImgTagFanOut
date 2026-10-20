@@ -154,6 +154,29 @@ public class FaceTagTests : IDisposable
     }
 
     [Fact]
+    public void ClearPersonLinks_OnlyRemovesThatPersonInThatImage()
+    {
+        ItemDao photo = CreateItemWithFaces(faceCount: 2);
+        ItemDao other = CreateItemWithFaces("other.jpg", faceCount: 1);
+        TagDao maman = CreateTag("Maman");
+        TagDao papa = CreateTag("Papa");
+
+        List<FaceDao> photoFaces = FacesOf(photo);
+        FaceDao otherFace = FacesOf(other)[0];
+        _faces.SetPersonTag(photoFaces[0], maman);
+        _faces.SetPersonTag(photoFaces[1], papa);
+        _faces.SetPersonTag(otherFace, maman);
+        _db.SaveChanges();
+
+        _faces.ClearPersonLinks(photo.Name, "Maman");
+        _db.SaveChanges();
+
+        Assert.Null(_faces.GetPersonTag(photoFaces[0].FaceId));
+        Assert.Equal("Papa", _faces.GetPersonTag(photoFaces[1].FaceId)?.Name);
+        Assert.Equal("Maman", _faces.GetPersonTag(otherFace.FaceId)?.Name);
+    }
+
+    [Fact]
     public void DeletingTheTag_RemovesItsFaceLinks()
     {
         ItemDao item = CreateItemWithFaces();

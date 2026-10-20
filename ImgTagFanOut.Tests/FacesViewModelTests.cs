@@ -119,6 +119,21 @@ public class FacesViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task OnPersonDetached_ClearsTheStrip()
+    {
+        await _viewModel.LoadAsync(_folder, Item());
+
+        _viewModel.SelectedFace = _viewModel.Faces[0];
+        _viewModel.NewPersonName = "Maman";
+        await _viewModel.CreatePersonCommand.Execute().FirstAsync();
+        Assert.Equal("Maman", _viewModel.Faces[0].Person);
+
+        _viewModel.OnPersonDetached("Maman");
+
+        Assert.Null(_viewModel.Faces[0].Person);
+    }
+
+    [Fact]
     public async Task Naming_RaisesTagsChanged_SoTheLabelPanelCanRefresh()
     {
         await _viewModel.LoadAsync(_folder, Item());

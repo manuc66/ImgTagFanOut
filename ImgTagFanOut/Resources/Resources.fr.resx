@@ -271,4 +271,7 @@ Tous les libellés et analyses de visages enregistrés pour ce dossier seront pe
   <data name="Person" xml:space="preserve">
     <value>Personne</value>
   </data>
+  <data name="PersonTagHint" xml:space="preserve">
+    <value>Personne : nommer un visage dans la bande de visages ajoute aussi ce libellé, et le retirer ici oublie ces visages.</value>
+  </data>
 </root>

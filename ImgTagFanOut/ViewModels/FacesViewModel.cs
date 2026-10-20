@@ -110,6 +110,24 @@ public class FacesViewModel : ViewModelBase
     /// Refreshes the strip for the given image. Must run on the UI thread: the
     /// crops are <see cref="CroppedBitmap"/>, which are thread-affine.
     /// </summary>
+    /// <summary>
+    /// The label was removed from the image from the label panel: the faces that
+    /// carried it no longer do, so the strip and the gallery must follow.
+    /// </summary>
+    public void OnPersonDetached(string personName)
+    {
+        foreach (FaceItemViewModel face in Faces.Where(face => face.Person == personName))
+        {
+            face.Person = null;
+        }
+
+        if (Folder is not null)
+        {
+            _personSuggester.Invalidate(Folder);
+            ReloadPersonTags(Folder);
+        }
+    }
+
     public async Task LoadAsync(string? folder, CanHaveTag? image)
     {
         int version = ++_loadVersion;

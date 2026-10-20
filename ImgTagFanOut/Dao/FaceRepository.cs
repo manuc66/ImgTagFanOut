@@ -130,6 +130,30 @@ public class FaceRepository : IFaceRepository
             .ToList();
     }
 
+    public void ClearPersonLinks(string itemName, string personName)
+    {
+        List<FaceTagDao> links = _dbContext.FaceTags
+            .Where(link => link.Face.Item.Name == itemName && link.Tag.Name == personName)
+            .ToList();
+
+        if (links.Count > 0)
+        {
+            _dbContext.FaceTags.RemoveRange(links);
+        }
+    }
+
+    public void ClearAllPersonLinks(string itemName)
+    {
+        List<FaceTagDao> links = _dbContext.FaceTags
+            .Where(link => link.Face.Item.Name == itemName)
+            .ToList();
+
+        if (links.Count > 0)
+        {
+            _dbContext.FaceTags.RemoveRange(links);
+        }
+    }
+
     public void SetPersonTag(FaceDao face, TagDao? tag)
     {
         List<FaceTagDao> existing = _dbContext.FaceTags
