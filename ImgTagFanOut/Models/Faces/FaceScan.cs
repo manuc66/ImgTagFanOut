@@ -58,8 +58,8 @@ public sealed class FaceScan : IFaceScan
         }
         catch (Exception e)
         {
-            // Modèles absents, natifs OpenCV indisponibles (macOS), etc.
-            Log.Warning(e, "Analyse des visages indisponible");
+            // Missing models, OpenCV natives unavailable (macOS), and the like.
+            Log.Warning(e, "Face analysis unavailable");
             return new FaceScanSummary(0, 0, 0, 0, 0, 0, AnalyzerUnavailable: true, stopwatch.Elapsed);
         }
 
@@ -118,9 +118,9 @@ public sealed class FaceScan : IFaceScan
                     }
                     catch (Exception e)
                     {
-                        // Une image illisible ne doit pas arrêter le lot.
+                        // An unreadable image must not abort the batch.
                         failures++;
-                        Log.Warning(e, "Analyse de visage impossible pour {File}", fullPath);
+                        Log.Warning(e, "Face analysis failed for {File}", fullPath);
                     }
 
                     if (pendingSave >= SaveEvery)
@@ -134,11 +134,11 @@ public sealed class FaceScan : IFaceScan
             }
             finally
             {
-                // Ce qui a été calculé doit survivre à une annulation.
+                // Whatever was computed must survive a cancellation.
                 await unitOfWork.SaveChangesAsync(CancellationToken.None);
 
                 Log.Information(
-                    "Analyse des visages : {Analyzed} images, {Cached} déjà à jour, {Faces} visages, {Skipped} fichiers absents, {Failures} échecs en {Duration}",
+                    "Face analysis: {Analyzed} images, {Cached} already up to date, {Faces} faces, {Skipped} missing files, {Failures} failures in {Duration}",
                     analyzed, cached, faceCount, skipped, failures, stopwatch.Elapsed);
             }
 
@@ -155,7 +155,7 @@ public sealed class FaceScan : IFaceScan
     }
 
     /// <summary>
-    /// Le hash est la clé du cache : on le calcule une fois puis on le garde.
+    /// The hash is the cache key: compute it once, then keep it.
     /// </summary>
     private async Task<string> EnsureHashAsync(ItemDao item, string fullPath, CancellationToken cancellationToken)
     {

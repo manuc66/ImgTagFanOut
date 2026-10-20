@@ -26,7 +26,7 @@
         <Folder Include="Migrations\" />
         <AvaloniaResource Include="Assets\**" Exclude="Assets\Models\**" />
         <Folder Include="Models\CompareAlgorithms\" />
-        <!-- Modèles ONNX : copiés à côté de l'exécutable, pas embarqués dans l'assembly -->
+        <!-- ONNX models: copied next to the executable, not embedded in the assembly -->
         <None Remove="Assets\Models\**" />
         <Content Include="Assets\Models\**" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
@@ -71,9 +71,9 @@
 
         <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="15.0.0" />
 
-        <!-- Détection de visages (YuNet) et embeddings (SFace). Les natifs viennent
-             des paquets runtime ; macOS n'est pas encore couvert par OpenCvSharp5,
-             la fonctionnalité s'y désactive d'elle-même. -->
+        <!-- Face detection (YuNet) and embeddings (SFace). Natives come from the
+             runtime packages; macOS is not covered by OpenCvSharp5 yet, the feature
+             disables itself there. -->
         <PackageReference Include="OpenCvSharp5" Version="5.0.0.20261018" />
         <PackageReference Include="OpenCvSharp5.runtime.win.slim" Version="5.0.0.20261018" />
         <PackageReference Include="OpenCvSharp5.official.runtime.linux-x64" Version="5.0.0.20261018" />

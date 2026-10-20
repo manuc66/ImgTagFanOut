@@ -144,14 +144,14 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
-    /// <summary>Texte de la progression affichée pendant une opération longue.</summary>
+    /// <summary>Progress text shown while a long operation runs.</summary>
     public string? BusyMessage
     {
         get => _busyMessage;
         private set => this.RaiseAndSetIfChanged(ref _busyMessage, value);
     }
 
-    /// <summary>Compte rendu de la dernière opération, affiché en bas de la fenêtre.</summary>
+    /// <summary>Report of the last operation, shown at the bottom of the window.</summary>
     public string? StatusMessage
     {
         get => _statusMessage;

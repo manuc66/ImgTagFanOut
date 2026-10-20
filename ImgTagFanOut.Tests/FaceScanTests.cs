@@ -175,7 +175,7 @@ public class FaceScanTests : IDisposable
         Assert.Equal(4, db.Faces.Count());
     }
 
-    /// <summary>Contrairement à <see cref="Progress{T}"/>, ne poste pas sur le pool : le test reste déterministe.</summary>
+    /// <summary>Unlike <see cref="Progress{T}"/>, does not post to the pool: keeps the test deterministic.</summary>
     private sealed class SynchronousProgress<T> : IProgress<T>
     {
         private readonly Action<T> _report;

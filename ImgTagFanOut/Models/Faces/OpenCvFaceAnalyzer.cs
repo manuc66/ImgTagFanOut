@@ -12,16 +12,16 @@ using Serilog;
 namespace ImgTagFanOut.Models.Faces;
 
 /// <summary>
-/// Détection YuNet et embeddings SFace via OpenCV.
+/// YuNet detection and SFace embeddings through OpenCV.
 /// <para>
-/// Les coordonnées renvoyées sont <b>normalisées</b> (0..1) : elles restent
-/// valables quelle que soit la taille à laquelle l'image est redécodée plus
-/// tard, et l'affichage n'a qu'à multiplier par la taille du contrôle.
+/// Returned coordinates are <b>normalized</b> (0..1): they stay valid whatever
+/// size the image is decoded at later, and the UI only has to multiply by the
+/// size of the control.
 /// </para>
 /// <para>
-/// Cette classe n'est pas thread-safe (les objets OpenCV sous-jacents ne le sont
-/// pas) : créer une instance par thread de travail. Le chargement des modèles
-/// coûte quelques dizaines de millisecondes, il ne faut pas le faire par image.
+/// This class is not thread-safe (the underlying OpenCV objects are not):
+/// create one instance per worker thread. Loading the models costs a few tens
+/// of milliseconds, so it must not happen per image.
 /// </para>
 /// </summary>
 public sealed class OpenCvFaceAnalyzer : IFaceAnalyzer, IDisposable
@@ -34,8 +34,8 @@ public sealed class OpenCvFaceAnalyzer : IFaceAnalyzer, IDisposable
     private const float DefaultNmsThreshold = 0.3f;
 
     /// <summary>
-    /// Au-delà, l'image est réduite avant analyse : un crop de 112 px n'a pas
-    /// besoin de la pleine résolution, et cela borne la mémoire par image.
+    /// Beyond this, the image is downscaled before analysis: a 112 px crop does
+    /// not need full resolution, and it bounds the memory used per image.
     /// </summary>
     private const int MaxDecodedLongEdge = 2000;
 
@@ -67,13 +67,13 @@ public sealed class OpenCvFaceAnalyzer : IFaceAnalyzer, IDisposable
 
         _recognizer = FaceRecognizerSF.Create(embedderModel, "");
 
-        // Format invariant : la culture courante ne doit pas changer la clé de cache.
+        // Invariant formatting: the current culture must not change the cache key.
         _detectorVersion = string.Create(
             CultureInfo.InvariantCulture,
             $"yunet-2023mar/w{workingLongEdge}/s{scoreThreshold:0.00}/n{nmsThreshold:0.00}");
     }
 
-    /// <summary>Répertoire des modèles à côté de l'exécutable.</summary>
+    /// <summary>Models directory, next to the executable.</summary>
     public static string DefaultModelsDirectory => Path.Combine(AppContext.BaseDirectory, "Assets", "Models");
 
     public string DetectorVersion => _detectorVersion;
@@ -116,7 +116,7 @@ public sealed class OpenCvFaceAnalyzer : IFaceAnalyzer, IDisposable
         if (!File.Exists(path))
         {
             throw new FileNotFoundException(
-                $"Modèle de visage introuvable : {path}. Il devrait être livré avec l'application.",
+                $"Face model not found: {path}. It should ship with the application.",
                 path);
         }
 
@@ -124,8 +124,8 @@ public sealed class OpenCvFaceAnalyzer : IFaceAnalyzer, IDisposable
     }
 
     /// <summary>
-    /// Charge l'image en BGR. OpenCV ne décode ni le HEIC ni les RAW : on bascule
-    /// alors sur Magick.NET, déjà utilisé pour les vignettes.
+    /// Loads the image as BGR. OpenCV decodes neither HEIC nor RAW, so those fall
+    /// back to Magick.NET, already used for thumbnails.
     /// </summary>
     internal static Mat LoadImage(string fullFilePath)
     {
@@ -137,7 +137,7 @@ public sealed class OpenCvFaceAnalyzer : IFaceAnalyzer, IDisposable
 
         image?.Dispose();
 
-        Log.Debug("Format non décodé par OpenCV, tentative via Magick.NET : {File}", fullFilePath);
+        Log.Debug("Format not decoded by OpenCV, trying Magick.NET: {File}", fullFilePath);
         return LimitSize(LoadWithImageMagick(fullFilePath));
     }
 
@@ -145,7 +145,7 @@ public sealed class OpenCvFaceAnalyzer : IFaceAnalyzer, IDisposable
     {
         MagickReadSettings settings = new()
         {
-            // Le décodeur réduit dès la lecture : un RAW de 50 Mpx ne finit pas en mémoire.
+            // The decoder downscales while reading: a 50 MP RAW never lands in memory.
             Width = MaxDecodedLongEdge,
             Height = MaxDecodedLongEdge,
         };
@@ -158,7 +158,7 @@ public sealed class OpenCvFaceAnalyzer : IFaceAnalyzer, IDisposable
         if (decoded.Empty())
         {
             decoded.Dispose();
-            throw new InvalidOperationException($"Impossible de décoder l'image : {fullFilePath}");
+            throw new InvalidOperationException($"Cannot decode image: {fullFilePath}");
         }
 
         return decoded;
@@ -233,7 +233,7 @@ public sealed class OpenCvFaceAnalyzer : IFaceAnalyzer, IDisposable
                 Landmarks: NormalizeLandmarks(landmarks, width, height)));
         }
 
-        // Ordre stable d'un passage à l'autre : la position sert d'identifiant d'affichage.
+        // Stable order across runs: the position is used as a display identifier.
         return detections.OrderBy(d => d.X).ToArray();
     }
 
@@ -261,7 +261,7 @@ public sealed class OpenCvFaceAnalyzer : IFaceAnalyzer, IDisposable
 
         if (!feature.GetArray(out float[] values) || values.Length == 0)
         {
-            throw new InvalidOperationException("Embedding vide : le modèle SFace n'a rien produit.");
+            throw new InvalidOperationException("Empty embedding: the SFace model produced nothing.");
         }
 
         return NormalizeToBytes(values);
@@ -291,7 +291,7 @@ public sealed class OpenCvFaceAnalyzer : IFaceAnalyzer, IDisposable
         return faceRow;
     }
 
-    /// <summary>Normalise en L2 puis sérialise en float32 little-endian.</summary>
+    /// <summary>L2-normalizes then serializes as little-endian float32.</summary>
     private static byte[] NormalizeToBytes(float[] values)
     {
         double sum = 0;
@@ -303,7 +303,7 @@ public sealed class OpenCvFaceAnalyzer : IFaceAnalyzer, IDisposable
         double norm = Math.Sqrt(sum);
         if (norm < 1e-9)
         {
-            throw new InvalidOperationException("Embedding dégénéré (norme nulle).");
+            throw new InvalidOperationException("Degenerate embedding (zero norm).");
         }
 
         byte[] bytes = new byte[values.Length * sizeof(float)];
