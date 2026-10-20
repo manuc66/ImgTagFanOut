@@ -1,0 +1,102 @@
+{
+  "source": "Wikimedia Commons, public domain (US government works)",
+  "persons": {
+    "obama": [
+      {
+        "file": "obama/photo-1.jpg",
+        "commons": "President Barack Obama.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:President_Barack_Obama.jpg"
+      },
+      {
+        "file": "obama/photo-2.jpg",
+        "commons": "President Barack Obama, 2012 portrait crop.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:President_Barack_Obama,_2012_portrait_crop.jpg"
+      }
+    ],
+    "bush-jr": [
+      {
+        "file": "bush-jr/photo-1.jpg",
+        "commons": "George-W-Bush.jpeg",
+        "page": "https://commons.wikimedia.org/wiki/File:George-W-Bush.jpeg"
+      },
+      {
+        "file": "bush-jr/photo-2.jpg",
+        "commons": "George W. Bush 2003 (4x5).png",
+        "page": "https://commons.wikimedia.org/wiki/File:George_W._Bush_2003_(4x5).png"
+      },
+      {
+        "file": "bush-jr/photo-3.jpg",
+        "commons": "George W. Bush 108th Congressional Portrait.png",
+        "page": "https://commons.wikimedia.org/wiki/File:George_W._Bush_108th_Congressional_Portrait.png"
+      }
+    ],
+    "clinton": [
+      {
+        "file": "clinton/photo-1.jpg",
+        "commons": "Bill Clinton 1999.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Bill_Clinton_1999.jpg"
+      },
+      {
+        "file": "clinton/photo-2.jpg",
+        "commons": "Bill Clinton 1986.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Bill_Clinton_1986.jpg"
+      },
+      {
+        "file": "clinton/photo-3.jpg",
+        "commons": "Bill Clinton official.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Bill_Clinton_official.jpg"
+      }
+    ],
+    "bush-sr": [
+      {
+        "file": "bush-sr/photo-1.jpg",
+        "commons": "Official portrait of President George H W Bush January 1992.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Official_portrait_of_President_George_H_W_Bush_January_1992.jpg"
+      },
+      {
+        "file": "bush-sr/photo-2.jpg",
+        "commons": "George H. W. Bush official CIA portrait.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:George_H._W._Bush_official_CIA_portrait.jpg"
+      },
+      {
+        "file": "bush-sr/photo-3.jpg",
+        "commons": "Official portrait of Vice President George H. W. Bush, 1985.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Official_portrait_of_Vice_President_George_H._W._Bush,_1985.jpg"
+      }
+    ],
+    "reagan": [
+      {
+        "file": "reagan/photo-1.jpg",
+        "commons": "Ronald Reagan 1981 presidential portrait.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Ronald_Reagan_1981_presidential_portrait.jpg"
+      },
+      {
+        "file": "reagan/photo-2.jpg",
+        "commons": "Ronald Reagan 1985 presidential portrait (cropped).jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Ronald_Reagan_1985_presidential_portrait_(cropped).jpg"
+      },
+      {
+        "file": "reagan/photo-3.jpg",
+        "commons": "Official Portrait of President Reagan 1981.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Official_Portrait_of_President_Reagan_1981.jpg"
+      }
+    ],
+    "carter": [
+      {
+        "file": "carter/photo-1.jpg",
+        "commons": "Jimmy Carter, official portrait.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Jimmy_Carter,_official_portrait.jpg"
+      },
+      {
+        "file": "carter/photo-2.jpg",
+        "commons": "Jimmy Carter 1971.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Jimmy_Carter_1971.jpg"
+      },
+      {
+        "file": "carter/photo-3.jpg",
+        "commons": "Official Portrait of Jimmy Carter (1977).jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Official_Portrait_of_Jimmy_Carter_(1977).jpg"
+      }
+    ]
+  }
+}
