@@ -87,4 +87,57 @@ public class SettingsTests : IDisposable
         Assert.Contains("HardLinkWhenPossible", File.ReadAllText(path), StringComparison.Ordinal);
         Assert.Equal(PublishLinkMode.HardLinkWhenPossible, new Settings(path).ReadSettings().LinkMode);
     }
+
+    [Fact]
+    public void ReadSettings_WithAnUndefinedLinkMode_FallsBackToCopy()
+    {
+        string path = WriteSettingsFile("""{"LinkMode": 42}""");
+
+        Assert.Equal(PublishLinkMode.Copy, new Settings(path).ReadSettings().LinkMode);
+    }
+
+    [Fact]
+    public void ReadSettings_WhenTheFileIsLocked_ReturnsDefaultsInsteadOfThrowing()
+    {
+        string path = WriteSettingsFile("""{"LastFolder": "/some/folder"}""");
+
+        using (FileStream _ = new(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        {
+            AppSettings settings = new Settings(path).ReadSettings();
+            Assert.Null(settings.LastFolder);
+        }
+    }
+
+    [Fact]
+    public void Save_CreatesTheParentFolder()
+    {
+        string path = Path.Combine(_tempDir, "nested", "deeper", "settings.json");
+
+        new Settings(path).Save(new AppSettings { LastFolder = "/nested" });
+
+        Assert.Equal("/nested", new Settings(path).ReadSettings().LastFolder);
+    }
+
+    [Fact]
+    public void Save_ReplacesThePreviousFileAndLeavesNoTemporaryFile()
+    {
+        string path = WriteSettingsFile("""{"LastFolder":"/old"}""");
+
+        new Settings(path).Save(new AppSettings { LastFolder = "/new" });
+
+        Assert.Equal("/new", new Settings(path).ReadSettings().LastFolder);
+        Assert.Equal(new[] { path }, Directory.GetFiles(_tempDir));
+    }
+
+    [Fact]
+    public void Save_WhenTheTargetIsADirectory_ThrowsAndCleansItsTemporaryFile()
+    {
+        string path = Path.Combine(_tempDir, "settings.json");
+        Directory.CreateDirectory(path);
+
+        Assert.ThrowsAny<Exception>(() => new Settings(path).Save(new AppSettings()));
+
+        Assert.True(Directory.Exists(path));
+        Assert.Empty(Directory.GetFiles(_tempDir));
+    }
 }
