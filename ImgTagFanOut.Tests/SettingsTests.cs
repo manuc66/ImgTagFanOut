@@ -72,4 +72,19 @@ public class SettingsTests : IDisposable
         Assert.Equal("/round/trip", read.LastFolder);
         Assert.False(read.ErrorTrackingAllowed);
     }
+
+    [Fact]
+    public void LinkMode_DefaultsToCopy_AndRoundTripsAsAString()
+    {
+        string path = Path.Combine(_tempDir, "settings.json");
+
+        Assert.Equal(PublishLinkMode.Copy, new Settings(path).ReadSettings().LinkMode);
+
+        new Settings(path).Save(new AppSettings { LinkMode = PublishLinkMode.HardLinkWhenPossible });
+
+        // Readable in the JSON file rather than a bare number, so a user can
+        // inspect it and an older build ignores it instead of guessing.
+        Assert.Contains("HardLinkWhenPossible", File.ReadAllText(path), StringComparison.Ordinal);
+        Assert.Equal(PublishLinkMode.HardLinkWhenPossible, new Settings(path).ReadSettings().LinkMode);
+    }
 }

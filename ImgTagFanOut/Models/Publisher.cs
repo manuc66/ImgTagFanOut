@@ -24,8 +24,9 @@ public class Publisher : IPublisher
         string workingFolder,
         string targetFolder,
         bool dropEverythingFirst,
+        PublishLinkMode linkMode,
         Action<Tag> beginTag,
-        Action<(string source, string? destination, bool copied)> onFileCompleted,
+        Action<PublishFileResult> onFileCompleted,
         Action<(string path, bool success, string? error)> onFileDeleted,
         Action<(string path, bool success, string? error)> onDirectoryDeleted,
         CancellationToken cancellationToken
@@ -59,15 +60,16 @@ public class Publisher : IPublisher
                 continue;
             }
 
-            await PublishTag(workingFolder, targetFolder, beginTag, onFileCompleted, tag, itemsInDb, cancellationToken);
+            await PublishTag(workingFolder, targetFolder, linkMode, beginTag, onFileCompleted, tag, itemsInDb, cancellationToken);
         }
     }
 
     private static async Task PublishTag(
         string workingFolder,
         string targetFolder,
+        PublishLinkMode linkMode,
         Action<Tag> beginTag,
-        Action<(string source, string? destination, bool copied)> onFileCompleted,
+        Action<PublishFileResult> onFileCompleted,
         Tag tag,
         ImmutableList<string> itemsInDb,
         CancellationToken cancellationToken
@@ -83,16 +85,17 @@ public class Publisher : IPublisher
 
         foreach (string itemInDb in itemsInDb)
         {
-            (string source, string? destination, bool copied) result = await PublishFile(cancellationToken, workingFolder, itemInDb, targetDirectoryForTag);
+            PublishFileResult result = await PublishFile(cancellationToken, workingFolder, itemInDb, targetDirectoryForTag, linkMode);
             onFileCompleted(result);
         }
     }
 
-    private static async Task<(string source, string? destination, bool copied)> PublishFile(
+    private static async Task<PublishFileResult> PublishFile(
         CancellationToken cancellationToken,
         string workingFolder,
         string itemInDb,
-        string targetDirectoryForTag
+        string targetDirectoryForTag,
+        PublishLinkMode linkMode
     )
     {
         string itemFullPath = Path.Combine(workingFolder, itemInDb);
@@ -102,7 +105,7 @@ public class Publisher : IPublisher
         if (!File.Exists(itemFullPath))
         {
             // skip, the source file is not found, this could be a warning!
-            return (itemFullPath, null, false);
+            return new(itemFullPath, null, false, false);
         }
 
         string destFileName = Path.Combine(targetDirectoryForTag, fileName);
@@ -113,7 +116,7 @@ public class Publisher : IPublisher
             if (FileExt.FilesAreEqual(itemFullPathFi, destFileNameFi))
             {
                 // skip, the source file is the same as the target
-                return (itemFullPath, destFileName, false);
+                return new(itemFullPath, destFileName, false, false);
             }
 
             string fileExtension = Path.GetExtension(fileName);
@@ -127,13 +130,21 @@ public class Publisher : IPublisher
                 if (destFileNameFi.Exists && FileExt.FilesAreEqual(itemFullPathFi, destFileNameFi))
                 {
                     // skip, the source file is the same as the target, so already copied
-                    return (itemFullPath, destFileName, false);
+                    return new(itemFullPath, destFileName, false, false);
                 }
             } while (File.Exists(destFileName));
         }
 
+        // A hard link costs no extra space, but only works on the same volume.
+        // Anything else (another disk, a USB key, a network share) falls back to
+        // the copy below, so the target stays usable.
+        if (linkMode == PublishLinkMode.HardLinkWhenPossible && HardLink.TryCreate(itemFullPath, destFileName))
+        {
+            return new(itemFullPath, destFileName, true, true);
+        }
+
         await CopyFileAsync(itemFullPath, destFileName, cancellationToken);
-        return (itemFullPath, destFileName, true);
+        return new(itemFullPath, destFileName, true, false);
     }
 
     private static async Task CopyFileAsync(string sourceFile, string destinationFile, CancellationToken cancellationToken)

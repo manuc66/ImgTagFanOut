@@ -364,5 +364,41 @@ namespace ImgTagFanOut.Resources {
                 return ResourceManager.GetString("Refresh", resourceCulture);
             }
         }
+        
+        public static string AdvancedSettings {
+            get {
+                return ResourceManager.GetString("AdvancedSettings", resourceCulture);
+            }
+        }
+        
+        public static string Save {
+            get {
+                return ResourceManager.GetString("Save", resourceCulture);
+            }
+        }
+        
+        public static string PublicationSection {
+            get {
+                return ResourceManager.GetString("PublicationSection", resourceCulture);
+            }
+        }
+        
+        public static string UseHardLinks {
+            get {
+                return ResourceManager.GetString("UseHardLinks", resourceCulture);
+            }
+        }
+        
+        public static string UseHardLinksHint {
+            get {
+                return ResourceManager.GetString("UseHardLinksHint", resourceCulture);
+            }
+        }
+        
+        public static string LinkedTo {
+            get {
+                return ResourceManager.GetString("LinkedTo", resourceCulture);
+            }
+        }
     }
 }

@@ -20,6 +20,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         this.WhenActivated(d => d(ViewModel!.ShowConsentDialog.RegisterHandler(DoShowConsentDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ShowEjectDatabaseDialog.RegisterHandler(DoShowEjectDatabaseDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ShowAboutDialog.RegisterHandler(DoShowABoutDialogAsync)));
+        this.WhenActivated(d => d(ViewModel!.ShowSettingsDialog.RegisterHandler(DoShowSettingsDialogAsync)));
         this.WhenActivated(d => d(ViewModel!.ExitCommand.Subscribe(_ => Close())));
         Activated += OnWindowActivated;
         this.WhenActivated(disposable =>
@@ -80,6 +81,14 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     private async Task DoShowABoutDialogAsync(IInteractionContext<AboutViewModel, int?> interaction)
     {
         About dialog = new() { DataContext = interaction.Input };
+
+        int? result = await dialog.ShowDialog<int?>(this);
+        interaction.SetOutput(result);
+    }
+
+    private async Task DoShowSettingsDialogAsync(IInteractionContext<SettingsViewModel, int?> interaction)
+    {
+        SettingsWindow dialog = new() { DataContext = interaction.Input };
 
         int? result = await dialog.ShowDialog<int?>(this);
         interaction.SetOutput(result);

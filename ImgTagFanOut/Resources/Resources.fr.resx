@@ -277,4 +277,22 @@ Tous les libellés et analyses de visages enregistrés pour ce dossier seront pe
   <data name="PersonLabelWithoutFace" xml:space="preserve">
     <value>« {0} » ajouté à la photo, mais aucun visage n'y est associé : les suggestions n'apprendront rien de cette photo. Nommez les visages sous l'aperçu pour les entraîner.</value>
   </data>
+  <data name="AdvancedSettings" xml:space="preserve">
+    <value>Réglages avancés</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="PublicationSection" xml:space="preserve">
+    <value>Publication</value>
+  </data>
+  <data name="UseHardLinks" xml:space="preserve">
+    <value>Créer des liens physiques au lieu de copies lorsque c'est possible</value>
+  </data>
+  <data name="UseHardLinksHint" xml:space="preserve">
+    <value>Un lien physique ne stocke la photo qu'une fois : chaque dossier de tag pointe vers le même fichier, ce qui économise l'espace d'une seconde copie. Cela ne fonctionne que si le dossier d'export est sur le même disque que la bibliothèque ; sur un autre disque, une clé USB ou un partage réseau, les fichiers sont copiés normalement. Les photos liées partagent leur contenu : modifier ou supprimer d'un côté affecte l'autre, donc réservez ce mode aux dossiers destinés au partage plutôt qu'à l'édition. Copier le dossier d'export ailleurs produit toujours des fichiers normaux et indépendants.</value>
+  </data>
+  <data name="LinkedTo" xml:space="preserve">
+    <value>lié à</value>
+  </data>
 </root>

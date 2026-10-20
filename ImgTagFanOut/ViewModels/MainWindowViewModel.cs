@@ -184,6 +184,7 @@ public class MainWindowViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> LocateCommand { get; }
     public ReactiveCommand<Unit, Unit> ExitCommand { get; }
     public ReactiveCommand<Unit, Unit> ShowAboutDialogCommand { get; }
+    public ReactiveCommand<Unit, Unit> ShowSettingsDialogCommand { get; }
     public ReactiveCommand<Unit, Unit> OpenTargetFolderCommand { get; }
 
     public Interaction<PublishProgressViewModel, int?> ShowPublishProgressDialog { get; }
@@ -191,6 +192,7 @@ public class MainWindowViewModel : ViewModelBase
     public Interaction<PublishDropOrMergeViewModel, int?> PublishDropOrMergeDialog { get; }
     public Interaction<EjectDatabaseViewModel, bool?> ShowEjectDatabaseDialog { get; }
     public Interaction<AboutViewModel, int?> ShowAboutDialog { get; }
+    public Interaction<SettingsViewModel, int?> ShowSettingsDialog { get; }
 
 
     public MainWindowViewModel()
@@ -218,6 +220,7 @@ public class MainWindowViewModel : ViewModelBase
         PublishDropOrMergeDialog = new();
         ShowEjectDatabaseDialog = new();
         ShowAboutDialog = new();
+        ShowSettingsDialog = new();
         _settings = new();
         WorkingFolder = "";
         WindowTitle = nameof(ImgTagFanOut);
@@ -371,6 +374,11 @@ public class MainWindowViewModel : ViewModelBase
         {
             AboutViewModel aboutViewModel = new();
             await ShowAboutDialog.Handle(aboutViewModel);
+        });
+        ShowSettingsDialogCommand = ReactiveCommand.CreateFromTask(async _ =>
+        {
+            SettingsViewModel settingsViewModel = new();
+            await ShowSettingsDialog.Handle(settingsViewModel);
         });
     }
 
@@ -1113,7 +1121,7 @@ ReloadTagList(unitOfWork);
             return;
         }
 
-        PublishProgressViewModel viewModel = new(WorkingFolder, TargetFolder, dropEverythingFirst.Value, cancellationToken);
+        PublishProgressViewModel viewModel = new(WorkingFolder, TargetFolder, dropEverythingFirst.Value, _settings.ReadSettings().LinkMode, cancellationToken);
 
         await ShowPublishProgressDialog.Handle(viewModel);
     }

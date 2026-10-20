@@ -15,6 +15,7 @@ public class PublishProgressViewModel : ViewModelBase
     private readonly bool _dropEverythingFirst;
     private readonly IPublisher _publisher;
     private readonly IFileManagerHandler _fileManagerHandler;
+    private readonly PublishLinkMode _linkMode;
     private string _trailLog;
     private bool _completed;
     public string WorkingFolder { get; }
@@ -36,13 +37,14 @@ public class PublishProgressViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _trailLog, value);
     }
 
-    public PublishProgressViewModel(string workingFolder, string targetFolder, bool dropEverythingFirst, CancellationToken cancellationToken)
-        : this(workingFolder, targetFolder, dropEverythingFirst, cancellationToken, new Publisher(), new FileManagerHandler()) { }
+    public PublishProgressViewModel(string workingFolder, string targetFolder, bool dropEverythingFirst, PublishLinkMode linkMode, CancellationToken cancellationToken)
+        : this(workingFolder, targetFolder, dropEverythingFirst, linkMode, cancellationToken, new Publisher(), new FileManagerHandler()) { }
 
     internal PublishProgressViewModel(
         string workingFolder,
         string targetFolder,
         bool dropEverythingFirst,
+        PublishLinkMode linkMode,
         CancellationToken cancellationToken,
         IPublisher publisher,
         IFileManagerHandler fileManagerHandler)
@@ -50,6 +52,7 @@ public class PublishProgressViewModel : ViewModelBase
         _publisher = publisher;
         _fileManagerHandler = fileManagerHandler;
         _dropEverythingFirst = dropEverythingFirst;
+        _linkMode = linkMode;
         WorkingFolder = workingFolder;
         TargetFolder = targetFolder;
         _trailLog = string.Empty;
@@ -87,6 +90,7 @@ public class PublishProgressViewModel : ViewModelBase
                 WorkingFolder,
                 TargetFolder,
                 _dropEverythingFirst,
+                _linkMode,
                 OnBeginTag,
                 OnFileCompleted,
                 OnFileDeleted,
@@ -138,25 +142,28 @@ public class PublishProgressViewModel : ViewModelBase
         }
     }
 
-    private void OnFileCompleted((string source, string? destination, bool copied) a)
+    private void OnFileCompleted(PublishFileResult result)
     {
-        (string source, string? destination, bool copied) = a;
         string toAdd = string.IsNullOrEmpty(TrailLog) ? string.Empty : Environment.NewLine;
 
-        if (!copied)
+        if (result.Linked)
         {
-            if (destination == null)
+            toAdd += $"{result.Source} {Resources.Resources.LinkedTo} {result.Destination}";
+        }
+        else if (!result.Created)
+        {
+            if (result.Destination == null)
             {
-                toAdd += $"{source} {Resources.Resources.NotFoundSkipped}";
+                toAdd += $"{result.Source} {Resources.Resources.NotFoundSkipped}";
             }
             else
             {
-                toAdd += $"{source} {Resources.Resources.AlreadyAt} {destination}";
+                toAdd += $"{result.Source} {Resources.Resources.AlreadyAt} {result.Destination}";
             }
         }
         else
         {
-            toAdd += $"{source} {Resources.Resources.CopiedTo} {destination}";
+            toAdd += $"{result.Source} {Resources.Resources.CopiedTo} {result.Destination}";
         }
 
         TrailLog += toAdd;

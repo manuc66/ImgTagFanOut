@@ -277,4 +277,22 @@ All tags and face analyses stored for this folder will be lost. This cannot be u
   <data name="PersonLabelWithoutFace" xml:space="preserve">
     <value>“{0}” added to the photo, but no face is linked: the suggestions will not learn from it. Name the faces under the preview to teach them.</value>
   </data>
+  <data name="AdvancedSettings" xml:space="preserve">
+    <value>Advanced settings</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="PublicationSection" xml:space="preserve">
+    <value>Publication</value>
+  </data>
+  <data name="UseHardLinks" xml:space="preserve">
+    <value>Create hard links instead of copies when possible</value>
+  </data>
+  <data name="UseHardLinksHint" xml:space="preserve">
+    <value>A hard link stores the photo once and lets each tag folder point to it, which saves the space of a second copy. It only works when the export folder is on the same disk as the library; on another disk, a USB key or a network share, files are copied as usual. Linked photos share their content: editing or deleting one side affects the other, so use this for folders you share rather than edit. Copying the export folder elsewhere still produces normal, independent files.</value>
+  </data>
+  <data name="LinkedTo" xml:space="preserve">
+    <value>linked to</value>
+  </data>
 </root>

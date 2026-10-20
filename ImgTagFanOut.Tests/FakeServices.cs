@@ -21,14 +21,17 @@ public sealed class FakePublisher : IPublisher
     public bool DropEverythingFirstUsed { get; private set; }
 
     /// <summary>Invoked when the publish starts, so a test can feed progress callbacks.</summary>
-    public Action<Action<Tag>, Action<(string source, string? destination, bool copied)>, Action<(string path, bool success, string? error)>, Action<(string path, bool success, string? error)>>? OnStart { get; set; }
+    public Action<Action<Tag>, Action<PublishFileResult>, Action<(string path, bool success, string? error)>, Action<(string path, bool success, string? error)>>? OnStart { get; set; }
+
+    public PublishLinkMode LinkModeUsed { get; private set; }
 
     public Task PublishToFolder(
         string workingFolder,
         string targetFolder,
         bool dropEverythingFirst,
+        PublishLinkMode linkMode,
         Action<Tag> beginTag,
-        Action<(string source, string? destination, bool copied)> onFileCompleted,
+        Action<PublishFileResult> onFileCompleted,
         Action<(string path, bool success, string? error)> onFileDeleted,
         Action<(string path, bool success, string? error)> onDirectoryDeleted,
         CancellationToken cancellationToken)
@@ -37,6 +40,7 @@ public sealed class FakePublisher : IPublisher
         WorkingFolderUsed = workingFolder;
         TargetFolderUsed = targetFolder;
         DropEverythingFirstUsed = dropEverythingFirst;
+        LinkModeUsed = linkMode;
         OnStart?.Invoke(beginTag, onFileCompleted, onFileDeleted, onDirectoryDeleted);
         return _gate.Task;
     }

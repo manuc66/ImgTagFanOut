@@ -95,7 +95,7 @@ public class DialogWindowTests : IDisposable
     public void PublishProgress_CloseIsRefusedWhilePublishHasNotCompleted()
     {
         FakePublisher publisher = new();
-        PublishProgressViewModel vm = new(_tempDir, _tempDir, false, CancellationToken.None, publisher, new FakeFileManagerHandler());
+        PublishProgressViewModel vm = new(_tempDir, _tempDir, false, PublishLinkMode.Copy, CancellationToken.None, publisher, new FakeFileManagerHandler());
         PublishProgressWindow window = new() { DataContext = vm };
         window.Show();
         Dispatcher.UIThread.RunJobs();
@@ -114,7 +114,7 @@ public class DialogWindowTests : IDisposable
     public async Task PublishProgress_CloseSucceedsOnceCompleted()
     {
         FakePublisher publisher = new();
-        PublishProgressViewModel vm = new(_tempDir, _tempDir, false, CancellationToken.None, publisher, new FakeFileManagerHandler());
+        PublishProgressViewModel vm = new(_tempDir, _tempDir, false, PublishLinkMode.Copy, CancellationToken.None, publisher, new FakeFileManagerHandler());
         PublishProgressWindow window = new() { DataContext = vm };
         window.Show();
         Dispatcher.UIThread.RunJobs();
@@ -140,9 +140,9 @@ public class DialogWindowTests : IDisposable
     {
         FakePublisher publisher = new();
         publisher.OnStart = (beginTag, onFileCompleted, _, _) =>
-            onFileCompleted(("/src/a.png", "/dst/a.png", true));
+            onFileCompleted(new PublishFileResult("/src/a.png", "/dst/a.png", true, false));
 
-        PublishProgressViewModel vm = new(_tempDir, _tempDir, false, CancellationToken.None, publisher, new FakeFileManagerHandler());
+        PublishProgressViewModel vm = new(_tempDir, _tempDir, false, PublishLinkMode.Copy, CancellationToken.None, publisher, new FakeFileManagerHandler());
         PublishProgressWindow window = new() { DataContext = vm };
         window.Show();
         Dispatcher.UIThread.RunJobs();
@@ -173,7 +173,7 @@ public class DialogWindowTests : IDisposable
 
         FakePublisher publisher = new();
         FakeFileManagerHandler fileManager = new();
-        PublishProgressViewModel vm = new(_tempDir, target, false, CancellationToken.None, publisher, fileManager);
+        PublishProgressViewModel vm = new(_tempDir, target, false, PublishLinkMode.Copy, CancellationToken.None, publisher, fileManager);
         PublishProgressWindow window = new() { DataContext = vm };
         window.Show();
         Dispatcher.UIThread.RunJobs();
@@ -186,6 +186,42 @@ public class DialogWindowTests : IDisposable
 
         publisher.Complete();
         await SettleAsync();
+    }
+
+    // -------------------------------------------------------------------- Settings
+
+    [AvaloniaFact]
+    public void Settings_CancelKeepsTheCurrentMode()
+    {
+        using IDisposable _ = UserSettings.Preserve();
+        UserSettings.Write("""{"LinkMode":"Copy"}""");
+
+        SettingsViewModel vm = new() { UseHardLinks = true };
+        SettingsWindow window = new() { DataContext = vm };
+        Func<bool> isOpen = window.TrackOpen();
+
+        Execute(window.FindControl<Button>("CancelButton")!.Command);
+
+        Assert.False(isOpen());
+        Assert.False(vm.Confirmed);
+        Assert.Equal(PublishLinkMode.Copy, new Settings().ReadSettings().LinkMode);
+    }
+
+    [AvaloniaFact]
+    public void Settings_SaveStoresTheModeAndCloses()
+    {
+        using IDisposable _ = UserSettings.Preserve();
+        UserSettings.Write("{}");
+
+        SettingsViewModel vm = new() { UseHardLinks = true };
+        SettingsWindow window = new() { DataContext = vm };
+        Func<bool> isOpen = window.TrackOpen();
+
+        Execute(window.FindControl<Button>("SaveButton")!.Command);
+
+        Assert.False(isOpen());
+        Assert.True(vm.Confirmed);
+        Assert.Equal(PublishLinkMode.HardLinkWhenPossible, new Settings().ReadSettings().LinkMode);
     }
 
     // ----------------------------------------------------------------------- Consent

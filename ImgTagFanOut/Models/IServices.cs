@@ -29,8 +29,9 @@ public interface IPublisher
         string workingFolder,
         string targetFolder,
         bool dropEverythingFirst,
+        PublishLinkMode linkMode,
         Action<Tag> beginTag,
-        Action<(string source, string? destination, bool copied)> onFileCompleted,
+        Action<PublishFileResult> onFileCompleted,
         Action<(string path, bool success, string? error)> onFileDeleted,
         Action<(string path, bool success, string? error)> onDirectoryDeleted,
         CancellationToken cancellationToken
