@@ -41,7 +41,7 @@ Name: "french"; MessagesFile: "compiler:Languages\French.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "ImgTagFanOut\bin\Release\{#DotnetVersion}\publish\win-x64\*"; DestDir: "{app}"; Flags: ignoreversion
+Source: "ImgTagFanOut\bin\Release\{#DotnetVersion}\publish\win-x64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
