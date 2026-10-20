@@ -103,6 +103,10 @@ public class FacesViewModel : ViewModelBase
 
     private int _loadVersion;
 
+    /// <summary>
+    /// Refreshes the strip for the given image. Must run on the UI thread: the
+    /// crops are <see cref="CroppedBitmap"/>, which are thread-affine.
+    /// </summary>
     public async Task LoadAsync(string? folder, CanHaveTag? image)
     {
         int version = ++_loadVersion;
@@ -122,8 +126,10 @@ public class FacesViewModel : ViewModelBase
 
         IReadOnlyList<FaceRow> rows = await Task.Run(() => LoadRows(folder, image.Item));
 
+        // Décodage hors du thread UI : 1200 px prennent quelques dizaines de millisecondes.
+        string fullPath = image.GetFullFilePath(folder);
         Bitmap? source = rows.Count > 0
-            ? await _thumbnailProvider.GetThumbnail(image.GetFullFilePath(folder), CropSourceWidth)
+            ? await Task.Run(() => _thumbnailProvider.GetThumbnail(fullPath, CropSourceWidth))
             : null;
 
         // A newer selection won while the image was being decoded.

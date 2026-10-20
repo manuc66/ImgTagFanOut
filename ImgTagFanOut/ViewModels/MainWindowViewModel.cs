@@ -272,6 +272,7 @@ public class MainWindowViewModel : ViewModelBase
 
         this.WhenAnyValue(x => x.SelectedImage, x => x.WorkingFolder, (image, folder) => (image, folder))
             .Throttle(TimeSpan.FromMilliseconds(80))
+            .ObserveOn(RxApp.MainThreadScheduler)
             .SelectMany(pair => Observable.FromAsync(() => Faces.LoadAsync(pair.folder, pair.image)))
             .Subscribe();
 

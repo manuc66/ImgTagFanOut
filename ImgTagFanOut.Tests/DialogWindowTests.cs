@@ -299,6 +299,18 @@ public class DialogWindowTests : IDisposable
         await SettleAsync();
     }
 
+    [AvaloniaFact]
+    public void About_OpensWithoutDependingOnTheWorkingDirectory()
+    {
+        // The license ships next to the executable. It used to be read from the current
+        // directory, which made the window throw when the app ran from its project folder.
+        About about = new();
+
+        TextBlock? license = about.FindControl<TextBlock>("LicenseTextBlock");
+        Assert.NotNull(license);
+        Assert.False(string.IsNullOrWhiteSpace(license!.Text));
+    }
+
     /// <summary>
     /// Lets queued dispatcher work and the continuations posted by the commands run. Command
     /// execution is asynchronous, so tests must pump before asserting.
