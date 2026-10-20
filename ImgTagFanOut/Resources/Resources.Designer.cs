@@ -412,5 +412,29 @@ namespace ImgTagFanOut.Resources {
                 return ResourceManager.GetString("PublishCancelled", resourceCulture);
             }
         }
+        
+        public static string OperationFailed {
+            get {
+                return ResourceManager.GetString("OperationFailed", resourceCulture);
+            }
+        }
+        
+        public static string OperationCancelled {
+            get {
+                return ResourceManager.GetString("OperationCancelled", resourceCulture);
+            }
+        }
+        
+        public static string ScanFailed {
+            get {
+                return ResourceManager.GetString("ScanFailed", resourceCulture);
+            }
+        }
+        
+        public static string FaceScanFailed {
+            get {
+                return ResourceManager.GetString("FaceScanFailed", resourceCulture);
+            }
+        }
     }
 }

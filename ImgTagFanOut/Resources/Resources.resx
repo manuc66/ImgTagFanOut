@@ -301,4 +301,16 @@ All tags and face analyses stored for this folder will be lost. This cannot be u
   <data name="PublishCancelled" xml:space="preserve">
     <value>Publication cancelled.</value>
   </data>
+  <data name="OperationFailed" xml:space="preserve">
+    <value>Operation failed:</value>
+  </data>
+  <data name="OperationCancelled" xml:space="preserve">
+    <value>Operation cancelled.</value>
+  </data>
+  <data name="ScanFailed" xml:space="preserve">
+    <value>The folder could not be scanned:</value>
+  </data>
+  <data name="FaceScanFailed" xml:space="preserve">
+    <value>The face analysis failed:</value>
+  </data>
 </root>

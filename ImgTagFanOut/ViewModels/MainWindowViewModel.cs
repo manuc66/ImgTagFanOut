@@ -19,6 +19,7 @@ using ImgTagFanOut.Dao;
 using ImgTagFanOut.Models;
 using ImgTagFanOut.Models.Faces;
 using ReactiveUI;
+using Serilog;
 
 namespace ImgTagFanOut.ViewModels;
 
@@ -451,6 +452,13 @@ public class MainWindowViewModel : ViewModelBase
         {
             StatusMessage = Resources.Resources.FaceScanCancelled;
         }
+        catch (Exception ex)
+        {
+            // A locked database or a broken model file must leave the window
+            // usable and explain what happened.
+            Log.Error(ex, "Face analysis failed for {Folder}", folder);
+            StatusMessage = $"{Resources.Resources.FaceScanFailed} {ex.Message}";
+        }
         finally
         {
             _busyCancellation = null;
@@ -474,11 +482,21 @@ public class MainWindowViewModel : ViewModelBase
         }
 
         IsBusy = true;
+        StatusMessage = null;
         try
         {
             ct.ThrowIfCancellationRequested();
             _unitOfWorkFactory.DeleteDatabase(folder);
             ResetWorkspace();
+        }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = Resources.Resources.OperationCancelled;
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Cannot eject the database of {Folder}", folder);
+            StatusMessage = $"{Resources.Resources.OperationFailed} {ex.Message}";
         }
         finally
         {
@@ -665,9 +683,21 @@ public class MainWindowViewModel : ViewModelBase
     private async Task ExecuteScanFolderCommandAsync(CancellationToken cts)
     {
         IsBusy = true;
+        StatusMessage = null;
         try
         {
             await Task.Run(async () => await ScanFolder(cts), cts);
+        }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = Resources.Resources.OperationCancelled;
+        }
+        catch (Exception ex)
+        {
+            // A removed USB key or an unreadable database used to vanish into
+            // the global exception handler; show it where the user looks.
+            Log.Error(ex, "Folder scan failed for {Folder}", WorkingFolder);
+            StatusMessage = $"{Resources.Resources.ScanFailed} {ex.Message}";
         }
         finally
         {
@@ -714,9 +744,18 @@ public class MainWindowViewModel : ViewModelBase
             return x;
         }
 
-        await using IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(WorkingFolder);
-        unitOfWork.ParameterRepository.Update(ShowDoneSettingKey, x.ToString());
-        await unitOfWork.SaveChangesAsync();
+        try
+        {
+            await using IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(WorkingFolder);
+            unitOfWork.ParameterRepository.Update(ShowDoneSettingKey, x.ToString());
+            await unitOfWork.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            // This preference is only a convenience: losing it must not crash
+            // the activation or the scan that follows.
+            Log.Warning(ex, "Cannot save the ShowDone preference");
+        }
 
         return x;
     }
@@ -814,31 +853,43 @@ public class MainWindowViewModel : ViewModelBase
         RxApp.MainThreadScheduler.ScheduleAsync(
             async (_, ct) =>
             {
-                using CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(ct, _currentHashLookup.Token);
-                if (WorkingFolder == null || cts.IsCancellationRequested)
+                try
                 {
-                    return;
-                }
+                    using CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(ct, _currentHashLookup.Token);
+                    if (WorkingFolder == null || cts.IsCancellationRequested)
+                    {
+                        return;
+                    }
 
-                CancellationToken cancellationToken = cts.Token;
-                canHaveTag.Hash = await _hashEvaluator.ComputeHashAsync(canHaveTag.GetFullFilePath(WorkingFolder), cancellationToken);
-                if (canHaveTag != SelectedImage || canHaveTag.Hash == null || SelectedImage.Done || cts.IsCancellationRequested)
+                    CancellationToken cancellationToken = cts.Token;
+                    canHaveTag.Hash = await _hashEvaluator.ComputeHashAsync(canHaveTag.GetFullFilePath(WorkingFolder), cancellationToken);
+                    if (canHaveTag != SelectedImage || canHaveTag.Hash == null || SelectedImage.Done || cts.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    ImmutableList<Tag> allTagForHash;
+                    await using (IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken))
+                    {
+                        allTagForHash = unitOfWork.TagRepository.GetAllTagForHash(canHaveTag.Hash);
+                    }
+
+                    if (canHaveTag != SelectedImage || cts.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    await AssignAllTags(SelectedImage, allTagForHash, cancellationToken);
+                }
+                catch (OperationCanceledException)
                 {
-                    return;
+                    // Another photo was selected, or the window is closing.
                 }
-
-                ImmutableList<Tag> allTagForHash;
-                await using (IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken))
+                catch (Exception ex)
                 {
-                    allTagForHash = unitOfWork.TagRepository.GetAllTagForHash(canHaveTag.Hash);
+                    // The photo may have been deleted or renamed meanwhile.
+                    Log.Warning(ex, "Cannot look up tags by hash for {File}", canHaveTag.Item);
                 }
-
-                if (canHaveTag != SelectedImage || cts.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                await AssignAllTags(SelectedImage, allTagForHash, cancellationToken);
             }
         );
     }
@@ -847,16 +898,25 @@ public class MainWindowViewModel : ViewModelBase
     internal async Task<string> OpenFolder(string path)
     {
         IsBusy = true;
+        StatusMessage = null;
         try
         {
             await using IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(path);
 
             TargetFolder = unitOfWork.ParameterRepository.Get(TargetFolderSettingKey);
-            ShowDone = Boolean.Parse(unitOfWork.ParameterRepository.Get(ShowDoneSettingKey) ?? false.ToString());
+            ShowDone = bool.TryParse(unitOfWork.ParameterRepository.Get(ShowDoneSettingKey), out bool showDone) && showDone;
 
-ReloadTagList(unitOfWork);
+            ReloadTagList(unitOfWork);
             TagToImages.LoadTags();
 
+            return path;
+        }
+        catch (Exception ex)
+        {
+            // Opening a folder that disappeared (removable drive) must not
+            // leave a busy cursor or an unobserved exception behind.
+            Log.Error(ex, "Cannot open the folder {Folder}", path);
+            StatusMessage = $"{Resources.Resources.OperationFailed} {ex.Message}";
             return path;
         }
         finally
@@ -961,9 +1021,18 @@ ReloadTagList(unitOfWork);
             return;
         }
 
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.GetUnitOfWork(WorkingFolder);
-        ReloadTagList(unitOfWork);
-        TagToImages.LoadTags();
+        try
+        {
+            using IUnitOfWork unitOfWork = _unitOfWorkFactory.GetUnitOfWork(WorkingFolder);
+            ReloadTagList(unitOfWork);
+            TagToImages.LoadTags();
+        }
+        catch (Exception ex)
+        {
+            // Called from UI events (naming a face); a database hiccup must not
+            // take the window down.
+            Log.Warning(ex, "Cannot reload the tags of {Folder}", WorkingFolder);
+        }
     }
 
 

@@ -1,6 +1,7 @@
 using System.Reactive;
 using System.Reactive.Linq;
 using Avalonia.Headless.XUnit;
+using Avalonia.Media.Imaging;
 using ImgTagFanOut.Dao;
 using ImgTagFanOut.Models;
 using ImgTagFanOut.Models.Faces;
@@ -169,5 +170,99 @@ public class MainWindowViewModelTests : IDisposable
 
         Assert.True(DbContextFactory.DatabaseExists(_tempDir));
         Assert.Equal(_tempDir, vm.WorkingFolder);
+    }
+
+    [AvaloniaFact]
+    public async Task OpenFolder_WithAMalformedShowDoneSetting_FallsBackToFalse()
+    {
+        await using (IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(_tempDir))
+        {
+            unitOfWork.ParameterRepository.Update("show_done", "definitely-not-a-boolean");
+            await unitOfWork.SaveChangesAsync();
+        }
+
+        MainWindowViewModel vm = new() { WorkingFolder = _tempDir };
+        await vm.OpenFolder(_tempDir);
+
+        Assert.False(vm.ShowDone);
+    }
+
+    [AvaloniaFact]
+    public async Task ScanFolder_WhenTheScannerFails_ReportsTheErrorAndLeavesTheWindowUsable()
+    {
+        MainWindowViewModel vm = new(
+            new UnitOfWorkFactory(),
+            new ThrowingFolderScan(new IOException("the drive disappeared")),
+            new HashEvaluator(),
+            new NullThumbnailProvider(),
+            new FakeFileManagerHandler());
+        vm.WorkingFolder = _tempDir;
+        await vm.OpenFolder(_tempDir);
+
+        await vm.ScanFolderCommand.Execute(Unit.Default).FirstAsync();
+
+        Assert.False(vm.IsBusy);
+        Assert.NotNull(vm.StatusMessage);
+        Assert.Contains("the drive disappeared", vm.StatusMessage);
+        Assert.Contains(ImgTagFanOut.Resources.Resources.ScanFailed, vm.StatusMessage);
+    }
+
+    [AvaloniaFact]
+    public async Task AnalyzeFaces_WhenTheScanFails_ReportsTheErrorAndClearsTheBusyState()
+    {
+        MainWindowViewModel vm = new(
+            new UnitOfWorkFactory(),
+            new FolderScan(),
+            new HashEvaluator(),
+            new NullThumbnailProvider(),
+            new FakeFileManagerHandler(),
+            new ThrowingFaceScan(new InvalidOperationException("broken model")));
+        vm.WorkingFolder = _tempDir;
+        await vm.OpenFolder(_tempDir);
+
+        await vm.AnalyzeFacesCommand.Execute(Unit.Default).FirstAsync();
+
+        Assert.False(vm.IsBusy);
+        Assert.Null(vm.BusyMessage);
+        Assert.NotNull(vm.StatusMessage);
+        Assert.Contains("broken model", vm.StatusMessage);
+        Assert.Contains(ImgTagFanOut.Resources.Resources.FaceScanFailed, vm.StatusMessage);
+    }
+
+    private sealed class ThrowingFolderScan : IFolderScan
+    {
+        private readonly Exception _exception;
+
+        public ThrowingFolderScan(Exception exception)
+        {
+            _exception = exception;
+        }
+
+        public Task ScanFolder(CancellationToken cancellationToken, string workingFolder, DynamicData.SourceList<CanHaveTag> images)
+        {
+            return Task.FromException(_exception);
+        }
+    }
+
+    private sealed class ThrowingFaceScan : IFaceScan
+    {
+        private readonly Exception _exception;
+
+        public ThrowingFaceScan(Exception exception)
+        {
+            _exception = exception;
+        }
+
+        public Task<FaceScanSummary> ScanAsync(string workingFolder, IProgress<FaceScanProgress>? progress, CancellationToken cancellationToken)
+        {
+            return Task.FromException<FaceScanSummary>(_exception);
+        }
+    }
+
+    private sealed class NullThumbnailProvider : IThumbnailProvider
+    {
+        public Task<Bitmap?> GetThumbnail(string fullFilePath) => Task.FromResult<Bitmap?>(null);
+
+        public Task<Bitmap?> GetThumbnail(string fullFilePath, uint targetWidth) => Task.FromResult<Bitmap?>(null);
     }
 }

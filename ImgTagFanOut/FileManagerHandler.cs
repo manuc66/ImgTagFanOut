@@ -1,7 +1,10 @@
+using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace ImgTagFanOut;
 
@@ -19,28 +22,39 @@ public class FileManagerHandler : IFileManagerHandler
         await OpenFolder(parentFolder);
     }
 
-    public async Task OpenFolder(string parentFolder)
+    public Task OpenFolder(string parentFolder)
     {
-        using Process folderOpener = new();
-        folderOpener.StartInfo.FileName = parentFolder;
-        folderOpener.StartInfo.UseShellExecute = true;
-
-        if (folderOpener.Start())
+        return StartProcessAsync(new ProcessStartInfo
         {
-            await folderOpener.WaitForExitAsync();
-        }
+            FileName = parentFolder,
+            UseShellExecute = true,
+        });
     }
 
-    public async Task OpenFile(string path)
+    public Task OpenFile(string path)
     {
-        // Just open the directory instead
-        using Process folderOpener = new();
-        folderOpener.StartInfo.FileName = path;
-        folderOpener.StartInfo.UseShellExecute = true;
-
-        if (folderOpener.Start())
+        return StartProcessAsync(new ProcessStartInfo
         {
-            await folderOpener.WaitForExitAsync();
+            FileName = path,
+            UseShellExecute = true,
+        });
+    }
+
+    private static async Task StartProcessAsync(ProcessStartInfo startInfo)
+    {
+        try
+        {
+            using Process process = new() { StartInfo = startInfo };
+            if (process.Start())
+            {
+                await process.WaitForExitAsync();
+            }
+        }
+        catch (Exception ex) when (ex is Win32Exception or InvalidOperationException or PlatformNotSupportedException or FileNotFoundException)
+        {
+            // No file manager, no handler for this extension, a headless
+            // session: opening a folder is a convenience, not a requirement.
+            Log.Warning(ex, "Cannot open {Target}", startInfo.FileName);
         }
     }
 
@@ -51,7 +65,9 @@ public class FileManagerHandler : IFileManagerHandler
             return new()
             {
                 FileName = "explorer",
-                Arguments = "/select," + path + "\"",
+                // The path must be quoted as a whole: without the opening quote,
+                // explorer receives "/select,C:\...\file.jpg\"".
+                Arguments = "/select,\"" + path + "\"",
                 UseShellExecute = true,
             };
         }
@@ -61,7 +77,7 @@ public class FileManagerHandler : IFileManagerHandler
             return new()
             {
                 FileName = "open",
-                Arguments = "-R " + path,
+                Arguments = "-R \"" + path + "\"",
                 UseShellExecute = true,
             };
         }
@@ -69,11 +85,12 @@ public class FileManagerHandler : IFileManagerHandler
         if (platform == OSPlatform.Linux)
         {
             // On linux, try to use dbus, see https://stackoverflow.com/questions/73409227/open-file-in-containing-folder-for-linux/73409251
+            string uri = new Uri(Path.GetFullPath(path)).AbsoluteUri;
             return new()
             {
                 FileName = "dbus-send",
                 Arguments =
-                    $@"--print-reply --dest=org.freedesktop.FileManager1 --type=method_call /org/freedesktop/FileManager1 org.freedesktop.FileManager1.ShowItems array:string:""file://{path}"" string:""""",
+                    $@"--print-reply --dest=org.freedesktop.FileManager1 --type=method_call /org/freedesktop/FileManager1 org.freedesktop.FileManager1.ShowItems array:string:""{uri}"" string:""""",
                 UseShellExecute = true,
             };
         }
@@ -92,16 +109,24 @@ public class FileManagerHandler : IFileManagerHandler
             return;
         }
 
-        using Process process = new() { StartInfo = startInfo };
-        process.Start();
-        await process.WaitForExitAsync();
-
-        if (platform == OSPlatform.Linux && process.ExitCode != 0)
+        try
         {
-            // The dbus invocation can fail for a variety of reasons:
-            // - dbus is not available
-            // - no programs implement the service,
-            // - ...
+            using Process process = new() { StartInfo = startInfo };
+            process.Start();
+            await process.WaitForExitAsync();
+
+            if (platform == OSPlatform.Linux && process.ExitCode != 0)
+            {
+                // The dbus invocation can fail for a variety of reasons:
+                // - dbus is not available
+                // - no programs implement the service,
+                // - ...
+                await OpenParentFolder(path);
+            }
+        }
+        catch (Exception ex) when (ex is Win32Exception or InvalidOperationException or PlatformNotSupportedException)
+        {
+            Log.Warning(ex, "Cannot reveal {File}, opening its folder instead", path);
             await OpenParentFolder(path);
         }
     }

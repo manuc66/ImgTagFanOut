@@ -12,8 +12,7 @@ public class FileManagerHandlerTests
 
         Assert.NotNull(info);
         Assert.Equal("open", info.FileName);
-        Assert.Contains("-R", info.Arguments);
-        Assert.Contains("/tmp/some file.jpg", info.Arguments);
+        Assert.Equal("-R \"/tmp/some file.jpg\"", info.Arguments);
     }
 
     [Fact]
@@ -23,7 +22,7 @@ public class FileManagerHandlerTests
 
         Assert.NotNull(info);
         Assert.Equal("explorer", info.FileName);
-        Assert.Contains("/select,", info.Arguments);
+        Assert.Equal("/select,\"C:\\tmp\\some file.jpg\"", info.Arguments);
     }
 
     [Fact]
@@ -34,6 +33,6 @@ public class FileManagerHandlerTests
         Assert.NotNull(info);
         Assert.Equal("dbus-send", info.FileName);
         Assert.Contains("org.freedesktop.FileManager1.ShowItems", info.Arguments);
-        Assert.Contains("file:///tmp/some file.jpg", info.Arguments);
+        Assert.Contains("file:///tmp/some%20file.jpg", info.Arguments);
     }
 }

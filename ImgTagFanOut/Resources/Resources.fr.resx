@@ -301,4 +301,16 @@ Tous les libellés et analyses de visages enregistrés pour ce dossier seront pe
   <data name="PublishCancelled" xml:space="preserve">
     <value>Publication annulée.</value>
   </data>
+  <data name="OperationFailed" xml:space="preserve">
+    <value>L'opération a échoué :</value>
+  </data>
+  <data name="OperationCancelled" xml:space="preserve">
+    <value>Opération annulée.</value>
+  </data>
+  <data name="ScanFailed" xml:space="preserve">
+    <value>Le dossier n'a pas pu être analysé :</value>
+  </data>
+  <data name="FaceScanFailed" xml:space="preserve">
+    <value>L'analyse des visages a échoué :</value>
+  </data>
 </root>
