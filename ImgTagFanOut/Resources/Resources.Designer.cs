@@ -267,6 +267,41 @@ namespace ImgTagFanOut.Resources {
                 return ResourceManager.GetString("PleaseWait", resourceCulture);
             }
         }
+
+        
+        public static string AssignPerson {
+            get {
+                return ResourceManager.GetString("AssignPerson", resourceCulture);
+            }
+        }
+
+        
+        public static string ForgetPerson {
+            get {
+                return ResourceManager.GetString("ForgetPerson", resourceCulture);
+            }
+        }
+
+        
+        public static string NewPerson {
+            get {
+                return ResourceManager.GetString("NewPerson", resourceCulture);
+            }
+        }
+
+        
+        public static string CreatePerson {
+            get {
+                return ResourceManager.GetString("CreatePerson", resourceCulture);
+            }
+        }
+
+        
+        public static string Person {
+            get {
+                return ResourceManager.GetString("Person", resourceCulture);
+            }
+        }
         
         public static string AnalyzeFaces {
             get {

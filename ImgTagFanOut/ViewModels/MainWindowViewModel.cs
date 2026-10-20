@@ -160,6 +160,8 @@ public class MainWindowViewModel : ViewModelBase
 
     public TagToImagesViewModel TagToImages { get; }
 
+    public FacesViewModel Faces { get; }
+
     public ReactiveCommand<Window, string> SelectFolderCommand { get; }
     public ReactiveCommand<Window, string?> SelectTargetFolderCommand { get; }
 
@@ -208,6 +210,7 @@ public class MainWindowViewModel : ViewModelBase
         _fileManagerHandler = fileManagerHandler;
         _faceScan = faceScan ?? new FaceScan(unitOfWorkFactory, hashEvaluator);
         TagToImages = new TagToImagesViewModel(() => WorkingFolder, unitOfWorkFactory, thumbnailProvider);
+        Faces = new FacesViewModel(unitOfWorkFactory, thumbnailProvider);
         ShowPublishProgressDialog = new();
         ShowConsentDialog = new();
         PublishDropOrMergeDialog = new();
@@ -266,6 +269,11 @@ public class MainWindowViewModel : ViewModelBase
             .ObserveOn(RxApp.MainThreadScheduler)
             .SelectMany(FetchThumbnail)
             .Subscribe(UpdateImageDisplay);
+
+        this.WhenAnyValue(x => x.SelectedImage, x => x.WorkingFolder, (image, folder) => (image, folder))
+            .Throttle(TimeSpan.FromMilliseconds(80))
+            .SelectMany(pair => Observable.FromAsync(() => Faces.LoadAsync(pair.folder, pair.image)))
+            .Subscribe();
 
         DoneCommand = ReactiveCommand.CreateFromTask(
             ToggleDoneCurrentElement,

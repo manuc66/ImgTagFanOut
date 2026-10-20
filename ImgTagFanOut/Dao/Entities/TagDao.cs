@@ -18,4 +18,5 @@ public class TagDao
 
     public List<ItemTagDao> ItemTags { get; } = new();
     public List<ItemDao> Items { get; } = new();
+    public List<FaceTagDao> FaceTags { get; } = new();
 }

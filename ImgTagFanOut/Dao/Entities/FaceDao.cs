@@ -34,4 +34,6 @@ public class FaceDao
 
     /// <summary>Version of the embedder that produced <see cref="Embedding"/>.</summary>
     public string? EmbedderVersion { get; set; }
+
+    public List<FaceTagDao> FaceTags { get; } = new();
 }

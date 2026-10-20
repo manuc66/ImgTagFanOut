@@ -283,6 +283,14 @@ public class TagRepository : ITagRepository
 
         _dbContext.ItemTags.RemoveRange(existingTag.ItemTags);
 
+        List<FaceTagDao> faceLinks = _dbContext.FaceTags
+            .Where(link => link.TagId == existingTag.TagId)
+            .ToList();
+        if (faceLinks.Count > 0)
+        {
+            _dbContext.FaceTags.RemoveRange(faceLinks);
+        }
+
         foreach (ItemDao existingItem in affectedItems)
         {
             var remaining = _dbContext.ItemTags.Local
@@ -301,6 +309,12 @@ public class TagRepository : ITagRepository
     public ImmutableList<ItemDao> GetAllItems()
     {
         return _dbContext.Items.OrderBy(x => x.Name).ToImmutableList();
+    }
+
+    public TagDao? GetTagDao(string name)
+    {
+        string trimmed = name.Trim();
+        return _dbContext.Tags.FirstOrDefault(t => t.Name == trimmed);
     }
 
     public ImmutableList<string> GetItemsWithTag(Tag tag)

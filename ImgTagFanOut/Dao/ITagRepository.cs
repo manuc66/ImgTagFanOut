@@ -21,4 +21,5 @@ public interface ITagRepository
     ImmutableList<string> GetItemsWithTag(Tag tag);
     ImmutableList<Tag> GetAllTagForHash(string hash);
     ImmutableList<ItemDao> GetAllItems();
+    TagDao? GetTagDao(string name);
 }

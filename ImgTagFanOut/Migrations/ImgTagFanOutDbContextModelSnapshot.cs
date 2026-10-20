@@ -87,6 +87,21 @@ namespace ImgTagFanOut.Migrations
                     b.ToTable("faces", (string)null);
                 });
 
+            modelBuilder.Entity("ImgTagFanOut.Dao.FaceTagDao", b =>
+                {
+                    b.Property<int>("FaceId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TagId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("FaceId", "TagId");
+
+                    b.HasIndex("TagId");
+
+                    b.ToTable("face_tags", (string)null);
+                });
+
             modelBuilder.Entity("ImgTagFanOut.Dao.ItemDao", b =>
                 {
                     b.Property<int>("ItemId")
@@ -198,6 +213,25 @@ namespace ImgTagFanOut.Migrations
                     b.Navigation("Item");
                 });
 
+            modelBuilder.Entity("ImgTagFanOut.Dao.FaceTagDao", b =>
+                {
+                    b.HasOne("ImgTagFanOut.Dao.FaceDao", "Face")
+                        .WithMany("FaceTags")
+                        .HasForeignKey("FaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ImgTagFanOut.Dao.TagDao", "Tag")
+                        .WithMany("FaceTags")
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Face");
+
+                    b.Navigation("Tag");
+                });
+
             modelBuilder.Entity("ImgTagFanOut.Dao.ItemTagDao", b =>
                 {
                     b.HasOne("ImgTagFanOut.Dao.ItemDao", "Item")
@@ -217,6 +251,11 @@ namespace ImgTagFanOut.Migrations
                     b.Navigation("Tag");
                 });
 
+            modelBuilder.Entity("ImgTagFanOut.Dao.FaceDao", b =>
+                {
+                    b.Navigation("FaceTags");
+                });
+
             modelBuilder.Entity("ImgTagFanOut.Dao.ItemDao", b =>
                 {
                     b.Navigation("FaceAnalysis");
@@ -228,6 +267,8 @@ namespace ImgTagFanOut.Migrations
 
             modelBuilder.Entity("ImgTagFanOut.Dao.TagDao", b =>
                 {
+                    b.Navigation("FaceTags");
+
                     b.Navigation("ItemTags");
                 });
 #pragma warning restore 612, 618

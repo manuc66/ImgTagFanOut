@@ -41,6 +41,16 @@ public class FaceRepository : IFaceRepository
 
         if (existing.Count > 0)
         {
+            // Person links go away with the face, without relying on SQLite's
+            // ON DELETE CASCADE (only active when foreign keys are enforced).
+            List<FaceTagDao> links = _dbContext.FaceTags
+                .Where(link => link.Face.ItemForeignKey == item.ItemId)
+                .ToList();
+            if (links.Count > 0)
+            {
+                _dbContext.FaceTags.RemoveRange(links);
+            }
+
             _dbContext.Faces.RemoveRange(existing);
         }
 
@@ -73,5 +83,61 @@ public class FaceRepository : IFaceRepository
         analysis.DetectorVersion = detectorVersion;
         analysis.FaceCount = faces.Count;
         analysis.AnalyzedAtUtc = DateTime.UtcNow;
+    }
+
+    public IReadOnlyList<TagDao> GetPersonTags()
+    {
+        return _dbContext.FaceTags
+            .Select(link => link.Tag)
+            .Distinct()
+            .OrderBy(tag => tag.Name)
+            .ToList();
+    }
+
+    public TagDao? GetPersonTag(int faceId)
+    {
+        return _dbContext.FaceTags
+            .Where(link => link.FaceId == faceId)
+            .Select(link => link.Tag)
+            .FirstOrDefault();
+    }
+
+    public FaceDao? GetFace(int faceId)
+    {
+        return _dbContext.Faces.FirstOrDefault(face => face.FaceId == faceId);
+    }
+
+    public IReadOnlyList<FaceWithPerson> GetFacesWithPerson(string itemName)
+    {
+        return _dbContext.Faces
+            .Where(face => face.Item.Name == itemName)
+            .OrderBy(face => face.Position)
+            .Select(face => new FaceWithPerson(
+                face,
+                face.FaceTags.Select(link => link.Tag.Name).FirstOrDefault()))
+            .ToList();
+    }
+
+    public void SetPersonTag(FaceDao face, TagDao? tag)
+    {
+        List<FaceTagDao> existing = _dbContext.FaceTags
+            .Where(link => link.FaceId == face.FaceId)
+            .ToList();
+
+        if (existing.Count > 0)
+        {
+            _dbContext.FaceTags.RemoveRange(existing);
+        }
+
+        if (tag is not null)
+        {
+            _dbContext.FaceTags.Add(new FaceTagDao
+            {
+                FaceId = face.FaceId,
+                Face = face,
+                TagId = tag.TagId,
+                Tag = tag,
+            });
+        }
     }
 }

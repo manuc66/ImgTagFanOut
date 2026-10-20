@@ -19,6 +19,8 @@ public interface IHashEvaluator
 public interface IThumbnailProvider
 {
     Task<Bitmap?> GetThumbnail(string fullFilePath);
+
+    Task<Bitmap?> GetThumbnail(string fullFilePath, uint targetWidth);
 }
 
 public interface IPublisher

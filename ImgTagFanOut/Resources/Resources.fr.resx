@@ -256,4 +256,19 @@ Tous les libellés et analyses de visages enregistrés pour ce dossier seront pe
   <data name="PleaseWait" xml:space="preserve">
     <value>Veuillez patienter...</value>
   </data>
+  <data name="AssignPerson" xml:space="preserve">
+    <value>Assigner</value>
+  </data>
+  <data name="ForgetPerson" xml:space="preserve">
+    <value>Oublier</value>
+  </data>
+  <data name="NewPerson" xml:space="preserve">
+    <value>Nouvelle personne</value>
+  </data>
+  <data name="CreatePerson" xml:space="preserve">
+    <value>Créer</value>
+  </data>
+  <data name="Person" xml:space="preserve">
+    <value>Personne</value>
+  </data>
 </root>

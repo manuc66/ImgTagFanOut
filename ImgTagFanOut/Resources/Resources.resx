@@ -256,4 +256,19 @@ All tags and face analyses stored for this folder will be lost. This cannot be u
   <data name="PleaseWait" xml:space="preserve">
     <value>Please wait...</value>
   </data>
+  <data name="AssignPerson" xml:space="preserve">
+    <value>Assign</value>
+  </data>
+  <data name="ForgetPerson" xml:space="preserve">
+    <value>Forget</value>
+  </data>
+  <data name="NewPerson" xml:space="preserve">
+    <value>New person</value>
+  </data>
+  <data name="CreatePerson" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="Person" xml:space="preserve">
+    <value>Person</value>
+  </data>
 </root>

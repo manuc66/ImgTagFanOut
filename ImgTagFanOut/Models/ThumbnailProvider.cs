@@ -10,9 +10,13 @@ namespace ImgTagFanOut.Models;
 
 public class ThumbnailProvider : IThumbnailProvider
 {
-    public async Task<Bitmap?> GetThumbnail(string fullFilePath)
+    public Task<Bitmap?> GetThumbnail(string fullFilePath)
     {
-        uint targetWidth = 400;
+        return GetThumbnail(fullFilePath, 400);
+    }
+
+    public async Task<Bitmap?> GetThumbnail(string fullFilePath, uint targetWidth)
+    {
         try
         {
             return await GetThumbnailWithAvaloniaBitmap(fullFilePath, targetWidth);

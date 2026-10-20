@@ -15,6 +15,7 @@ public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext, IUnitOfW
     public DbSet<ParameterDao> Parameters { get; set; } = null!;
     public DbSet<FaceDao> Faces { get; set; } = null!;
     public DbSet<FaceAnalysisDao> FaceAnalyses { get; set; } = null!;
+    public DbSet<FaceTagDao> FaceTags { get; set; } = null!;
     public ITagRepository TagRepository { get; }
     public IParameterRepository ParameterRepository { get; }
     public IFaceRepository FaceRepository { get; }
@@ -113,6 +114,26 @@ public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext, IUnitOfW
             .HasOne(x => x.Item)
             .WithOne(x => x.FaceAnalysis)
             .HasForeignKey<FaceAnalysisDao>(x => x.ItemForeignKey)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // FaceTags
+        modelBuilder.Entity<FaceTagDao>().ToTable("face_tags");
+
+        modelBuilder.Entity<FaceTagDao>().HasKey(x => new { x.FaceId, x.TagId });
+        modelBuilder.Entity<FaceTagDao>().HasIndex(x => new { x.TagId });
+
+        modelBuilder
+            .Entity<FaceTagDao>()
+            .HasOne(x => x.Face)
+            .WithMany(x => x.FaceTags)
+            .HasForeignKey(x => x.FaceId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder
+            .Entity<FaceTagDao>()
+            .HasOne(x => x.Tag)
+            .WithMany(x => x.FaceTags)
+            .HasForeignKey(x => x.TagId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }
