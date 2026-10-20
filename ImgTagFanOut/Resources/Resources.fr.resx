@@ -121,7 +121,7 @@
     <value>Parcourir</value>
   </data>
   <data name="Scan" xml:space="preserve">
-    <value>Lister</value>
+    <value>Actualiser le dossier</value>
   </data>
   <data name="Cancel" xml:space="preserve">
     <value>Annuler</value>
@@ -225,6 +225,15 @@ Tous les libellés et analyses de visages enregistrés pour ce dossier seront pe
   </data>
   <data name="Eject" xml:space="preserve">
     <value>Éjecter</value>
+  </data>
+  <data name="NoFolderOpen" xml:space="preserve">
+    <value>Aucun dossier n'est ouvert.</value>
+  </data>
+  <data name="OpenFolder" xml:space="preserve">
+    <value>Ouvrir un dossier...</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Actualiser</value>
   </data>
   <data name="File" xml:space="preserve">
     <value>Fichier</value>

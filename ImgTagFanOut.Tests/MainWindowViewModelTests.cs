@@ -47,6 +47,19 @@ public class MainWindowViewModelTests : IDisposable
     }
 
     [AvaloniaFact]
+    public void HasWorkingFolder_TracksTheSelectedFolder()
+    {
+        MainWindowViewModel vm = new();
+        Assert.False(vm.HasWorkingFolder);
+
+        vm.WorkingFolder = _tempDir;
+        Assert.True(vm.HasWorkingFolder);
+
+        vm.WorkingFolder = null;
+        Assert.False(vm.HasWorkingFolder);
+    }
+
+    [AvaloniaFact]
     public async Task EjectDatabase_RemovesTheDatabaseAndResetsTheWorkspace()
     {
         await SeedTagAsync("cat");

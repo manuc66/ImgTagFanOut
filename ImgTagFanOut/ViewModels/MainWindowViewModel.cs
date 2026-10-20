@@ -46,8 +46,14 @@ public class MainWindowViewModel : ViewModelBase
     internal string? WorkingFolder
     {
         get => _workingFolder;
-        set => this.RaiseAndSetIfChanged(ref _workingFolder, value);
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _workingFolder, value);
+            this.RaisePropertyChanged(nameof(HasWorkingFolder));
+        }
     }
+
+    public bool HasWorkingFolder => !string.IsNullOrWhiteSpace(WorkingFolder);
 
     public string? TargetFolder
     {

@@ -121,7 +121,7 @@
     <value>Browse</value>
   </data>
   <data name="Scan" xml:space="preserve">
-    <value>Scan</value>
+    <value>Refresh folder</value>
   </data>
   <data name="Cancel" xml:space="preserve">
     <value>Cancel</value>
@@ -225,6 +225,15 @@ All tags and face analyses stored for this folder will be lost. This cannot be u
   </data>
   <data name="Eject" xml:space="preserve">
     <value>Eject</value>
+  </data>
+  <data name="NoFolderOpen" xml:space="preserve">
+    <value>No folder is open.</value>
+  </data>
+  <data name="OpenFolder" xml:space="preserve">
+    <value>Open a folder...</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Refresh</value>
   </data>
   <data name="File" xml:space="preserve">
     <value>File</value>

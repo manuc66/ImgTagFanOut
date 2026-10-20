@@ -260,5 +260,23 @@ namespace ImgTagFanOut.Resources {
                 return ResourceManager.GetString("Eject", resourceCulture);
             }
         }
+        
+        public static string NoFolderOpen {
+            get {
+                return ResourceManager.GetString("NoFolderOpen", resourceCulture);
+            }
+        }
+        
+        public static string OpenFolder {
+            get {
+                return ResourceManager.GetString("OpenFolder", resourceCulture);
+            }
+        }
+        
+        public static string Refresh {
+            get {
+                return ResourceManager.GetString("Refresh", resourceCulture);
+            }
+        }
     }
 }

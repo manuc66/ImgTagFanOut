@@ -20,41 +20,60 @@
     <Grid>
         <Grid IsEnabled="{Binding !IsBusy, Mode=OneWay}" ColumnDefinitions="*,*" RowDefinitions="*,Auto">
             <Grid Grid.Row="0" Grid.Column="0" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,*,*">
-                <DockPanel Grid.Row="2" Grid.Column="0" LastChildFill="True">
-                    <TextBlock DockPanel.Dock="Top" Text="{x:Static resources:Resources.Images}"></TextBlock>
-                    <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto,Auto">
+                <Grid Grid.Row="2" Grid.Column="0" RowDefinitions="Auto,Auto,Auto,*">
+                    <TextBlock Grid.Row="0" Text="{x:Static resources:Resources.Images}"></TextBlock>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,4,0,4">
+                        <Button Content="{x:Static resources:Resources.OpenFolder}"
+                                Command="{Binding SelectFolderCommand}"
+                                CommandParameter="{Binding $parent[Window]}" />
+                        <Button Content="{x:Static resources:Resources.Refresh}"
+                                Command="{Binding ScanFolderCommand}" Margin="4,0,0,0" />
+                    </StackPanel>
+                    <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,0,0,4">
                         <TextBlock Grid.Column="0" Text="{x:Static resources:Resources.Filter}"></TextBlock>
                         <TextBox Grid.Column="1" Text="{Binding ItemFilterInput}"></TextBox>
                         <Button Grid.Column="2" Command="{Binding ClearItemFilterInputCommand}"
                                 Content="{x:Static resources:Resources.Clear}">
                         </Button>
                     </Grid>
-                    <ListBox DockPanel.Dock="Bottom" SelectedIndex="{Binding SelectedIndex}"
-                             ItemsSource="{Binding FilteredImages, Mode=OneWay}" SelectedItem="{Binding SelectedImage, Mode=TwoWay}">
-                      <ListBox.ItemsPanel>
-                        <ItemsPanelTemplate>
-                          <VirtualizingStackPanel/>
-                        </ItemsPanelTemplate>
-                      </ListBox.ItemsPanel>
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"></ColumnDefinition>
-                                        <ColumnDefinition Width="Auto"></ColumnDefinition>
-                                        <ColumnDefinition Width="Auto" MinWidth="5"></ColumnDefinition>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="{Binding Item, Mode=OneWay}"></TextBlock>
-                                    <TextBlock Grid.Column="1"
-                                               Text="{Binding Done, Converter={StaticResource BoolToCheckmarkConverter}}"
-                                               VerticalAlignment="Center" FontSize="24">
-                                    </TextBlock>
-                                    <TextBlock Grid.Column="2" Text="{Binding Tags.Count, Mode=OneWay}" VerticalAlignment="Center"></TextBlock>
-                                </Grid>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </DockPanel>
+                    <Grid Grid.Row="3">
+                        <ListBox SelectedIndex="{Binding SelectedIndex}"
+                                 ItemsSource="{Binding FilteredImages, Mode=OneWay}" SelectedItem="{Binding SelectedImage, Mode=TwoWay}">
+                          <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                              <VirtualizingStackPanel/>
+                            </ItemsPanelTemplate>
+                          </ListBox.ItemsPanel>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"></ColumnDefinition>
+                                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                            <ColumnDefinition Width="Auto" MinWidth="5"></ColumnDefinition>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding Item, Mode=OneWay}"></TextBlock>
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding Done, Converter={StaticResource BoolToCheckmarkConverter}}"
+                                                   VerticalAlignment="Center" FontSize="24">
+                                        </TextBlock>
+                                        <TextBlock Grid.Column="2" Text="{Binding Tags.Count, Mode=OneWay}" VerticalAlignment="Center"></TextBlock>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <Border IsVisible="{Binding !HasWorkingFolder}" Background="Transparent">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Text="{x:Static resources:Resources.NoFolderOpen}"
+                                           FontSize="16" HorizontalAlignment="Center" Margin="0,0,0,10" />
+                                <Button Content="{x:Static resources:Resources.OpenFolder}"
+                                        Command="{Binding SelectFolderCommand}"
+                                        CommandParameter="{Binding $parent[Window]}"
+                                        HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Grid>
 
 
                 <DockPanel Grid.Row="2" Grid.Column="1" LastChildFill="False">
