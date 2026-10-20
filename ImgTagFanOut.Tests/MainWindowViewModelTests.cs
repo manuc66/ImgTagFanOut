@@ -229,6 +229,121 @@ public class MainWindowViewModelTests : IDisposable
         Assert.Contains(ImgTagFanOut.Resources.Resources.FaceScanFailed, vm.StatusMessage);
     }
 
+    private void WriteImage(string name)
+    {
+        File.WriteAllBytes(Path.Combine(_tempDir, name), [1, 2, 3]);
+    }
+
+    private async Task ScanAndWaitAsync(MainWindowViewModel vm, int expectedCount)
+    {
+        await vm.ScanFolderCommand.Execute(Unit.Default).FirstAsync();
+
+        for (int i = 0; i < 100 && vm.FilteredImages.Count < expectedCount; i++)
+        {
+            Dispatcher.UIThread.RunJobs();
+            await Task.Delay(10, TestContext.Current.CancellationToken);
+        }
+
+        Assert.Equal(expectedCount, vm.FilteredImages.Count);
+    }
+
+    private static async Task WaitForTagsAsync(MainWindowViewModel vm, int expectedCount)
+    {
+        for (int i = 0; i < 100 && vm.FilteredTagList.Count < expectedCount; i++)
+        {
+            Dispatcher.UIThread.RunJobs();
+            await Task.Delay(10, TestContext.Current.CancellationToken);
+        }
+
+        Assert.Equal(expectedCount, vm.FilteredTagList.Count);
+    }
+
+    [AvaloniaFact]
+    public async Task DoneCommand_MarksTheSelectedImageDoneInTheDatabase()
+    {
+        WriteImage("a.jpg");
+        MainWindowViewModel vm = new() { WorkingFolder = _tempDir };
+        await vm.OpenFolder(_tempDir);
+        await ScanAndWaitAsync(vm, 1);
+        vm.SelectedImage = vm.FilteredImages.Single();
+
+        await vm.DoneCommand.Execute(Unit.Default).FirstAsync();
+
+        Assert.True(vm.SelectedImage!.Done);
+
+        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(_tempDir);
+        Assert.True(unitOfWork.TagRepository.GetAllItems().Single().Done);
+    }
+
+    [AvaloniaFact]
+    public async Task AddAndDeleteTag_UpdateTheListAndTheDatabase()
+    {
+        MainWindowViewModel vm = new() { WorkingFolder = _tempDir };
+        await vm.OpenFolder(_tempDir);
+
+        vm.TagFilterInput = "  cat  ";
+        await vm.AddToTagListCommand.Execute(Unit.Default).FirstAsync();
+        await WaitForTagsAsync(vm, 1);
+
+        Assert.Equal("cat", vm.FilteredTagList.Single().Tag.Name);
+
+        await vm.DeleteTagCommand.Execute(vm.FilteredTagList.Single()).FirstAsync();
+
+        Assert.Empty(vm.FilteredTagList);
+
+        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(_tempDir);
+        Assert.Empty(unitOfWork.TagRepository.GetAllTag());
+    }
+
+    [AvaloniaFact]
+    public async Task AllAndNoneCommands_AssignThenRemoveEveryLabelOnTheImage()
+    {
+        WriteImage("a.jpg");
+        await SeedTagAsync("cat");
+        await SeedTagAsync("dog");
+
+        MainWindowViewModel vm = new() { WorkingFolder = _tempDir };
+        await vm.OpenFolder(_tempDir);
+        await ScanAndWaitAsync(vm, 1);
+        await WaitForTagsAsync(vm, 2);
+        vm.SelectedImage = vm.FilteredImages.Single();
+
+        await vm.AllCommand.Execute(Unit.Default).FirstAsync();
+        Assert.Equal(2, vm.SelectedImage!.Tags.Count);
+
+        await vm.NoneCommand.Execute(Unit.Default).FirstAsync();
+        Assert.Empty(vm.SelectedImage.Tags);
+
+        await using IUnitOfWork unitOfWork = await DbContextFactory.GetUnitOfWorkAsync(_tempDir);
+        Assert.Empty(unitOfWork.AsDbContext().ItemTags);
+    }
+
+    [AvaloniaFact]
+    public async Task OpenLocateAndOpenTarget_UseTheFileManagerOnlyWhenThePathsExist()
+    {
+        WriteImage("a.jpg");
+        FakeFileManagerHandler fileManager = new();
+        MainWindowViewModel vm = new(
+            new UnitOfWorkFactory(),
+            new FolderScan(),
+            new HashEvaluator(),
+            new NullThumbnailProvider(),
+            fileManager);
+        vm.WorkingFolder = _tempDir;
+        await vm.OpenFolder(_tempDir);
+        await ScanAndWaitAsync(vm, 1);
+        vm.SelectedImage = vm.FilteredImages.Single();
+
+        await vm.OpenCommand.Execute(Unit.Default).FirstAsync();
+        await vm.LocateCommand.Execute(Unit.Default).FirstAsync();
+        Assert.Equal(Path.Combine(_tempDir, "a.jpg"), fileManager.LastOpenedFile);
+        Assert.Equal(Path.Combine(_tempDir, "a.jpg"), fileManager.LastRevealedFile);
+
+        vm.TargetFolder = _tempDir;
+        await vm.OpenTargetFolderCommand.Execute(Unit.Default).FirstAsync();
+        Assert.Equal(_tempDir, fileManager.LastOpenedFolder);
+    }
+
     private sealed class ThrowingFolderScan : IFolderScan
     {
         private readonly Exception _exception;

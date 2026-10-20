@@ -55,6 +55,10 @@ public sealed class FakeFileManagerHandler : IFileManagerHandler
 {
     public string? LastOpenedFolder { get; private set; }
 
+    public string? LastOpenedFile { get; private set; }
+
+    public string? LastRevealedFile { get; private set; }
+
     public Task OpenParentFolder(string path)
     {
         LastOpenedFolder = path;
@@ -67,7 +71,15 @@ public sealed class FakeFileManagerHandler : IFileManagerHandler
         return Task.CompletedTask;
     }
 
-    public Task OpenFile(string path) => Task.CompletedTask;
+    public Task OpenFile(string path)
+    {
+        LastOpenedFile = path;
+        return Task.CompletedTask;
+    }
 
-    public Task RevealFileInFolder(string path) => Task.CompletedTask;
+    public Task RevealFileInFolder(string path)
+    {
+        LastRevealedFile = path;
+        return Task.CompletedTask;
+    }
 }
