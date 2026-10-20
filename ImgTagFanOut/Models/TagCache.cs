@@ -7,26 +7,36 @@ namespace ImgTagFanOut.Models;
 public class TagCache : ITagCache
 {
     private readonly HashSet<Tag> _tags = new(Tag.Comparer);
+    private readonly object _sync = new();
 
     public Tag GetOrCreate(TagDao tagDao)
     {
         Tag probingTag = new(tagDao.Name);
-        if (_tags.TryGetValue(probingTag, out Tag? tag))
+        lock (_sync)
         {
-            return tag;
-        }
+            if (_tags.TryGetValue(probingTag, out Tag? tag))
+            {
+                return tag;
+            }
 
-        _tags.Add(probingTag);
-        return probingTag;
+            _tags.Add(probingTag);
+            return probingTag;
+        }
     }
 
     public void Remove(Tag tag)
     {
-        _tags.Remove(tag);
+        lock (_sync)
+        {
+            _tags.Remove(tag);
+        }
     }
 
     public void Clear()
     {
-        _tags.Clear();
+        lock (_sync)
+        {
+            _tags.Clear();
+        }
     }
 }

@@ -62,7 +62,7 @@ public class TagToImagesUiTests : IDisposable
         // Simulate clicking the "Tags" tab
         TabControl? tabControl = window.FindControl<TabControl>("tabControl");
         Assert.NotNull(tabControl);
-        TabItem? tagsTab = tabControl.Items.OfType<TabItem>().FirstOrDefault(t => (string?)t.Header == "Libellés");
+        TabItem? tagsTab = window.FindByAutomationId<TabItem>(AutomationIds.TagsTab);
         Assert.NotNull(tagsTab);
         tabControl.SelectedItem = tagsTab;
         Dispatcher.UIThread.RunJobs();
