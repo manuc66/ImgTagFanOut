@@ -11,4 +11,6 @@ public interface IImgTagFanOutDbContext
     DbSet<FaceDao> Faces { get; }
     DbSet<FaceAnalysisDao> FaceAnalyses { get; }
     DbSet<FaceTagDao> FaceTags { get; }
+    DbSet<TagSuggestionDao> TagSuggestions { get; }
+    DbSet<ItemEmbeddingDao> ItemEmbeddings { get; }
 }

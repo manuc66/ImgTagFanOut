@@ -54,6 +54,15 @@ public class TagRepository : ITagRepository
         return tags;
     }
 
+    public ImmutableList<string> GetTagNamesForItem(int itemId)
+    {
+        return _dbContext
+            .ItemTags.Where(link => link.ItemForeignKey == itemId)
+            .Select(link => link.Tag.Name)
+            .Distinct()
+            .ToImmutableList();
+    }
+
     public async Task AddOrUpdateItem(CanHaveTag tagAssignation, Func<CanHaveTag, Task<string>> getHash)
     {
         ItemDao? existingItem = await _dbContext.Items
