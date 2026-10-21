@@ -14,6 +14,11 @@ public class CanHaveTag : ViewModelBase
 
     public string? Hash { get; set; }
 
+    /// <summary>Métadonnées relevées au scan : elles évitent de relire le fichier.</summary>
+    public long Size { get; set; }
+
+    public long ModifiedAtUtcTicks { get; set; }
+
     public ObservableCollection<Tag> Tags
     {
         get => _tags;

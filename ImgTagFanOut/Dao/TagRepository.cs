@@ -61,10 +61,23 @@ public class TagRepository : ITagRepository
             .ThenInclude(x => x.Tag)
             .FirstOrDefaultAsync(t => t.Name == tagAssignation.Item);
 
-        // The hash identifies the file content. Compute it for new items too:
-        // without it, a later scan cannot tell an edited photo from the same
-        // one and the face cache has no valid key.
-        string hash = await getHash(tagAssignation);
+        // The hash identifies the file content and keys the face cache. Reading
+        // the whole file costs more than everything else in a scan, so it is only
+        // computed when size or last-write time say the file may have changed.
+        // A zero timestamp means "never recorded" (rows created before this
+        // column existed, or a caller that only knows the name): trust nothing
+        // and read the file.
+        bool metadataUnchanged = existingItem is not null
+                                 && !string.IsNullOrEmpty(existingItem.Hash)
+                                 && existingItem.ModifiedAtUtcTicks != 0
+                                 && tagAssignation.ModifiedAtUtcTicks != 0
+                                 && existingItem.Size == tagAssignation.Size
+                                 && existingItem.ModifiedAtUtcTicks == tagAssignation.ModifiedAtUtcTicks;
+
+        string hash = metadataUnchanged
+            ? existingItem!.Hash!
+            : await getHash(tagAssignation);
+
         tagAssignation.Hash = hash;
 
         if (existingItem != null)
@@ -89,10 +102,17 @@ public class TagRepository : ITagRepository
             }
 
             existingItem.Hash = hash;
+            existingItem.Size = tagAssignation.Size;
+            existingItem.ModifiedAtUtcTicks = tagAssignation.ModifiedAtUtcTicks;
         }
         else
         {
-            _dbContext.Items.Add(new(tagAssignation.Item) { Hash = hash });
+            _dbContext.Items.Add(new(tagAssignation.Item)
+            {
+                Hash = hash,
+                Size = tagAssignation.Size,
+                ModifiedAtUtcTicks = tagAssignation.ModifiedAtUtcTicks,
+            });
         }
     }
 

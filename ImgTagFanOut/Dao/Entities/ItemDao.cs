@@ -12,6 +12,13 @@ public class ItemDao
 
     public string Name { get; set; }
     public string? Hash { get; set; }
+
+    /// <summary>Taille du fichier au dernier scan, pour éviter de le re-hacher.</summary>
+    public long Size { get; set; }
+
+    /// <summary>Date de dernière écriture (ticks UTC) au dernier scan.</summary>
+    public long ModifiedAtUtcTicks { get; set; }
+
     public bool Done { get; set; }
 
     public List<ItemTagDao> ItemTags { get; } = new();

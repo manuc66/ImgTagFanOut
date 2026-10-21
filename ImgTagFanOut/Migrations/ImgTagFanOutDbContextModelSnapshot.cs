@@ -15,7 +15,7 @@ namespace ImgTagFanOut.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.13");
 
             modelBuilder.Entity("ImgTagFanOut.Dao.FaceAnalysisDao", b =>
                 {
@@ -114,9 +114,15 @@ namespace ImgTagFanOut.Migrations
                     b.Property<string>("Hash")
                         .HasColumnType("TEXT");
 
+                    b.Property<long>("ModifiedAtUtcTicks")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<long>("Size")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("ItemId");
 

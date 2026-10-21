@@ -97,6 +97,12 @@ public class FolderScan : IFolderScan
 
                 try
                 {
+                    // Read once: these two values let the next scan skip the file
+                    // entirely unless it may have changed.
+                    FileInfo info = new(file);
+                    canHaveTag.Size = info.Length;
+                    canHaveTag.ModifiedAtUtcTicks = info.LastWriteTimeUtc.Ticks;
+
                     await unitOfWork.TagRepository.AddOrUpdateItem(
                         canHaveTag,
                         tag => _hashEvaluator.ComputeHashAsync(tag.GetFullFilePath(workingFolder), cancellationToken));
