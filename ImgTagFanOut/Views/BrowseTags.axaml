@@ -48,11 +48,14 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
-                            <ToggleButton Content="{Binding Tag.Name}"
-                                          ToolTip.Tip="{Binding PersonHint}"
+                            <ToggleButton ToolTip.Tip="{Binding PersonHint}"
                                           IsChecked="{Binding IsSelected}"
                                           CommandParameter="{Binding Tag}"
                                           Command="{Binding $parent[ItemsControl].((viewModels:MainWindowViewModel)DataContext).ToggleAssignTagToImageCommand, DataType={x:Type viewModels:MainWindowViewModel}, FallbackValue={x:Null}}">
+                                <StackPanel Classes="withIcon">
+                                    <materialIcons:MaterialIcon Kind="Account" IsVisible="{Binding IsPerson}" />
+                                    <TextBlock Text="{Binding Tag.Name}" VerticalAlignment="Center" />
+                                </StackPanel>
                                 <ToggleButton.ContextMenu>
                                     <ContextMenu>
                                         <MenuItem Header="{x:Static resources:Resources.Delete}"

@@ -94,11 +94,9 @@
 
 
                 <DockPanel Grid.Row="2" Grid.Column="1" LastChildFill="False">
-                    <ToggleSwitch DockPanel.Dock="Top" IsChecked="{Binding ShowDone}"
-                                  Content="{x:Static resources:Resources.ShowDone}"
-                                  OnContent="{x:Static resources:Resources.ShowDoneOn}"
-                                  OffContent="{x:Static resources:Resources.ShowDoneOff}">
-                    </ToggleSwitch>
+                    <CheckBox DockPanel.Dock="Top" IsChecked="{Binding ShowDone}"
+                              HorizontalAlignment="Left" Margin="0,0,0,6"
+                              Content="{x:Static resources:Resources.ShowDone}" />
                     <Button DockPanel.Dock="Top" Command="{Binding AllCommand}" HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center">
                         <StackPanel Classes="withIcon">
