@@ -16,6 +16,10 @@
 
 - **Shareable Collections**: Easily share specific image sets with individuals or groups by sending them the corresponding subdirectory containing images matching their interests or needs.
 
+- **Face Tagging**: Detect faces in your photos, name them once and let the application suggest that person on the other photos. Everything runs locally, no image ever leaves the machine.
+
+![ImgTagFanOut](docs/screenshot.png)
+
 ## How It Works
 
 1. **Select a Directory**: Choose the directory containing your images that you want to organize.
@@ -27,6 +31,33 @@
 4. **Share with Ease**: Share the subdirectories with friends, family, or colleagues, ensuring they receive the images relevant to them.
 
 ImgTagFanOut simplifies image management, making it a breeze to sort, organize, and distribute your image collection. Try it today and take control of your images like never before!
+
+## Face tagging
+
+Open a folder and run **Analyze faces** (toolbar or *File* menu). Detection and
+embeddings run on the CPU, once per photo: results are stored in the workspace
+database and only recomputed when a file changes, when the models change, or
+when you name a face.
+
+- **Name a face** in the strip under the preview, or type a new person's name.
+  Naming a face also tags its photo, so publishing keeps working with tags.
+- **Suggestions**: unnamed faces are compared with the ones you already named
+  and the closest person is proposed with its score. Selecting the face
+  pre-fills the person, so accepting is one click.
+- **Unknown faces** tab: unnamed faces are grouped by similarity ("12 people,
+  47 photos"). Name a group once and every face in it is linked and every photo
+  tagged.
+- Removing a person label from a photo also forgets the faces of that photo, so
+  what the recogniser learns always matches what the photo claims.
+
+The two models (YuNet for detection, SFace for embeddings, ~39 MB) ship with the
+application under `Assets/Models`. They are MIT / Apache-2.0 licensed. Face
+detection is not available on macOS yet: OpenCvSharp does not publish macOS
+native binaries for OpenCV 5, and the feature disables itself there.
+
+A small demo library (17 public-domain portraits, 6 people) is in `demo/faces`
+if you want to try the feature without opening your own photos. See
+`demo/faces/README.md` for its limits.
 
 ## Supported Image Formats
 
