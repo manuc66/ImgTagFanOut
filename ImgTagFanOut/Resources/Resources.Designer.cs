@@ -316,6 +316,62 @@ namespace ImgTagFanOut.Resources {
                 return ResourceManager.GetString("PersonLabelWithoutFace", resourceCulture);
             }
         }
+
+        
+        public static string UnknownFaces {
+            get {
+                return ResourceManager.GetString("UnknownFaces", resourceCulture);
+            }
+        }
+
+        
+        public static string FindUnknownFaces {
+            get {
+                return ResourceManager.GetString("FindUnknownFaces", resourceCulture);
+            }
+        }
+
+        
+        public static string UnknownFacesHint {
+            get {
+                return ResourceManager.GetString("UnknownFacesHint", resourceCulture);
+            }
+        }
+
+        
+        public static string UnknownFacesFound {
+            get {
+                return ResourceManager.GetString("UnknownFacesFound", resourceCulture);
+            }
+        }
+
+        
+        public static string NoUnknownFaces {
+            get {
+                return ResourceManager.GetString("NoUnknownFaces", resourceCulture);
+            }
+        }
+
+        
+        public static string ClusterFaces {
+            get {
+                return ResourceManager.GetString("ClusterFaces", resourceCulture);
+            }
+        }
+
+        
+        public static string NameCluster {
+            get {
+                return ResourceManager.GetString("NameCluster", resourceCulture);
+            }
+        }
+
+        
+        public static string ClusterNamed {
+            get {
+                return ResourceManager.GetString("ClusterNamed", resourceCulture);
+            }
+        }
         
         public static string AnalyzeFaces {
             get {

@@ -313,4 +313,28 @@ All tags and face analyses stored for this folder will be lost. This cannot be u
   <data name="FaceScanFailed" xml:space="preserve">
     <value>The face analysis failed:</value>
   </data>
+  <data name="UnknownFaces" xml:space="preserve">
+    <value>Unknown faces</value>
+  </data>
+  <data name="FindUnknownFaces" xml:space="preserve">
+    <value>Find unknown faces</value>
+  </data>
+  <data name="UnknownFacesHint" xml:space="preserve">
+    <value>These faces are not linked to anyone yet. Naming one links every face of its group and tags their photos, which is how the suggestions improve.</value>
+  </data>
+  <data name="UnknownFacesFound" xml:space="preserve">
+    <value>{0} unnamed face(s) grouped into {1} group(s).</value>
+  </data>
+  <data name="NoUnknownFaces" xml:space="preserve">
+    <value>No unknown faces to review.</value>
+  </data>
+  <data name="ClusterFaces" xml:space="preserve">
+    <value>{0} face(s)</value>
+  </data>
+  <data name="NameCluster" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="ClusterNamed" xml:space="preserve">
+    <value>“{1}” named on {0} face(s).</value>
+  </data>
 </root>

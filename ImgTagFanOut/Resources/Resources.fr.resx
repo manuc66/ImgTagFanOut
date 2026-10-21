@@ -313,4 +313,28 @@ Tous les libellés et analyses de visages enregistrés pour ce dossier seront pe
   <data name="FaceScanFailed" xml:space="preserve">
     <value>L'analyse des visages a échoué :</value>
   </data>
+  <data name="UnknownFaces" xml:space="preserve">
+    <value>Inconnus</value>
+  </data>
+  <data name="FindUnknownFaces" xml:space="preserve">
+    <value>Chercher les visages inconnus</value>
+  </data>
+  <data name="UnknownFacesHint" xml:space="preserve">
+    <value>Ces visages ne sont encore liés à personne. En nommer un associe tous les visages de son groupe et tague leurs photos : c'est comme ça que les suggestions progressent.</value>
+  </data>
+  <data name="UnknownFacesFound" xml:space="preserve">
+    <value>{0} visage(s) sans nom regroupés en {1} groupe(s).</value>
+  </data>
+  <data name="NoUnknownFaces" xml:space="preserve">
+    <value>Aucun visage inconnu à revoir.</value>
+  </data>
+  <data name="ClusterFaces" xml:space="preserve">
+    <value>{0} visage(s)</value>
+  </data>
+  <data name="NameCluster" xml:space="preserve">
+    <value>Nommer</value>
+  </data>
+  <data name="ClusterNamed" xml:space="preserve">
+    <value>« {1} » nommé sur {0} visage(s).</value>
+  </data>
 </root>

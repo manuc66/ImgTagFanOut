@@ -164,6 +164,8 @@ public class MainWindowViewModel : ViewModelBase
 
     public FacesViewModel Faces { get; }
 
+    public UnknownFacesViewModel UnknownFaces { get; }
+
     public ReactiveCommand<Window, string> SelectFolderCommand { get; }
     public ReactiveCommand<Window, string?> SelectTargetFolderCommand { get; }
 
@@ -216,6 +218,9 @@ public class MainWindowViewModel : ViewModelBase
         TagToImages = new TagToImagesViewModel(() => WorkingFolder, unitOfWorkFactory, thumbnailProvider);
         Faces = new FacesViewModel(unitOfWorkFactory, thumbnailProvider, new PersonSuggester(unitOfWorkFactory));
         Faces.TagsChanged += (_, _) => ReloadTags();
+
+        UnknownFaces = new UnknownFacesViewModel(() => WorkingFolder, unitOfWorkFactory, thumbnailProvider);
+        UnknownFaces.TagsChanged += (_, _) => ReloadTags();
         ShowPublishProgressDialog = new();
         ShowConsentDialog = new();
         PublishDropOrMergeDialog = new();

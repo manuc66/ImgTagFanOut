@@ -252,27 +252,7 @@ public class FacesViewModel : ViewModelBase
 
     private static IImage? Crop(Bitmap? source, FaceDao face)
     {
-        if (source is null || source.PixelSize.Width == 0)
-        {
-            return null;
-        }
-
-        double width = source.PixelSize.Width;
-        double height = source.PixelSize.Height;
-
-        // A little margin around the face keeps the crop readable.
-        double margin = 0.15 * Math.Max(face.Width, face.Height);
-        int x = (int)Math.Max(0, (face.X - margin) * width);
-        int y = (int)Math.Max(0, (face.Y - margin) * height);
-        int w = (int)Math.Min(width - x, (face.Width + 2 * margin) * width);
-        int h = (int)Math.Min(height - y, (face.Height + 2 * margin) * height);
-
-        if (w <= 1 || h <= 1)
-        {
-            return null;
-        }
-
-        return new CroppedBitmap(source, new PixelRect(x, y, w, h));
+        return FaceCrop.Create(source, face.X, face.Y, face.Width, face.Height);
     }
 
     private Task AssignSelectedPersonAsync()

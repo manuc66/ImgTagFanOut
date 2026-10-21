@@ -84,6 +84,15 @@
 				</TabItem.Header>
 				<views:TagToImagesView DataContext="{Binding TagToImages}" />
 			</TabItem>
+			<TabItem AutomationProperties.AutomationId="{x:Static ui:AutomationIds.UnknownFacesTab}">
+				<TabItem.Header>
+					<StackPanel Classes="withIcon">
+						<materialIcons:MaterialIcon Kind="AccountSearchOutline" />
+						<TextBlock Text="{x:Static resources:Resources.UnknownFaces}" VerticalAlignment="Center" />
+					</StackPanel>
+				</TabItem.Header>
+				<views:UnknownFacesView DataContext="{Binding UnknownFaces}" />
+			</TabItem>
 		</TabControl>
 	</DockPanel>
 </Window>

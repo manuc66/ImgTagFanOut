@@ -48,6 +48,9 @@ public interface IFaceRepository
 
     /// <summary>Embeddings of every named face, used to recognise the others.</summary>
     List<PersonEmbedding> GetPersonEmbeddings();
+
+    /// <summary>Faces nobody has named yet, with their photo, oldest first.</summary>
+    List<FaceEmbedding> GetUnnamedFaces();
 }
 
 /// <param name="PersonName">Tag naming the person.</param>

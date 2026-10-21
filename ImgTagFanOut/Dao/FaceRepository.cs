@@ -126,6 +126,17 @@ public class FaceRepository : IFaceRepository
             .ToList();
     }
 
+    public List<FaceEmbedding> GetUnnamedFaces()
+    {
+        return _dbContext.Faces
+            .Where(face => face.Embedding != null && !face.FaceTags.Any())
+            .OrderBy(face => face.FaceId)
+            .Select(face => new { face.FaceId, face.Item.Name, face.X, face.Y, face.Width, face.Height, face.Embedding })
+            .ToList()
+            .Select(row => new FaceEmbedding(row.FaceId, row.Name, row.X, row.Y, row.Width, row.Height, row.Embedding!))
+            .ToList();
+    }
+
     public List<PersonEmbedding> GetPersonEmbeddings()
     {
         var rows = _dbContext.FaceTags
