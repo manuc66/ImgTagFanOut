@@ -436,5 +436,89 @@ namespace ImgTagFanOut.Resources {
                 return ResourceManager.GetString("FaceScanFailed", resourceCulture);
             }
         }
+
+        public static string SuggestTags {
+            get {
+                return ResourceManager.GetString("SuggestTags", resourceCulture);
+            }
+        }
+
+        public static string SuggestingTags {
+            get {
+                return ResourceManager.GetString("SuggestingTags", resourceCulture);
+            }
+        }
+
+        public static string TagSuggestions {
+            get {
+                return ResourceManager.GetString("TagSuggestions", resourceCulture);
+            }
+        }
+
+        public static string TagSuggestionSummary {
+            get {
+                return ResourceManager.GetString("TagSuggestionSummary", resourceCulture);
+            }
+        }
+
+        public static string TagSuggestionNoModel {
+            get {
+                return ResourceManager.GetString("TagSuggestionNoModel", resourceCulture);
+            }
+        }
+
+        public static string TagSuggestionScanCancelled {
+            get {
+                return ResourceManager.GetString("TagSuggestionScanCancelled", resourceCulture);
+            }
+        }
+
+        public static string TagSuggestionScanFailed {
+            get {
+                return ResourceManager.GetString("TagSuggestionScanFailed", resourceCulture);
+            }
+        }
+
+        public static string TagSuggestionFromPath {
+            get {
+                return ResourceManager.GetString("TagSuggestionFromPath", resourceCulture);
+            }
+        }
+
+        public static string TagSuggestionFromFace {
+            get {
+                return ResourceManager.GetString("TagSuggestionFromFace", resourceCulture);
+            }
+        }
+
+        public static string TagSuggestionFromSimilar {
+            get {
+                return ResourceManager.GetString("TagSuggestionFromSimilar", resourceCulture);
+            }
+        }
+
+        public static string AcceptSuggestion {
+            get {
+                return ResourceManager.GetString("AcceptSuggestion", resourceCulture);
+            }
+        }
+
+        public static string RejectSuggestion {
+            get {
+                return ResourceManager.GetString("RejectSuggestion", resourceCulture);
+            }
+        }
+
+        public static string NextSuggestion {
+            get {
+                return ResourceManager.GetString("NextSuggestion", resourceCulture);
+            }
+        }
+
+        public static string NoPendingSuggestions {
+            get {
+                return ResourceManager.GetString("NoPendingSuggestions", resourceCulture);
+            }
+        }
     }
 }

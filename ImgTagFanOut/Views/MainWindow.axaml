@@ -39,6 +39,16 @@
                         <materialIcons:MaterialIcon Kind="FaceRecognition" />
                     </MenuItem.Icon>
                 </MenuItem>
+                <MenuItem Header="{x:Static resources:Resources.SuggestTags}" Command="{Binding SuggestTagsCommand}">
+                    <MenuItem.Icon>
+                        <materialIcons:MaterialIcon Kind="TagSearch" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="{x:Static resources:Resources.NextSuggestion}" Command="{Binding NextSuggestionCommand}">
+                    <MenuItem.Icon>
+                        <materialIcons:MaterialIcon Kind="SkipNext" />
+                    </MenuItem.Icon>
+                </MenuItem>
                 <MenuItem Header="{x:Static resources:Resources.EjectDatabase}" Command="{Binding EjectDatabaseCommand}">
                     <MenuItem.Icon>
                         <materialIcons:MaterialIcon Kind="Eject" />

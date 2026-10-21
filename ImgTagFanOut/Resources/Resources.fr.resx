@@ -313,4 +313,46 @@ Tous les libellés et analyses de visages enregistrés pour ce dossier seront pe
   <data name="FaceScanFailed" xml:space="preserve">
     <value>L'analyse des visages a échoué :</value>
   </data>
+  <data name="SuggestTags" xml:space="preserve">
+    <value>Suggérer des tags</value>
+  </data>
+  <data name="SuggestingTags" xml:space="preserve">
+    <value>Recherche de suggestions : {0}/{1}</value>
+  </data>
+  <data name="TagSuggestions" xml:space="preserve">
+    <value>Tags suggérés</value>
+  </data>
+  <data name="TagSuggestionSummary" xml:space="preserve">
+    <value>Suggestions : {0} image(s), {1} proposition(s), {2} descripteur(s) réutilisé(s).</value>
+  </data>
+  <data name="TagSuggestionNoModel" xml:space="preserve">
+    <value>Le modèle visuel local est indisponible : seuls le chemin et les visages nommés ont été utilisés.</value>
+  </data>
+  <data name="TagSuggestionScanCancelled" xml:space="preserve">
+    <value>Recherche de suggestions annulée.</value>
+  </data>
+  <data name="TagSuggestionScanFailed" xml:space="preserve">
+    <value>La recherche de suggestions a échoué :</value>
+  </data>
+  <data name="TagSuggestionFromPath" xml:space="preserve">
+    <value>Le nom du fichier évoque ce tag ({0}).</value>
+  </data>
+  <data name="TagSuggestionFromFace" xml:space="preserve">
+    <value>Visage reconnu : {0}.</value>
+  </data>
+  <data name="TagSuggestionFromSimilar" xml:space="preserve">
+    <value>Ressemble à {0} photo(s) déjà taguée(s).</value>
+  </data>
+  <data name="AcceptSuggestion" xml:space="preserve">
+    <value>Accepter</value>
+  </data>
+  <data name="RejectSuggestion" xml:space="preserve">
+    <value>Rejeter</value>
+  </data>
+  <data name="NextSuggestion" xml:space="preserve">
+    <value>Suggestion suivante</value>
+  </data>
+  <data name="NoPendingSuggestions" xml:space="preserve">
+    <value>Aucune suggestion en attente. Lancez « Suggérer des tags » pour en chercher.</value>
+  </data>
 </root>

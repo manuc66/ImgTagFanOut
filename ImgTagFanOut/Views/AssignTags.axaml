@@ -20,7 +20,7 @@
     </Design.DataContext>
     <Grid>
         <Grid IsEnabled="{Binding !IsBusy, Mode=OneWay}" ColumnDefinitions="*,*" RowDefinitions="*,Auto">
-            <Grid Grid.Row="0" Grid.Column="0" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,*,*,Auto">
+            <Grid Grid.Row="0" Grid.Column="0" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,*,*,Auto,Auto">
                 <Grid Grid.Row="2" Grid.Column="0" RowDefinitions="Auto,Auto,Auto,*">
                     <TextBlock Grid.Row="0" Text="{x:Static resources:Resources.Images}"></TextBlock>
                     <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,4,0,4">
@@ -42,6 +42,16 @@
                                 <materialIcons:MaterialIcon Kind="FaceRecognition" Classes="toolIcon" />
                                 <TextBlock Text="{x:Static resources:Resources.AnalyzeFaces}" VerticalAlignment="Center" />
                             </StackPanel>
+                        </Button>
+                        <Button Command="{Binding SuggestTagsCommand}" Margin="4,0,0,0">
+                            <StackPanel Classes="withIcon">
+                                <materialIcons:MaterialIcon Kind="TagSearch" Classes="toolIcon" />
+                                <TextBlock Text="{x:Static resources:Resources.SuggestTags}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button Command="{Binding NextSuggestionCommand}" Margin="4,0,0,0"
+                                ToolTip.Tip="{x:Static resources:Resources.NextSuggestion}">
+                            <materialIcons:MaterialIcon Kind="SkipNext" Classes="toolIcon" />
                         </Button>
                     </StackPanel>
                     <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,0,0,4">
@@ -140,7 +150,10 @@
                        Grid.ColumnSpan="2">
                 </Image>
 
-                <views:FaceStrip Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,4,0,0"
+                <views:TagSuggestionsView Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+                                          DataContext="{Binding Suggestions}" />
+
+                <views:FaceStrip Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,4,0,0"
                                 DataContext="{Binding Faces}"/>
             </Grid>
 
