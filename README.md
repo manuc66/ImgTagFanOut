@@ -16,6 +16,8 @@
 
 - **Shareable Collections**: Easily share specific image sets with individuals or groups by sending them the corresponding subdirectory containing images matching their interests or needs.
 
+- **Local tag suggestions**: Once a few photos are tagged, the app can propose tags for the others. It compares the photo with your already-tagged images, reads the file name and the faces you named, and shows a scored suggestion. Nothing is assigned until you accept it, and the vision model runs entirely on your machine.
+
 ## How It Works
 
 1. **Select a Directory**: Choose the directory containing your images that you want to organize.
@@ -25,6 +27,16 @@
 3. **Automatic Organization**: ImgTagFanOut will create subdirectories for each tag and copy the tagged images into the appropriate subdirectories.
 
 4. **Share with Ease**: Share the subdirectories with friends, family, or colleagues, ensuring they receive the images relevant to them.
+
+### Local tag suggestions
+
+Tagging stays the source of truth: suggestions only fill the label panel, they never move or rename a file. Run **Suggest tags** from the File menu (or the toolbar) and the app:
+
+- computes a small visual descriptor for each photo with a local MobileNetV2 ONNX model (about 14 MB, CPU only, no network);
+- compares it with the photos you already tagged, and adds signals from the file name and the faces you named;
+- stores at most three scored proposals per image, with the evidence behind each one.
+
+Click a proposal to assign the tag, or the cross to reject it; rejected tags are remembered and not proposed again. **Next suggestion** jumps to the next image waiting for a review. The descriptors are cached by content hash, so a second run only reads SQLite.
 
 ImgTagFanOut simplifies image management, making it a breeze to sort, organize, and distribute your image collection. Try it today and take control of your images like never before!
 

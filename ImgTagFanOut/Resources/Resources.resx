@@ -313,4 +313,46 @@ All tags and face analyses stored for this folder will be lost. This cannot be u
   <data name="FaceScanFailed" xml:space="preserve">
     <value>The face analysis failed:</value>
   </data>
+  <data name="SuggestTags" xml:space="preserve">
+    <value>Suggest tags</value>
+  </data>
+  <data name="SuggestingTags" xml:space="preserve">
+    <value>Finding tag suggestions: {0}/{1}</value>
+  </data>
+  <data name="TagSuggestions" xml:space="preserve">
+    <value>Suggested tags</value>
+  </data>
+  <data name="TagSuggestionSummary" xml:space="preserve">
+    <value>Suggestions: {0} image(s), {1} proposition(s), {2} cached descriptor(s).</value>
+  </data>
+  <data name="TagSuggestionNoModel" xml:space="preserve">
+    <value>The local vision model is unavailable: only the path and the named faces were used.</value>
+  </data>
+  <data name="TagSuggestionScanCancelled" xml:space="preserve">
+    <value>Tag suggestion scan cancelled.</value>
+  </data>
+  <data name="TagSuggestionScanFailed" xml:space="preserve">
+    <value>The tag suggestion scan failed:</value>
+  </data>
+  <data name="TagSuggestionFromPath" xml:space="preserve">
+    <value>The file name suggests this tag ({0}).</value>
+  </data>
+  <data name="TagSuggestionFromFace" xml:space="preserve">
+    <value>Recognised face: {0}.</value>
+  </data>
+  <data name="TagSuggestionFromSimilar" xml:space="preserve">
+    <value>Looks like {0} already-tagged photo(s).</value>
+  </data>
+  <data name="AcceptSuggestion" xml:space="preserve">
+    <value>Accept</value>
+  </data>
+  <data name="RejectSuggestion" xml:space="preserve">
+    <value>Reject</value>
+  </data>
+  <data name="NextSuggestion" xml:space="preserve">
+    <value>Next suggestion</value>
+  </data>
+  <data name="NoPendingSuggestions" xml:space="preserve">
+    <value>No pending suggestions. Run “Suggest tags” to look for some.</value>
+  </data>
 </root>

@@ -16,9 +16,12 @@ public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext, IUnitOfW
     public DbSet<FaceDao> Faces { get; set; } = null!;
     public DbSet<FaceAnalysisDao> FaceAnalyses { get; set; } = null!;
     public DbSet<FaceTagDao> FaceTags { get; set; } = null!;
+    public DbSet<TagSuggestionDao> TagSuggestions { get; set; } = null!;
+    public DbSet<ItemEmbeddingDao> ItemEmbeddings { get; set; } = null!;
     public ITagRepository TagRepository { get; }
     public IParameterRepository ParameterRepository { get; }
     public IFaceRepository FaceRepository { get; }
+    public ISuggestionRepository SuggestionRepository { get; }
 
     public ImgTagFanOutDbContext()
         : this(new(), ".") { }
@@ -29,6 +32,7 @@ public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext, IUnitOfW
         TagRepository = new TagRepository(this, tagCache);
         ParameterRepository = new ParameterRepository(this);
         FaceRepository = new FaceRepository(this);
+        SuggestionRepository = new SuggestionRepository(this);
     }
 
     public ImgTagFanOutDbContext(DbContextOptions<ImgTagFanOutDbContext> options, TagCache tagCache)
@@ -37,6 +41,7 @@ public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext, IUnitOfW
         TagRepository = new TagRepository(this, tagCache);
         ParameterRepository = new ParameterRepository(this);
         FaceRepository = new FaceRepository(this);
+        SuggestionRepository = new SuggestionRepository(this);
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
@@ -134,6 +139,33 @@ public class ImgTagFanOutDbContext : DbContext, IImgTagFanOutDbContext, IUnitOfW
             .HasOne(x => x.Tag)
             .WithMany(x => x.FaceTags)
             .HasForeignKey(x => x.TagId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Tag suggestions
+        modelBuilder.Entity<TagSuggestionDao>().ToTable("tag_suggestions");
+
+        modelBuilder.Entity<TagSuggestionDao>().HasKey(x => new { x.ItemForeignKey, x.TagName });
+        modelBuilder.Entity<TagSuggestionDao>().HasIndex(x => new { x.TagName, x.State });
+        modelBuilder.Entity<TagSuggestionDao>().HasIndex(x => new { x.SourceHash });
+
+        modelBuilder
+            .Entity<TagSuggestionDao>()
+            .HasOne(x => x.Item)
+            .WithMany()
+            .HasForeignKey(x => x.ItemForeignKey)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Item embeddings
+        modelBuilder.Entity<ItemEmbeddingDao>().ToTable("item_embeddings");
+
+        modelBuilder.Entity<ItemEmbeddingDao>().HasKey(x => x.ItemForeignKey);
+        modelBuilder.Entity<ItemEmbeddingDao>().HasIndex(x => new { x.SourceHash });
+
+        modelBuilder
+            .Entity<ItemEmbeddingDao>()
+            .HasOne(x => x.Item)
+            .WithOne()
+            .HasForeignKey<ItemEmbeddingDao>(x => x.ItemForeignKey)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

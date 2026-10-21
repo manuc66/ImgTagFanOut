@@ -9,6 +9,7 @@ public interface IUnitOfWork : IAsyncDisposable, IDisposable
     public ITagRepository TagRepository { get; }
     public IParameterRepository ParameterRepository { get; }
     public IFaceRepository FaceRepository { get; }
+    public ISuggestionRepository SuggestionRepository { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     int SaveChanges();
 }

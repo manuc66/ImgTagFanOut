@@ -20,6 +20,7 @@ public interface ITagRepository
     void DeleteTag(Tag tag);
     ImmutableList<string> GetItemsWithTag(Tag tag);
     ImmutableList<Tag> GetAllTagForHash(string hash);
+    ImmutableList<string> GetTagNamesForItem(int itemId);
     ImmutableList<ItemDao> GetAllItems();
     TagDao? GetTagDao(string name);
 }

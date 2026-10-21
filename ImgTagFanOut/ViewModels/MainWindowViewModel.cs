@@ -18,6 +18,7 @@ using DynamicData.Binding;
 using ImgTagFanOut.Dao;
 using ImgTagFanOut.Models;
 using ImgTagFanOut.Models.Faces;
+using ImgTagFanOut.Models.Suggestions;
 using ReactiveUI;
 using Serilog;
 
@@ -164,12 +165,16 @@ public class MainWindowViewModel : ViewModelBase
 
     public FacesViewModel Faces { get; }
 
+    public TagSuggestionsViewModel Suggestions { get; }
+
     public ReactiveCommand<Window, string> SelectFolderCommand { get; }
     public ReactiveCommand<Window, string?> SelectTargetFolderCommand { get; }
 
     public ReactiveCommand<Unit, Unit> ScanFolderCommand { get; }
     public ReactiveCommand<Unit, Unit> EjectDatabaseCommand { get; }
     public ReactiveCommand<Unit, Unit> AnalyzeFacesCommand { get; }
+    public ReactiveCommand<Unit, Unit> SuggestTagsCommand { get; }
+    public ReactiveCommand<Unit, Unit> NextSuggestionCommand { get; }
     public ReactiveCommand<Unit, Unit> CancelBusyCommand { get; }
     public ReactiveCommand<Window, Unit> PublishCommand { get; }
     public ReactiveCommand<Tag, Unit> ToggleAssignTagToImageCommand { get; }
@@ -205,7 +210,8 @@ public class MainWindowViewModel : ViewModelBase
         IHashEvaluator hashEvaluator,
         IThumbnailProvider thumbnailProvider,
         IFileManagerHandler fileManagerHandler,
-        IFaceScan? faceScan = null)
+        IFaceScan? faceScan = null,
+        ITagSuggestionScan? suggestionScan = null)
     {
         _unitOfWorkFactory = unitOfWorkFactory;
         _folderScan = folderScan;
@@ -213,9 +219,16 @@ public class MainWindowViewModel : ViewModelBase
         _thumbnailProvider = thumbnailProvider;
         _fileManagerHandler = fileManagerHandler;
         _faceScan = faceScan ?? new FaceScan(unitOfWorkFactory, hashEvaluator);
+        _tagSuggestionScan = suggestionScan ?? new TagSuggestionScan(unitOfWorkFactory, hashEvaluator);
         TagToImages = new TagToImagesViewModel(() => WorkingFolder, unitOfWorkFactory, thumbnailProvider);
         Faces = new FacesViewModel(unitOfWorkFactory, thumbnailProvider, new PersonSuggester(unitOfWorkFactory));
+        Suggestions = new TagSuggestionsViewModel(unitOfWorkFactory);
         Faces.TagsChanged += (_, _) => ReloadTags();
+        Suggestions.TagsChanged += (_, _) =>
+        {
+            ReloadTags();
+            RefreshTagIsSelected();
+        };
         ShowPublishProgressDialog = new();
         ShowConsentDialog = new();
         PublishDropOrMergeDialog = new();
@@ -282,6 +295,12 @@ public class MainWindowViewModel : ViewModelBase
             .SelectMany(pair => Observable.FromAsync(() => Faces.LoadAsync(pair.folder, pair.image)))
             .Subscribe();
 
+        this.WhenAnyValue(x => x.SelectedImage, x => x.WorkingFolder, (image, folder) => (image, folder))
+            .Throttle(TimeSpan.FromMilliseconds(30))
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .SelectMany(pair => Observable.FromAsync(() => Suggestions.LoadAsync(pair.folder, pair.image)))
+            .Subscribe();
+
         DoneCommand = ReactiveCommand.CreateFromTask(
             ToggleDoneCurrentElement,
             this.WhenAnyValue(x => x.SelectedImage).Select(x => x != null)
@@ -313,6 +332,21 @@ public class MainWindowViewModel : ViewModelBase
                                      && !string.IsNullOrWhiteSpace(folder)
                                      && Directory.Exists(folder))
                 .CombineLatest(ScanFolderCommand.IsExecuting, (canAnalyze, isScanning) => canAnalyze && !isScanning)
+        );
+
+        SuggestTagsCommand = ReactiveCommand.CreateFromTask(
+            ExecuteSuggestTagsCommandAsync,
+            this.WhenAnyValue(x => x.WorkingFolder, x => x.IsBusy,
+                    (folder, isBusy) => !isBusy
+                                     && !string.IsNullOrWhiteSpace(folder)
+                                     && Directory.Exists(folder))
+                .CombineLatest(ScanFolderCommand.IsExecuting, (canSuggest, isScanning) => canSuggest && !isScanning)
+        );
+
+        NextSuggestionCommand = ReactiveCommand.CreateFromTask(
+            ExecuteNextSuggestionCommandAsync,
+            this.WhenAnyValue(x => x.WorkingFolder)
+                .Select(folder => !string.IsNullOrWhiteSpace(folder) && Directory.Exists(folder))
         );
 
         CancelBusyCommand = ReactiveCommand.Create(
@@ -465,6 +499,102 @@ public class MainWindowViewModel : ViewModelBase
             BusyMessage = null;
             IsBusy = false;
         }
+    }
+
+    private async Task ExecuteSuggestTagsCommandAsync(CancellationToken cancellationToken)
+    {
+        string? folder = WorkingFolder;
+        if (string.IsNullOrWhiteSpace(folder) || !Directory.Exists(folder))
+        {
+            return;
+        }
+
+        using CancellationTokenSource cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        _busyCancellation = cancellation;
+        IsBusy = true;
+        BusyMessage = string.Format(Resources.Resources.SuggestingTags, 0, 0);
+        StatusMessage = null;
+
+        try
+        {
+            Progress<TagSuggestionScanProgress> progress = new(report =>
+                BusyMessage = string.Format(Resources.Resources.SuggestingTags, report.Processed, report.Total));
+
+            TagSuggestionScanSummary summary = await Task.Run(
+                () => _tagSuggestionScan.ScanAsync(folder, progress, cancellation.Token),
+                cancellation.Token);
+
+            string message = string.Format(
+                Resources.Resources.TagSuggestionSummary,
+                summary.SuggestedItems,
+                summary.SuggestionCount,
+                summary.CachedEmbeddings);
+
+            StatusMessage = summary.EmbedderUnavailable
+                ? $"{message} {Resources.Resources.TagSuggestionNoModel}"
+                : message;
+
+            // The scan changed the pending rows: show the ones of the current
+            // image without waiting for the next selection.
+            await Suggestions.LoadAsync(folder, SelectedImage);
+        }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = Resources.Resources.TagSuggestionScanCancelled;
+        }
+        catch (Exception ex)
+        {
+            // A missing model file or a database hiccup must leave the window
+            // usable and explain what happened.
+            Log.Error(ex, "Tag suggestion scan failed for {Folder}", folder);
+            StatusMessage = $"{Resources.Resources.TagSuggestionScanFailed} {ex.Message}";
+        }
+        finally
+        {
+            _busyCancellation = null;
+            BusyMessage = null;
+            IsBusy = false;
+        }
+    }
+
+    private async Task ExecuteNextSuggestionCommandAsync(CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(WorkingFolder))
+        {
+            return;
+        }
+
+        HashSet<string> pending;
+        await using (IUnitOfWork unitOfWork = await _unitOfWorkFactory.GetUnitOfWorkAsync(WorkingFolder, cancellationToken))
+        {
+            pending = unitOfWork.SuggestionRepository
+                .GetItemNamesWithPendingSuggestions()
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        }
+
+        if (pending.Count == 0)
+        {
+            StatusMessage = Resources.Resources.NoPendingSuggestions;
+            return;
+        }
+
+        int start = SelectedImage is null ? -1 : FilteredImages.IndexOf(SelectedImage);
+        for (int offset = 1; offset <= FilteredImages.Count; offset++)
+        {
+            int index = (start + offset + FilteredImages.Count) % FilteredImages.Count;
+            CanHaveTag candidate = FilteredImages[index];
+            if (!pending.Contains(candidate.Item))
+            {
+                continue;
+            }
+
+            SelectedImage = candidate;
+            SelectedIndex = index;
+            StatusMessage = null;
+            return;
+        }
+
+        StatusMessage = Resources.Resources.NoPendingSuggestions;
     }
 
     private async Task ExecuteEjectDatabaseCommandAsync(CancellationToken ct)
@@ -841,6 +971,7 @@ public class MainWindowViewModel : ViewModelBase
     private readonly IThumbnailProvider _thumbnailProvider;
     private readonly IFileManagerHandler _fileManagerHandler;
     private readonly IFaceScan _faceScan;
+    private readonly ITagSuggestionScan _tagSuggestionScan;
     private CancellationTokenSource? _busyCancellation;
     private readonly Bitmap _noPreviewToDisplay;
 

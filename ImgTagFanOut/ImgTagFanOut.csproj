@@ -72,6 +72,9 @@
 
         <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="15.0.0" />
 
+        <!-- Local image descriptor for tag suggestions. Runs on the CPU, no network. -->
+        <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.23.2" />
+
         <!-- Face detection (YuNet) and embeddings (SFace). Natives come from the
              runtime packages; macOS is not covered by OpenCvSharp5 yet, the feature
              disables itself there. -->

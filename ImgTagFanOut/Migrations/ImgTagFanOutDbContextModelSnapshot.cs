@@ -135,6 +135,36 @@ namespace ImgTagFanOut.Migrations
                     b.ToTable("items", (string)null);
                 });
 
+            modelBuilder.Entity("ImgTagFanOut.Dao.ItemEmbeddingDao", b =>
+                {
+                    b.Property<int>("ItemForeignKey")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("ComputedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Dimensions")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<byte[]>("Embedding")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.Property<string>("ModelVersion")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SourceHash")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ItemForeignKey");
+
+                    b.HasIndex("SourceHash");
+
+                    b.ToTable("item_embeddings", (string)null);
+                });
+
             modelBuilder.Entity("ImgTagFanOut.Dao.ItemTagDao", b =>
                 {
                     b.Property<int>("ItemForeignKey")
@@ -197,6 +227,48 @@ namespace ImgTagFanOut.Migrations
                     b.ToTable("tags", (string)null);
                 });
 
+            modelBuilder.Entity("ImgTagFanOut.Dao.TagSuggestionDao", b =>
+                {
+                    b.Property<int>("ItemForeignKey")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TagName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("EngineVersion")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ReasonArgument")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("Score")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SourceHash")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("State")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("SuggestedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ItemForeignKey", "TagName");
+
+                    b.HasIndex("SourceHash");
+
+                    b.HasIndex("TagName", "State");
+
+                    b.ToTable("tag_suggestions", (string)null);
+                });
+
             modelBuilder.Entity("ImgTagFanOut.Dao.FaceAnalysisDao", b =>
                 {
                     b.HasOne("ImgTagFanOut.Dao.ItemDao", "Item")
@@ -238,6 +310,17 @@ namespace ImgTagFanOut.Migrations
                     b.Navigation("Tag");
                 });
 
+            modelBuilder.Entity("ImgTagFanOut.Dao.ItemEmbeddingDao", b =>
+                {
+                    b.HasOne("ImgTagFanOut.Dao.ItemDao", "Item")
+                        .WithOne()
+                        .HasForeignKey("ImgTagFanOut.Dao.ItemEmbeddingDao", "ItemForeignKey")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+                });
+
             modelBuilder.Entity("ImgTagFanOut.Dao.ItemTagDao", b =>
                 {
                     b.HasOne("ImgTagFanOut.Dao.ItemDao", "Item")
@@ -255,6 +338,17 @@ namespace ImgTagFanOut.Migrations
                     b.Navigation("Item");
 
                     b.Navigation("Tag");
+                });
+
+            modelBuilder.Entity("ImgTagFanOut.Dao.TagSuggestionDao", b =>
+                {
+                    b.HasOne("ImgTagFanOut.Dao.ItemDao", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemForeignKey")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
                 });
 
             modelBuilder.Entity("ImgTagFanOut.Dao.FaceDao", b =>
