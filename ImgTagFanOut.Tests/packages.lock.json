@@ -509,15 +509,15 @@
       },
       "Sentry": {
         "type": "Transitive",
-        "resolved": "6.12.0",
-        "contentHash": "7IRSoMWSxzjD204mFrQs0+kU7/ZAQRcqNdiFB8tN9R8CxgwZvP/rrD2nuWmQnFleQwA3yZYcpR8m3EtGfP5x5w=="
+        "resolved": "6.12.1",
+        "contentHash": "yCHz3cLGZ3TVik3rLV6rp6SaqJ0Ai7PyIi2KdoHNGpZYWEkcX7kx13IV46mufAzPW7pqZZoKNoru0w0RpmkmrA=="
       },
       "Sentry.Serilog": {
         "type": "Transitive",
-        "resolved": "6.12.0",
-        "contentHash": "G8PMXTb2vobdNAsAyMSozca80LTHPuMW5L9JKkwM+X2PfgzORhf2Fhk778pZZX728Xq+llo0gS4hyycGRWt22A==",
+        "resolved": "6.12.1",
+        "contentHash": "nrE5smII1u2qPK0MKK/2O3bnJZuBqSekdVXepEDOe55rjRlIiANebe0TRiuawNhauJgNtSC0+lUxNq2kdRjhog==",
         "dependencies": {
-          "Sentry": "6.12.0",
+          "Sentry": "6.12.1",
           "Serilog": "2.10.0"
         }
       },
@@ -731,8 +731,8 @@
           "SQLitePCLRaw.bundle_e_sqlite3": "[3.0.5, )",
           "SQLitePCLRaw.core": "[3.0.5, )",
           "SQLitePCLRaw.provider.e_sqlite3": "[3.0.5, )",
-          "Sentry": "[6.12.0, )",
-          "Sentry.Serilog": "[6.12.0, )",
+          "Sentry": "[6.12.1, )",
+          "Sentry.Serilog": "[6.12.1, )",
           "Serilog.Enrichers.Environment": "[3.0.1, )",
           "Serilog.Enrichers.Process": "[3.0.0, )",
           "Serilog.Enrichers.Thread": "[4.0.0, )",
