@@ -184,17 +184,17 @@
       },
       "Sentry": {
         "type": "Direct",
-        "requested": "[6.12.0, )",
-        "resolved": "6.12.0",
-        "contentHash": "7IRSoMWSxzjD204mFrQs0+kU7/ZAQRcqNdiFB8tN9R8CxgwZvP/rrD2nuWmQnFleQwA3yZYcpR8m3EtGfP5x5w=="
+        "requested": "[6.13.0, )",
+        "resolved": "6.13.0",
+        "contentHash": "TwgXw4BwBa6gYKJxTEBJWZ0y+MyBDTMzCq8ywYWUEzG9srNmKui4AMcz6vZ9BEsaZYVJxni0EIDHGho+PQXDVA=="
       },
       "Sentry.Serilog": {
         "type": "Direct",
-        "requested": "[6.12.0, )",
-        "resolved": "6.12.0",
-        "contentHash": "G8PMXTb2vobdNAsAyMSozca80LTHPuMW5L9JKkwM+X2PfgzORhf2Fhk778pZZX728Xq+llo0gS4hyycGRWt22A==",
+        "requested": "[6.13.0, )",
+        "resolved": "6.13.0",
+        "contentHash": "O6sa7QqwygESalOGT7y7qHQ3cOWKG4hhs6ewWc0/Vxi4psPjb6wUjR2wqli4c2ONCYX+xN5eNMOPbTRkaVz+QQ==",
         "dependencies": {
-          "Sentry": "6.12.0",
+          "Sentry": "6.13.0",
           "Serilog": "2.10.0"
         }
       },
